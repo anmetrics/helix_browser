@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="search_engine_names">
+        <item>Google</item>
+        <item>Bing</item>
+        <item>DuckDuckGo</item>
+        <item>Yahoo</item>
+        <item>Brave Search</item>
+    </string-array>
+    <string-array name="search_engine_values">
+        <item>google</item>
+        <item>bing</item>
+        <item>duckduckgo</item>
+        <item>yahoo</item>
+        <item>brave</item>
+    </string-array>
+</resources>

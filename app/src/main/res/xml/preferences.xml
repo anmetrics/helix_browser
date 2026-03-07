@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="Tìm kiếm">
+        <ListPreference
+            app:key="search_engine"
+            app:title="Công cụ tìm kiếm"
+            app:summary="%s"
+            app:entries="@array/search_engine_names"
+            app:entryValues="@array/search_engine_values"
+            app:defaultValue="google"
+            app:icon="@drawable/ic_search" />
+
+        <EditTextPreference
+            app:key="homepage"
+            app:title="Trang chủ"
+            app:summary="https://www.google.com"
+            app:defaultValue="https://www.google.com"
+            app:icon="@drawable/ic_home" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Nội dung">
+        <SwitchPreferenceCompat
+            app:key="javascript_enabled"
+            app:title="JavaScript"
+            app:summary="Bật JavaScript cho các trang web"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_settings" />
+
+        <SwitchPreferenceCompat
+            app:key="desktop_mode"
+            app:title="Chế độ máy tính mặc định"
+            app:summary="Luôn dùng phiên bản máy tính"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_desktop" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Quyền riêng tư">
+        <Preference
+            app:key="clear_cache"
+            app:title="Xoá bộ nhớ cache"
+            app:summary="Xoá cache của tất cả trang web"
+            app:icon="@drawable/ic_delete" />
+
+        <Preference
+            app:key="clear_cookies"
+            app:title="Xoá Cookies"
+            app:summary="Xoá cookies của tất cả trang web"
+            app:icon="@drawable/ic_delete" />
+
+        <Preference
+            app:key="clear_history"
+            app:title="Xoá lịch sử"
+            app:summary="Xoá lịch sử duyệt web"
+            app:icon="@drawable/ic_history" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Thông tin">
+        <Preference
+            app:key="version"
+            app:title="Phiên bản"
+            app:summary="1.0.0"
+            app:selectable="false" />
+
+        <Preference
+            app:key="engine"
+            app:title="Engine"
+            app:summary="WebKit (Android WebView)"
+            app:selectable="false" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

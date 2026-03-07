@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">Tìm kiếm hoặc nhập URL</string>
+    <string name="new_tab">Tab mới</string>
+    <string name="incognito_tab">Tab ẩn danh</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="history">Lịch sử</string>
+    <string name="downloads">Tải xuống</string>
+    <string name="settings">Cài đặt</string>
+    <string name="share">Chia sẻ</string>
+    <string name="find_in_page">Tìm trong trang</string>
+    <string name="desktop_site">Phiên bản máy tính</string>
+    <string name="mobile_site">Phiên bản di động</string>
+    <string name="add_bookmark">Thêm bookmark</string>
+    <string name="remove_bookmark">Xoá bookmark</string>
+    <string name="clear_history">Xoá lịch sử</string>
+    <string name="downloading">Đang tải</string>
+</resources>

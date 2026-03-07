@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/sheet_background"
+    android:paddingBottom="24dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@color/divider_color"
+        android:backgroundTint="@color/divider_color" />
+
+    <!-- New Tab -->
+    <LinearLayout android:id="@+id/menu_new_tab"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_add" style="@style/MenuIconStyle" />
+        <TextView android:text="Tab mới" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <!-- Incognito -->
+    <LinearLayout android:id="@+id/menu_incognito_tab"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIconStyle" />
+        <TextView android:text="Tab ẩn danh" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <View style="@style/MenuDivider" />
+
+    <!-- Bookmark this page -->
+    <LinearLayout android:id="@+id/menu_bookmark"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_bookmark" style="@style/MenuIconStyle" />
+        <TextView android:text="Thêm bookmark" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <!-- Bookmarks list -->
+    <LinearLayout android:id="@+id/menu_bookmarks"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_bookmark_filled" style="@style/MenuIconStyle" />
+        <TextView android:text="Bookmarks" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <!-- History -->
+    <LinearLayout android:id="@+id/menu_history"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_history" style="@style/MenuIconStyle" />
+        <TextView android:text="Lịch sử" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <!-- Downloads -->
+    <LinearLayout android:id="@+id/menu_downloads"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_download" style="@style/MenuIconStyle" />
+        <TextView android:text="Tải xuống" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <View style="@style/MenuDivider" />
+
+    <!-- Find in page -->
+    <LinearLayout android:id="@+id/menu_find_in_page"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_search" style="@style/MenuIconStyle" />
+        <TextView android:text="Tìm trong trang" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <!-- Desktop site -->
+    <LinearLayout android:id="@+id/menu_desktop_site"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_desktop" style="@style/MenuIconStyle" />
+        <TextView android:text="Phiên bản máy tính" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <!-- Share -->
+    <LinearLayout android:id="@+id/menu_share"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_share" style="@style/MenuIconStyle" />
+        <TextView android:text="Chia sẻ" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <View style="@style/MenuDivider" />
+
+    <!-- Settings -->
+    <LinearLayout android:id="@+id/menu_settings"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_settings" style="@style/MenuIconStyle" />
+        <TextView android:text="Cài đặt" style="@style/MenuTextStyle" />
+    </LinearLayout>
+</LinearLayout>

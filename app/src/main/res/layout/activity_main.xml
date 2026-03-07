@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
+    tools:context=".ui.MainActivity">
+
+    <!-- Top Toolbar (handles its own top inset via paddingTop in code) -->
+    <LinearLayout
+        android:id="@+id/toolbarContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/toolbar_background"
+        android:elevation="4dp">
+
+        <!-- Status bar space — filled programmatically via applyWindowInsets -->
+        <View
+            android:id="@+id/statusBarSpace"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+
+        <!-- Actual toolbar row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="8dp">
+
+            <!-- Security Icon -->
+            <ImageView
+                android:id="@+id/iconSecure"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:padding="5dp"
+                android:src="@drawable/ic_lock"
+                android:visibility="gone"
+                android:contentDescription="Secure" />
+
+            <!-- Address Bar -->
+            <EditText
+                android:id="@+id/addressBar"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_address_bar"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:hint="Tìm kiếm hoặc nhập URL"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/hint_color"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:imeOptions="actionGo"
+                android:inputType="textUri"
+                android:selectAllOnFocus="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:fontFamily="sans-serif" />
+
+            <!-- Bookmark Button -->
+            <ImageButton
+                android:id="@+id/btnBookmark"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="6dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_bookmark"
+                android:contentDescription="Bookmark" />
+
+            <!-- Refresh / Stop Button -->
+            <ImageButton
+                android:id="@+id/btnRefresh"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="6dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_refresh"
+                android:contentDescription="Refresh" />
+
+            <!-- Cancel search button -->
+            <TextView
+                android:id="@+id/btnCancelSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Huỷ"
+                android:textColor="@color/accent_purple"
+                android:textSize="14sp"
+                android:paddingHorizontal="8dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- Loading Progress Bar -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:max="100"
+            android:progress="0"
+            android:visibility="gone"
+            app:indicatorColor="@color/accent_purple"
+            app:trackColor="@android:color/transparent"
+            app:trackThickness="3dp" />
+
+        <!-- Incognito Indicator -->
+        <TextView
+            android:id="@+id/incognitoIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:background="@color/incognito_background"
+            android:gravity="center"
+            android:text="🕵️ Chế độ ẩn danh"
+            android:textColor="#ffffff"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Main WebView Container -->
+    <FrameLayout
+        android:id="@+id/webViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <!-- Find in Page Bar (overlaid just below toolbar when visible) -->
+    <LinearLayout
+        android:id="@+id/findInPageBar"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:background="@color/toolbar_background"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:layout_gravity="top"
+        android:elevation="6dp"
+        android:visibility="gone"
+        android:translationY="108dp">
+
+        <EditText
+            android:id="@+id/findInPageInput"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_address_bar"
+            android:paddingHorizontal="12dp"
+            android:hint="Tìm trong trang..."
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+
+        <ImageButton
+            android:id="@+id/btnFindPrev"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_up"
+            android:contentDescription="Previous result" />
+
+        <ImageButton
+            android:id="@+id/btnFindNext"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_down"
+            android:contentDescription="Next result" />
+
+        <ImageButton
+            android:id="@+id/btnCloseFindInPage"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            android:contentDescription="Close" />
+    </LinearLayout>
+
+    <!-- Bottom Navigation Bar -->
+    <LinearLayout
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@color/toolbar_background"
+        android:elevation="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_arrow_back"
+                android:alpha="0.4"
+                android:contentDescription="Back" />
+
+            <ImageButton
+                android:id="@+id/btnForward"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_arrow_forward"
+                android:alpha="0.4"
+                android:contentDescription="Forward" />
+
+            <ImageButton
+                android:id="@+id/btnHome"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_home"
+                android:contentDescription="Home" />
+
+            <!-- Tab Count Button -->
+            <FrameLayout
+                android:id="@+id/btnTabs"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_tabs"
+                    android:contentDescription="Tabs" />
+
+                <TextView
+                    android:id="@+id/tabCountBadge"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:text="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="10sp"
+                    android:gravity="center"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium" />
+            </FrameLayout>
+
+            <ImageButton
+                android:id="@+id/btnMenu"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_more_vert"
+                android:contentDescription="More options" />
+        </LinearLayout>
+
+        <!-- Navigation bar space — filled by code -->
+        <View
+            android:id="@+id/navBarSpace"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
