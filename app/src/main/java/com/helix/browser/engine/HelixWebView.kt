@@ -17,6 +17,9 @@ class HelixWebView @JvmOverloads constructor(
 ) : WebView(context, attrs, defStyleAttr) {
 
     init {
+        isFocusable = true
+        isFocusableInTouchMode = true
+        
         setupSettings()
         CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
     }
@@ -106,6 +109,7 @@ class HelixWebView @JvmOverloads constructor(
         WebViewDatabase.getInstance(context).clearFormData()
         WebViewDatabase.getInstance(context).clearHttpAuthUsernamePassword()
     }
+
 
     private fun getDefaultUserAgent(): String {
         // Follows the same pattern as Brave, Edge, Samsung Internet:

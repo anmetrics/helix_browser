@@ -22,13 +22,6 @@ class TabSwitcherActivity : BaseActivity() {
         binding = ActivityTabSwitcherBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Apply nav bar inset to bottom spacer
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            binding.navBarSpace.layoutParams.height = bars.bottom
-            binding.navBarSpace.requestLayout()
-            insets
-        }
 
         val tabManager = (application as HelixApp).tabManager
 

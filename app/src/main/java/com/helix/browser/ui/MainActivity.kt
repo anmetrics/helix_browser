@@ -71,15 +71,27 @@ class MainActivity : BaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Apply window insets: status bar → top toolbar, nav bar → bottom nav
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // Pad the status bar spacer inside the toolbar
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+
+            // ── BULLETPROOF OEM COLOR FIX ──
+            // Physical <View> spacers matching system bar heights.
+            // Their parent LinearLayouts (@color/toolbar_background) physically draw
+            // behind the OS system bars. Immune to MIUI/HyperOS background-darkening.
             binding.statusBarSpace.layoutParams.height = systemBars.top
             binding.statusBarSpace.requestLayout()
-            // Pad the nav bar spacer inside the bottom nav
+
             binding.navBarSpace.layoutParams.height = systemBars.bottom
             binding.navBarSpace.requestLayout()
+
+            // Push the main root view up if keyboard is visible
+            val isKeyboardOpen = ime.bottom > systemBars.bottom
+            if (isKeyboardOpen) {
+                view.setPadding(0, 0, 0, ime.bottom)
+            } else {
+                view.setPadding(0, 0, 0, 0)
+            }
             insets
         }
 
@@ -294,6 +306,11 @@ class MainActivity : BaseActivity() {
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT
             )
         )
+
+        // CRITICAL: Force the WebView to take focus immediately after being attached.
+        // Otherwise, it sits in a detached-focus state where taps on <input> fields
+        // won't trigger the Android IME software keyboard.
+        webView.requestFocus()
 
         // Sync ViewModel state from the now-visible WebView
         viewModel.updateNavState(

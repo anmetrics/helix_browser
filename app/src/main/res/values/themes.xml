@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme -->
     <style name="Theme.HelixBrowser" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- CRITICAL: Disable Material 3 Dark Theme elevation colors.
+             This ensures that elements with elevation (like toolbar and bottom nav)
+             stay exactly their hex color (#1A1835) instead of being dynamically lightened. -->
+        <item name="elevationOverlayEnabled">false</item>
+
         <item name="colorPrimary">@color/accent_purple</item>
         <item name="colorPrimaryVariant">@color/accent_purple_dark</item>
         <item name="colorOnPrimary">@color/white</item>
@@ -11,6 +16,7 @@
         <item name="android:navigationBarColor">@color/toolbar_background</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
     <!-- Splash Screen Theme -->
@@ -44,7 +50,8 @@
         <item name="android:layout_height">52dp</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:gravity">center_vertical</item>
-        <item name="android:paddingHorizontal">20dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
@@ -66,7 +73,9 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
         <item name="android:background">@color/divider_color</item>
-        <item name="android:layout_marginHorizontal">20dp</item>
-        <item name="android:layout_marginVertical">4dp</item>
+        <item name="android:layout_marginStart">20dp</item>
+        <item name="android:layout_marginEnd">20dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
     </style>
 </resources>
