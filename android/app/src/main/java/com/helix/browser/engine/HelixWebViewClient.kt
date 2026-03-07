@@ -14,8 +14,21 @@ class HelixWebViewClient(
     private val onPageStarted: (url: String, favicon: Bitmap?) -> Unit,
     private val onPageFinished: (url: String) -> Unit,
     private val onPageError: (url: String, errorCode: Int, description: String) -> Unit,
-    private val shouldOverrideUrl: ((url: String) -> Boolean)? = null
+    private val shouldOverrideUrl: ((url: String) -> Boolean)? = null,
+    private val isAdBlockEnabled: () -> Boolean = { false }
 ) : WebViewClient() {
+
+    override fun shouldInterceptRequest(
+        view: WebView,
+        request: WebResourceRequest
+    ): WebResourceResponse? {
+        val url = request.url.toString()
+        if (isAdBlockEnabled() && AdBlockEngine.isAd(url)) {
+            // Block the ad by returning an empty response
+            return WebResourceResponse("text/plain", "UTF-8", null)
+        }
+        return super.shouldInterceptRequest(view, request)
+    }
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)

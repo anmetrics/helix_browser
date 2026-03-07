@@ -37,6 +37,13 @@
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Quyền riêng tư">
+        <SwitchPreferenceCompat
+            app:key="block_ads"
+            app:title="Chặn quảng cáo"
+            app:summary="Chặn quảng cáo và trình theo dõi"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_security" />
+
         <Preference
             app:key="clear_cache"
             app:title="Xoá bộ nhớ cache"

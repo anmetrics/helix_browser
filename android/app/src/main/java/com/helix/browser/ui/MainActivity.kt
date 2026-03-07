@@ -314,7 +314,8 @@ class MainActivity : BaseActivity() {
             },
             onPageError = { _, _, _ ->
                 if (tabManager.currentTab?.id == tab.id) runOnUiThread { viewModel.isLoading.value = false }
-            }
+            },
+            isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) }
         )
         webView.webChromeClient = HelixWebChromeClient(
             onProgressChanged = { progress -> if (tabManager.currentTab?.id == tab.id) runOnUiThread { viewModel.onProgressChanged(progress) } },
