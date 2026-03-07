@@ -70,11 +70,16 @@
         <TextView android:text="Tìm trong trang" style="@style/MenuTextStyle" />
     </LinearLayout>
 
-    <!-- Desktop site -->
     <LinearLayout android:id="@+id/menu_desktop_site"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_desktop" style="@style/MenuIconStyle" />
-        <TextView android:text="Phiên bản máy tính" style="@style/MenuTextStyle" />
+        <TextView android:text="Phiên bản máy tính" style="@style/MenuTextStyle"
+            android:layout_weight="1" />
+        <ImageView android:id="@+id/ic_check_desktop"
+            android:src="@drawable/ic_check"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- Share -->

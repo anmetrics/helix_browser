@@ -410,6 +410,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#3
         view.findViewById<View>(R.id.menu_history).setOnClickListener { startActivity(Intent(this, HistoryActivity::class.java)); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_downloads).setOnClickListener { startActivity(Intent(this, DownloadsActivity::class.java)); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_find_in_page).setOnClickListener { viewModel.showFindInPage.value = true; dialog.dismiss() }
+        view.findViewById<View>(R.id.ic_check_desktop).isVisible = viewModel.isDesktopMode.value == true
         view.findViewById<View>(R.id.menu_desktop_site).setOnClickListener {
             val isDesktop = viewModel.isDesktopMode.value?.not() ?: false
             viewModel.isDesktopMode.value = isDesktop
