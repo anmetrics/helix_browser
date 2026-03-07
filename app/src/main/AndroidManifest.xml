@@ -48,7 +48,7 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:windowSoftInputMode="adjustResize"
+            android:windowSoftInputMode="adjustPan|stateHidden"
             android:launchMode="singleTask">
             <!-- Handle web links opened from other apps -->
             <intent-filter>

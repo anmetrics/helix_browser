@@ -23,6 +23,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.helix.browser.HelixApp
@@ -61,8 +64,24 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Bug fix #2: Edge-to-edge — draw behind status bar & nav bar
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Apply window insets: status bar → top toolbar, nav bar → bottom nav
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            // Pad the status bar spacer inside the toolbar
+            binding.statusBarSpace.layoutParams.height = systemBars.top
+            binding.statusBarSpace.requestLayout()
+            // Pad the nav bar spacer inside the bottom nav
+            binding.navBarSpace.layoutParams.height = systemBars.bottom
+            binding.navBarSpace.requestLayout()
+            insets
+        }
 
         tabManager = (application as HelixApp).tabManager
 
@@ -119,10 +138,17 @@ class MainActivity : AppCompatActivity() {
                     setText(viewModel.currentUrl.value)
                     selectAll()
                     binding.btnCancelSearch.isVisible = true
+                    // Bug fix #1: explicitly show keyboard when address bar gains focus
+                    showKeyboard(this)
                 } else {
                     updateAddressBarDisplay()
                     binding.btnCancelSearch.isVisible = false
                 }
+            }
+
+            // Also show keyboard on click (in case focus was already there)
+            setOnClickListener {
+                if (isFocused) showKeyboard(this)
             }
 
             setOnEditorActionListener { _, actionId, event ->
@@ -131,7 +157,6 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     val input = text.toString().trim()
                     if (input.isNotEmpty()) {
-                        val engine = Prefs.getSearchEngine(this@MainActivity)
                         val url = UrlUtils.formatUrl(input)
                         loadUrl(url)
                         clearFocus()
@@ -550,21 +575,45 @@ class MainActivity : AppCompatActivity() {
         hideKeyboard()
     }
 
+    private fun showKeyboard(view: View) {
+        view.post {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+
     private fun hideKeyboard() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+        currentFocus?.clearFocus()
     }
 
+    @Suppress("DEPRECATION")
     private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            or View.SYSTEM_UI_FLAG_FULLSCREEN
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.hide(
+                android.view.WindowInsets.Type.statusBars() or
+                android.view.WindowInsets.Type.navigationBars()
+            )
+        } else {
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN
+            )
+        }
     }
 
+    @Suppress("DEPRECATION")
     private fun showSystemUI() {
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.show(
+                android.view.WindowInsets.Type.statusBars() or
+                android.view.WindowInsets.Type.navigationBars()
+            )
+        } else {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+        }
     }
 
     @Deprecated("Deprecated in Java")
