@@ -54,6 +54,8 @@ class MainActivity : BaseActivity() {
     private var fullscreenView: View? = null
     private var fullscreenCallback: android.webkit.WebChromeClient.CustomViewCallback? = null
 
+    private var headerHideRunnable: Runnable? = null
+
     private val fileChooserLauncher = registerForActivityResult(
         ActivityResultContracts.GetMultipleContents()
     ) { uris ->
@@ -87,6 +89,10 @@ class MainActivity : BaseActivity() {
 
             // Push the main root view up if keyboard is visible
             val isKeyboardOpen = ime.bottom > systemBars.bottom
+            
+            // Hide bottom navigation if keyboard is open
+            binding.bottomNavContainer.isVisible = !isKeyboardOpen
+
             if (isKeyboardOpen) {
                 view.setPadding(0, 0, 0, ime.bottom)
             } else {
@@ -348,6 +354,15 @@ class MainActivity : BaseActivity() {
         viewModel.currentUrl.value = webView.url ?: tab.url
         viewModel.currentTitle.value = webView.title ?: tab.title
         updateAddressBarDisplay()
+
+        // Reset dynamic header state when switching tabs
+        headerHideRunnable?.let { binding.root.removeCallbacks(it) }
+        setToolbarScrollable(false)
+        if (webView.progress >= 100 && webView.url != null && webView.url != "about:blank") {
+            headerHideRunnable = Runnable { setToolbarScrollable(true) }.also {
+                binding.root.postDelayed(it, 5000)
+            }
+        }
     }
 
     /** Creates and fully configures a fresh WebView for a new tab. Only called once per tab. */
@@ -360,6 +375,9 @@ class MainActivity : BaseActivity() {
                 if (tabManager.currentTab?.id == tab.id) runOnUiThread {
                     viewModel.onPageStarted(url)
                     updateNavButtons()
+                    // Re-lock the header when navigation starts
+                    headerHideRunnable?.let { binding.root.removeCallbacks(it) }
+                    setToolbarScrollable(false)
                 }
             },
             onPageFinished = { url ->
@@ -369,6 +387,13 @@ class MainActivity : BaseActivity() {
                 if (tabManager.currentTab?.id == tab.id) runOnUiThread {
                     viewModel.onPageFinished(url, webView.title ?: "")
                     updateNavButtons()
+                    // Start 5s timer to enable dynamic header if not new tab
+                    headerHideRunnable?.let { binding.root.removeCallbacks(it) }
+                    if (url != "about:blank") {
+                        headerHideRunnable = Runnable { setToolbarScrollable(true) }.also {
+                            binding.root.postDelayed(it, 5000)
+                        }
+                    }
                 }
             },
             onPageError = { _, _, _ ->
@@ -434,6 +459,19 @@ class MainActivity : BaseActivity() {
         }
 
         return webView
+    }
+
+    private fun setToolbarScrollable(scrollable: Boolean) {
+        val params = binding.toolbarContainer.layoutParams as com.google.android.material.appbar.AppBarLayout.LayoutParams
+        if (scrollable) {
+            params.scrollFlags = com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
+                    com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
+                    com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
+        } else {
+            params.scrollFlags = 0
+            binding.appBarLayout.setExpanded(true, true)
+        }
+        binding.toolbarContainer.layoutParams = params
     }
 
     fun loadUrl(url: String) {
