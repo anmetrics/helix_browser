@@ -45,7 +45,10 @@ class MainActivity : BaseActivity() {
     private val viewModel: BrowserViewModel by viewModels()
     private lateinit var tabManager: com.helix.browser.tabs.TabManager
 
+    // WebView pool: keeps all tab WebViews alive — no reload on tab switch
+    private val webViewPool = LinkedHashMap<String, HelixWebView>()
     private var currentWebView: HelixWebView? = null
+
     private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
 
     private var fullscreenView: View? = null
@@ -255,45 +258,76 @@ class MainActivity : BaseActivity() {
 
     private fun switchToTab(tab: BrowserTab) {
         tabManager.switchToTab(tab.id)
-        loadWebViewForCurrentTab()
+        attachWebViewForTab(tab)
         updateTabCountBadge()
 
-        // Update incognito state
         viewModel.isIncognito.value = tab.isIncognito
         binding.incognitoIndicator.isVisible = tab.isIncognito
-        if (tab.isIncognito) {
-            binding.root.setBackgroundResource(R.color.incognito_background)
-        } else {
-            binding.root.setBackgroundResource(android.R.color.transparent)
-        }
+        binding.root.setBackgroundResource(
+            if (tab.isIncognito) R.color.incognito_background else android.R.color.transparent
+        )
     }
 
-    private fun loadWebViewForCurrentTab() {
-        val tab = tabManager.currentTab ?: return
-
-        // Remove old WebView
+    /**
+     * Core tab engine: attach an existing WebView from the pool (no reload)
+     * or create a brand-new one if this tab has never been loaded.
+     *
+     * Old WebView is only detached from the container — NOT destroyed — so
+     * its page stays in memory, exactly like Chrome/Firefox.
+     */
+    private fun attachWebViewForTab(tab: BrowserTab) {
+        // Detach whatever is currently shown — keeps it alive in the pool
         binding.webViewContainer.removeAllViews()
 
-        // Create new WebView for this tab if needed
-        val webView = HelixWebView(this).also {
-            currentWebView = it
+        val webView = webViewPool.getOrPut(tab.id) {
+            createWebViewForTab(tab)   // only called once per tab lifetime
         }
+        currentWebView = webView
+
+        // WebView might be attached to a previous parent (shouldn't happen but be safe)
+        (webView.parent as? android.view.ViewGroup)?.removeView(webView)
+
+        binding.webViewContainer.addView(
+            webView,
+            android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        // Sync ViewModel state from the now-visible WebView
+        viewModel.updateNavState(
+            webView.canGoBack(),
+            webView.canGoForward()
+        )
+        viewModel.currentUrl.value = webView.url ?: tab.url
+        viewModel.currentTitle.value = webView.title ?: tab.title
+        updateAddressBarDisplay()
+    }
+
+    /** Creates and fully configures a fresh WebView for a new tab. Only called once per tab. */
+    private fun createWebViewForTab(tab: BrowserTab): HelixWebView {
+        val webView = HelixWebView(this)
 
         webView.webViewClient = HelixWebViewClient(
             onPageStarted = { url, _ ->
-                runOnUiThread {
+                // Only update UI if this tab is currently active
+                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
                     viewModel.onPageStarted(url)
                     updateNavButtons()
                 }
             },
             onPageFinished = { url ->
-                runOnUiThread {
+                // Keep tab metadata up to date even if tab is in background
+                tab.url = url
+                tab.title = webView.title ?: url
+                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
                     viewModel.onPageFinished(url, webView.title ?: "")
                     updateNavButtons()
                 }
             },
-            onPageError = { url, code, description ->
-                runOnUiThread {
+            onPageError = { _, _, _ ->
+                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
                     viewModel.isLoading.value = false
                 }
             }
@@ -301,15 +335,20 @@ class MainActivity : BaseActivity() {
 
         webView.webChromeClient = HelixWebChromeClient(
             onProgressChanged = { progress ->
-                runOnUiThread { viewModel.onProgressChanged(progress) }
+                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
+                    viewModel.onProgressChanged(progress)
+                }
             },
             onTitleReceived = { title ->
-                runOnUiThread { viewModel.currentTitle.value = title }
+                tab.title = title
+                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
+                    viewModel.currentTitle.value = title
+                }
             },
             onFaviconReceived = { favicon ->
-                runOnUiThread { tab.favicon = favicon }
+                tab.favicon = favicon
             },
-            onShowFileChooser = { callback, params ->
+            onShowFileChooser = { callback, _ ->
                 fileChooserCallback?.onReceiveValue(null)
                 fileChooserCallback = callback
                 fileChooserLauncher.launch("*/*")
@@ -333,27 +372,23 @@ class MainActivity : BaseActivity() {
             }
         )
 
-        // Download listener
-        webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, contentLength ->
+        webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
             downloadFile(url, userAgent, contentDisposition, mimeType)
         }
 
         if (tab.isIncognito) webView.setIncognitoMode(true)
 
-        binding.webViewContainer.addView(
-            webView,
-            android.widget.FrameLayout.LayoutParams(
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT
-            )
-        )
-
-        // Load URL if there is one, otherwise show new tab page
-        if (tab.url.isNotEmpty()) {
-            webView.loadUrl(tab.url)
-        } else {
-            showNewTabPage()
+        // Initial load
+        when {
+            tab.url.isNotEmpty() -> webView.loadUrl(tab.url)
+            else -> {
+                // Show new tab page HTML for this tab
+                val html = buildNewTabHtml()
+                webView.loadDataWithBaseURL("about:blank", html, "text/html", "UTF-8", null)
+            }
         }
+
+        return webView
     }
 
     fun loadUrl(url: String) {
@@ -362,14 +397,18 @@ class MainActivity : BaseActivity() {
             createNewTab(url)
             return
         }
-        currentWebView?.loadUrl(url)
+        // If a WebView exists in the pool, load into it directly
+        val webView = webViewPool[tab.id] ?: run {
+            createNewTab(url)
+            return
+        }
+        webView.loadUrl(url)
         hideKeyboard()
     }
 
     private fun showNewTabPage() {
-        // Load a beautiful new tab page
-        val newTabHtml = buildNewTabHtml()
-        currentWebView?.loadDataWithBaseURL("about:blank", newTabHtml, "text/html", "UTF-8", null)
+        val html = buildNewTabHtml()
+        currentWebView?.loadDataWithBaseURL("about:blank", html, "text/html", "UTF-8", null)
         viewModel.currentTitle.value = "New Tab"
         viewModel.currentUrl.value = ""
     }
@@ -620,8 +659,18 @@ class MainActivity : BaseActivity() {
             val tabId = data?.getStringExtra("tab_id")
             val newTab = data?.getBooleanExtra("new_tab", false) ?: false
             val incognito = data?.getBooleanExtra("incognito", false) ?: false
+            val closedAll = data?.getBooleanExtra("closed_all", false) ?: false
+
+            // Clean up WebViews for tabs that no longer exist
+            val liveTabs = tabManager.tabs.map { it.id }.toSet()
+            webViewPool.keys.toList().forEach { poolId ->
+                if (poolId !in liveTabs) {
+                    webViewPool.remove(poolId)?.destroy()
+                }
+            }
+
             when {
-                newTab -> createNewTab(isIncognito = incognito)
+                closedAll || newTab -> createNewTab(isIncognito = incognito)
                 tabId != null -> {
                     tabManager.switchToTab(tabId)
                     val tab = tabManager.currentTab ?: return
@@ -638,12 +687,16 @@ class MainActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        currentWebView?.onPause()
+        // Pause all background WebViews to reduce CPU usage
+        webViewPool.values.forEach { it.onPause() }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         tabManager.closeAllIncognito()
+        // Destroy all pooled WebViews cleanly
+        webViewPool.values.forEach { it.destroy() }
+        webViewPool.clear()
     }
 
     companion object {
