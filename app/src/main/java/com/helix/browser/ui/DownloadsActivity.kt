@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.helix.browser.databinding.ActivityDownloadsBinding
 import com.helix.browser.ui.adapter.DownloadsAdapter
 
-class DownloadsActivity : AppCompatActivity() {
+class DownloadsActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDownloadsBinding
     private lateinit var adapter: DownloadsAdapter

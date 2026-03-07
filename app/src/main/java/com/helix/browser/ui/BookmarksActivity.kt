@@ -14,7 +14,7 @@ import com.helix.browser.viewmodel.BookmarkViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
 
-class BookmarksActivity : AppCompatActivity() {
+class BookmarksActivity : BaseActivity() {
 
     private lateinit var binding: ActivityBookmarksBinding
     private val viewModel: BookmarkViewModel by viewModels()

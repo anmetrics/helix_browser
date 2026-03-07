@@ -3,22 +3,20 @@ package com.helix.browser.ui
 import android.os.Bundle
 import android.webkit.WebView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.helix.browser.R
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        setSupportActionBar(null)
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            title = "Cài đặt"
-        }
+        // Hook up toolbar from layout
+        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()

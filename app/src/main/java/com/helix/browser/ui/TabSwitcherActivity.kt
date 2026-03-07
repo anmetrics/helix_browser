@@ -4,13 +4,15 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import com.helix.browser.HelixApp
 import com.helix.browser.databinding.ActivityTabSwitcherBinding
 import com.helix.browser.tabs.BrowserTab
 import com.helix.browser.ui.adapter.TabsAdapter
 
-class TabSwitcherActivity : AppCompatActivity() {
+class TabSwitcherActivity : BaseActivity() {
 
     private lateinit var binding: ActivityTabSwitcherBinding
     private lateinit var adapter: TabsAdapter
@@ -19,6 +21,14 @@ class TabSwitcherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityTabSwitcherBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Apply nav bar inset to bottom spacer
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.navBarSpace.layoutParams.height = bars.bottom
+            binding.navBarSpace.requestLayout()
+            insets
+        }
 
         val tabManager = (application as HelixApp).tabManager
 

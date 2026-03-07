@@ -39,7 +39,7 @@ import com.helix.browser.utils.Prefs
 import com.helix.browser.utils.UrlUtils
 import com.helix.browser.viewmodel.BrowserViewModel
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: BrowserViewModel by viewModels()
@@ -64,9 +64,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Bug fix #2: Edge-to-edge — draw behind status bar & nav bar
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

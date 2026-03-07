@@ -17,7 +17,7 @@ import com.helix.browser.viewmodel.HistoryViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class HistoryActivity : AppCompatActivity() {
+class HistoryActivity : BaseActivity() {
 
     private lateinit var binding: ActivityHistoryBinding
     private val viewModel: HistoryViewModel by viewModels()
