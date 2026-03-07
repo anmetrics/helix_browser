@@ -63,6 +63,21 @@
 
     <View style="@style/MenuDivider" />
 
+    <!-- Save History Toggle -->
+    <LinearLayout android:id="@+id/menu_save_history_container"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_history" style="@style/MenuIconStyle" />
+        <TextView android:text="Lưu lịch sử" style="@style/MenuTextStyle"
+            android:layout_weight="1" />
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_save_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true" />
+    </LinearLayout>
+
+    <View style="@style/MenuDivider" />
+
     <!-- Find in page -->
     <LinearLayout android:id="@+id/menu_find_in_page"
         style="@style/MenuItemStyle">

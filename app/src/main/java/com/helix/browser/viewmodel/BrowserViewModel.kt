@@ -7,9 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.helix.browser.HelixApp
 import com.helix.browser.data.Bookmark
 import com.helix.browser.data.HistoryItem
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.helix.browser.utils.Prefs
 
 class BrowserViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -49,8 +49,8 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         isLoading.value = false
         isSecure.value = url.startsWith("https://")
 
-        // Save history (not incognito)
-        if (isIncognito.value != true) {
+        // Save history (not incognito and if enabled)
+        if (isIncognito.value != true && Prefs.isSaveHistoryEnabled(app)) {
             viewModelScope.launch {
                 historyRepo.addHistory(
                     title = title.ifEmpty { url },

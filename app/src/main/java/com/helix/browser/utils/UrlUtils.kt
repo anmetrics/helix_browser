@@ -65,6 +65,7 @@ object Prefs {
     private const val KEY_DARK_MODE = "dark_mode"
     private const val KEY_DESKTOP_MODE = "desktop_mode"
     private const val KEY_BLOCK_ADS = "block_ads"
+    private const val KEY_SAVE_HISTORY = "save_history"
     private const val DEFAULT_HOMEPAGE = "https://www.google.com"
 
     private fun prefs(context: Context): SharedPreferences =
@@ -80,4 +81,7 @@ object Prefs {
     fun isDarkMode(context: Context) = prefs(context).getBoolean(KEY_DARK_MODE, false)
     fun isDesktopMode(context: Context) = prefs(context).getBoolean(KEY_DESKTOP_MODE, false)
     fun isAdBlockEnabled(context: Context) = prefs(context).getBoolean(KEY_BLOCK_ADS, false)
+    
+    fun isSaveHistoryEnabled(context: Context) = prefs(context).getBoolean(KEY_SAVE_HISTORY, true)
+    fun setSaveHistoryEnabled(context: Context, enabled: Boolean) = prefs(context).edit().putBoolean(KEY_SAVE_HISTORY, enabled).apply()
 }
