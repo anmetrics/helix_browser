@@ -108,11 +108,23 @@ class HelixWebView @JvmOverloads constructor(
     }
 
     private fun getDefaultUserAgent(): String {
-        return "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36"
+        // Follows the same pattern as Brave, Edge, Samsung Internet:
+        // keep Chrome/WebKit tokens so sites work normally,
+        // then append our own brand at the end.
+        return "Mozilla/5.0 (Linux; Android 14; Mobile) " +
+               "AppleWebKit/537.36 (KHTML, like Gecko) " +
+               "Chrome/124.0.0.0 Mobile Safari/537.36 " +
+               "HelixBrowser/$APP_VERSION"
     }
 
     companion object {
+        private const val APP_VERSION = "1.0"
+
+        // Desktop mode: standard desktop Chrome UA + Helix brand
         private const val DESKTOP_USER_AGENT =
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            "Mozilla/5.0 (X11; Linux x86_64) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Chrome/124.0.0.0 Safari/537.36 " +
+            "HelixBrowser/$APP_VERSION"
     }
 }
