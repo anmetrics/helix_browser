@@ -200,6 +200,34 @@ class MainActivity : BaseActivity() {
             loadUrl(Prefs.getHomepage(this))
         }
         binding.btnTabs.setOnClickListener {
+            // Capture thumbnail of the current tab before navigating away
+            currentWebView?.let { webView ->
+                val tab = tabManager.currentTab
+                if (tab != null && webView.width > 0 && webView.height > 0) {
+                    try {
+                        // Create a bitmap and draw the WebView onto it
+                        val bitmap = android.graphics.Bitmap.createBitmap(
+                            webView.width, webView.height, android.graphics.Bitmap.Config.ARGB_8888
+                        )
+                        val canvas = android.graphics.Canvas(bitmap)
+                        webView.draw(canvas)
+
+                        // Scale down to save memory (e.g., 1/4th size)
+                        val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(
+                            bitmap, webView.width / 4, webView.height / 4, true
+                        )
+                        tab.thumbnail = scaledBitmap
+                        
+                        // Recycle the original large bitmap
+                        if (bitmap != scaledBitmap) {
+                            bitmap.recycle()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+
             val intent = Intent(this, TabSwitcherActivity::class.java)
             startActivityForResult(intent, REQUEST_TAB_SWITCHER)
         }

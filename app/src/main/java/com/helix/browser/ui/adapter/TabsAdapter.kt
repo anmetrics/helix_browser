@@ -29,7 +29,13 @@ class TabsAdapter(
             binding.tabTitle.text = tab.title.ifEmpty { "New Tab" }
             binding.tabUrl.text = tab.url.ifEmpty { "about:blank" }
             binding.incognitoIcon.visibility = if (tab.isIncognito) android.view.View.VISIBLE else android.view.View.GONE
-            tab.thumbnail?.let { binding.tabThumbnail.setImageBitmap(it) }
+            if (tab.thumbnail != null) {
+                com.bumptech.glide.Glide.with(binding.root.context)
+                    .load(tab.thumbnail)
+                    .into(binding.tabThumbnail)
+            } else {
+                binding.tabThumbnail.setImageDrawable(null)
+            }
             binding.root.setOnClickListener { onTabClick(tab) }
             binding.btnCloseTab.setOnClickListener { onTabClose(tab) }
         }
