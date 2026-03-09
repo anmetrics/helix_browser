@@ -52,7 +52,16 @@ struct WebView: NSViewRepresentable {
         if viewModel.prefs.isAdBlockEnabled {
             AdBlockEngine.shared.apply(to: config)
         }
-        
+
+        // Apply privacy protections
+        PrivacyManager.shared.applyPrivacySettings(to: config)
+
+        // Use incognito data store for private tabs
+        let tab = viewModel.tabs.first(where: { $0.id == tabId })
+        if tab?.isIncognito == true {
+            config.websiteDataStore = WKWebsiteDataStore.nonPersistent()
+        }
+
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
@@ -60,9 +69,8 @@ struct WebView: NSViewRepresentable {
         webView.setValue(false, forKey: "drawsBackground") // Transparent bg
         
         applyUserAgent(to: webView)
-        
+
         // Initial load
-        let tab = viewModel.tabs.first(where: { $0.id == tabId })
         if let urlStr = tab?.url, let url = URL(string: urlStr) {
             webView.load(URLRequest(url: url))
         }
@@ -218,7 +226,32 @@ struct WebView: NSViewRepresentable {
         // MARK: - WKNavigationDelegate
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            // Allow all navigations — let the web page handle its own routing
+            guard let url = navigationAction.request.url else {
+                decisionHandler(.allow)
+                return
+            }
+
+            // HTTPS upgrade
+            if Prefs.shared.isHttpsUpgradeEnabled && url.scheme == "http" {
+                var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+                components?.scheme = "https"
+                if let httpsUrl = components?.url {
+                    decisionHandler(.cancel)
+                    webView.load(URLRequest(url: httpsUrl))
+                    return
+                }
+            }
+
+            // Block third-party popups if enabled
+            if Prefs.shared.isBlockPopupsEnabled && navigationAction.navigationType == .other && navigationAction.targetFrame == nil {
+                // Open in new tab instead of popup
+                DispatchQueue.main.async {
+                    self.viewModel.createNewTab(url: url.absoluteString)
+                }
+                decisionHandler(.cancel)
+                return
+            }
+
             decisionHandler(.allow)
         }
         

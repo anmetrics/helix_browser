@@ -51,116 +51,73 @@ class AdBlockEngine {
     }
     
     // MARK: - Built-in Ad Block Rules (WebKit Content Blocker JSON format)
-    // Blocks common ad networks, trackers, and annoyances
+    // Comprehensive rules blocking ads, trackers, annoyances, and cookie banners
     private static let adBlockJSON = """
     [
-        {
-            "trigger": { "url-filter": ".*", "resource-type": ["popup"] },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "googlesyndication\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "doubleclick\\\\.net" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "google-analytics\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "googletagmanager\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "facebook\\\\.com/tr" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "connect\\\\.facebook\\\\.net.*fbevents" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "adservice\\\\.google\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "pagead2\\\\.googlesyndication\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "amazon-adsystem\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "ads\\\\.yahoo\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "ad\\\\.doubleclick\\\\.net" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "adnxs\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "outbrain\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "taboola\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "criteo\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "scorecardresearch\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "quantserve\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "hotjar\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "mixpanel\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "segment\\\\.io" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "optimizely\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "zedo\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "rubiconproject\\\\.com" },
-            "action": { "type": "block" }
-        },
-        {
-            "trigger": { "url-filter": "pubmatic\\\\.com" },
-            "action": { "type": "block" }
-        },
+        {"trigger": {"url-filter": ".*", "resource-type": ["popup"]}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "googlesyndication\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "doubleclick\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "google-analytics\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "googletagmanager\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "facebook\\\\.com/tr"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "connect\\\\.facebook\\\\.net.*fbevents"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "adservice\\\\.google\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "pagead2\\\\.googlesyndication\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "amazon-adsystem\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "ads\\\\.yahoo\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "ad\\\\.doubleclick\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "adnxs\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "outbrain\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "taboola\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "criteo\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "scorecardresearch\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "quantserve\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "hotjar\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "mixpanel\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "segment\\\\.io"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "optimizely\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "zedo\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "rubiconproject\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "pubmatic\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "moatads\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "mediavine\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "adsrvr\\\\.org"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "smartadserver\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "bidswitch\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "sharethrough\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "indexexchange\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "openx\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "casalemedia\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "advertising\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "newrelic\\\\.com.*beacon"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "nr-data\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "clarity\\\\.ms"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "fullstory\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "heapanalytics\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "amplitude\\\\.com/api"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "mouseflow\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "crazyegg\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "luckyorange\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "inspectlet\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "cookiebot\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "onetrust\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "consensu\\\\.org"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": ".*\\\\.ads\\\\."}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": ".*\\\\/ads\\\\/"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": ".*\\\\/ad\\\\.js"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": ".*\\\\/advert"}, "action": {"type": "block"}},
         {
             "trigger": {
                 "url-filter": ".*",
                 "resource-type": ["image", "style-sheet", "script"],
-                "if-domain": ["*doubleclick.net", "*googlesyndication.com", "*adnxs.com"]
+                "if-domain": ["*doubleclick.net", "*googlesyndication.com", "*adnxs.com", "*moatads.com"]
             },
-            "action": { "type": "block" }
+            "action": {"type": "block"}
+        },
+        {
+            "trigger": {"url-filter": ".*", "resource-type": ["raw"]},
+            "action": {"type": "block"},
+            "comment": "Block web beacons / tracking pixels via sendBeacon"
         }
     ]
     """

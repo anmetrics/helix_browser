@@ -119,11 +119,17 @@ struct ContentView: View {
                         // Menu (cleaned up)
                         Menu {
                             Button("Tab mới   ⌘T") { withAnimation { viewModel.createNewTab() } }
+                            Button("Tab ẩn danh mới") { withAnimation { viewModel.createNewTab(isIncognito: true) } }
                             Button("Tìm trên trang   ⌘F") { viewModel.isFindBarVisible = true }
                             Divider()
                             Button("Lịch sử   ⌘Y") { viewModel.loadUrl("helix://history") }
                             Button("Bookmarks   ⌘⌥B") { viewModel.loadUrl("helix://bookmarks") }
                             Button("Trang chủ") { viewModel.goHome() }
+                            Divider()
+                            // Privacy stats
+                            HStack {
+                                Text("Trình theo dõi đã chặn: \(viewModel.trackersBlocked)")
+                            }
                             Divider()
                             Button("Cài đặt") { viewModel.loadUrl("helix://settings") }
                         } label: {
@@ -206,6 +212,9 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("AppNewTab"))) { _ in
             withAnimation { viewModel.createNewTab() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("AppNewIncognitoTab"))) { _ in
+            withAnimation { viewModel.createNewTab(isIncognito: true) }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("AppCloseTab"))) { _ in
             withAnimation { viewModel.closeTab(id: viewModel.activeTabId) }
@@ -357,9 +366,26 @@ struct HorizontalTabBar: View {
             Button("Tab mới") { viewModel.createNewTab() }
             Button("Nhân đôi tab") { viewModel.duplicateTab(id: tab.id) }
             Divider()
+            Button(tab.isPinned ? "Bỏ ghim tab" : "Ghim tab") { viewModel.pinTab(id: tab.id) }
+            Button(tab.isMuted ? "Bật âm thanh" : "Tắt âm thanh") { viewModel.muteTab(id: tab.id) }
+            Divider()
+            Menu("Thêm vào nhóm") {
+                ForEach(viewModel.tabGroups) { group in
+                    Button(group.name) { viewModel.addTabToGroup(tabId: tab.id, groupId: group.id) }
+                }
+                Divider()
+                Button("Nhóm mới...") {
+                    viewModel.createTabGroup(name: "Nhóm mới", tabIds: [tab.id])
+                }
+                if tab.groupId != nil {
+                    Button("Xóa khỏi nhóm") { viewModel.removeTabFromGroup(tabId: tab.id) }
+                }
+            }
+            Divider()
             Button("Đóng tab") { viewModel.closeTab(id: tab.id) }
             if viewModel.tabs.count > 1 {
                 Button("Đóng tab khác") { viewModel.closeOtherTabs(except: tab.id) }
+                Button("Đóng tab bên phải") { viewModel.closeTabsToRight(of: tab.id) }
             }
         }
     }
@@ -379,22 +405,57 @@ struct DesktopTabItem: View {
     private var isIconOnly: Bool { tabWidth < 50 }
     private var isCompact: Bool { tabWidth < 120 && !isIconOnly }
     
+    private var groupColor: Color {
+        if let hex = tab.groupName != nil ? (tab.groupId != nil ? "#8B8BFF" : nil) : nil {
+            return Color(hex: hex)
+        }
+        return .clear
+    }
+
     var body: some View {
         HStack(spacing: isIconOnly ? 0 : (isCompact ? 4 : 6)) {
-            // Real favicon or fallback
-            TabFavicon(faviconUrl: tab.faviconUrl, url: tab.url, size: isIconOnly ? 16 : 14)
-            
+            // Pin indicator
+            if tab.isPinned && isIconOnly {
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 10))
+                    .foregroundColor(BrandColors.accentPurple)
+            } else if tab.isIncognito && isIconOnly {
+                Image(systemName: "eye.slash.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(BrandColors.accentPink)
+            } else {
+                // Real favicon or fallback
+                TabFavicon(faviconUrl: tab.faviconUrl, url: tab.url, size: isIconOnly ? 16 : 14)
+            }
+
             // Title (hidden in icon-only mode)
             if !isIconOnly {
-                Text(tab.title)
-                    .font(.system(size: 11, weight: isActive ? .semibold : .regular))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 3) {
+                    if tab.isPinned {
+                        Image(systemName: "pin.fill")
+                            .font(.system(size: 8))
+                            .foregroundColor(BrandColors.accentPurple)
+                    }
+                    if tab.isIncognito {
+                        Image(systemName: "eye.slash.fill")
+                            .font(.system(size: 9))
+                            .foregroundColor(BrandColors.accentPink)
+                    }
+                    if tab.isMuted {
+                        Image(systemName: "speaker.slash.fill")
+                            .font(.system(size: 9))
+                            .foregroundColor(BrandColors.textSecondary)
+                    }
+                    Text(tab.title)
+                        .font(.system(size: 11, weight: isActive ? .semibold : .regular))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
-            
-            // Close button (hidden in icon-only, visible on active/hover)
-            if !isIconOnly && (isActive || isHovering) {
+
+            // Close button (hidden for pinned & icon-only, visible on active/hover)
+            if !isIconOnly && !tab.isPinned && (isActive || isHovering) {
                 Button(action: onClose) {
                     Image(systemName: "xmark")
                         .font(.system(size: 8, weight: .bold))
@@ -412,7 +473,7 @@ struct DesktopTabItem: View {
             Group {
                 if isActive {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(tab.isIncognito ? BrandColors.accentPink.opacity(0.12) : Color.white.opacity(0.08))
                 } else if isHovering {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.white.opacity(0.04))
@@ -425,11 +486,20 @@ struct DesktopTabItem: View {
         .overlay(alignment: .bottom) {
             if isActive {
                 Rectangle()
-                    .fill(BrandColors.accentPurple)
+                    .fill(tab.isIncognito ? BrandColors.accentPink : BrandColors.accentPurple)
                     .frame(height: 1.5)
             }
         }
-        .help(tab.title) // Tooltip shows full title on hover (icon-only mode)
+        .overlay(alignment: .top) {
+            // Group color indicator
+            if tab.groupId != nil {
+                Rectangle()
+                    .fill(BrandColors.accentPurple)
+                    .frame(height: 2)
+                    .clipShape(RoundedRectangle(cornerRadius: 1))
+            }
+        }
+        .help(tab.title)
     }
 }
 

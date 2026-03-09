@@ -23,7 +23,14 @@ struct HelixBrowserApp: App {
                     NotificationCenter.default.post(name: NSNotification.Name("AppNewTab"), object: nil)
                 }
                 .keyboardShortcut("t", modifiers: .command)
-                
+
+                Button("Tab ẩn danh mới") {
+                    NotificationCenter.default.post(name: NSNotification.Name("AppNewIncognitoTab"), object: nil)
+                }
+                .keyboardShortcut("t", modifiers: [.command, .shift])
+
+                Divider()
+
                 Button("Đóng Tab") {
                     NotificationCenter.default.post(name: NSNotification.Name("AppCloseTab"), object: nil)
                 }

@@ -34,6 +34,62 @@ struct SettingsView: View {
                     // Privacy & Security
                     SettingsSection(title: "Quyền riêng tư & Bảo mật", icon: "shield.fill") {
                         SettingsToggle(title: "Chặn quảng cáo", subtitle: "Chặn quảng cáo và trình theo dõi trên web", icon: "hand.raised.fill", isOn: $prefs.isAdBlockEnabled)
+                        SettingsDivider()
+                        SettingsToggle(title: "Chặn trình theo dõi", subtitle: "Ngăn các trang web theo dõi hoạt động của bạn", icon: "eye.slash.fill", isOn: $prefs.isBlockTrackersEnabled)
+                        SettingsDivider()
+                        SettingsToggle(title: "Chặn cookie bên thứ ba", subtitle: "Ngăn cookie theo dõi từ các trang khác", icon: "xmark.shield.fill", isOn: $prefs.isBlockThirdPartyCookies)
+                        SettingsDivider()
+                        SettingsToggle(title: "Do Not Track", subtitle: "Gửi yêu cầu không theo dõi đến website", icon: "hand.raised.slash.fill", isOn: $prefs.isDoNotTrackEnabled)
+                        SettingsDivider()
+                        SettingsToggle(title: "Nâng cấp HTTPS", subtitle: "Tự động chuyển sang kết nối an toàn", icon: "lock.shield.fill", isOn: $prefs.isHttpsUpgradeEnabled)
+                        SettingsDivider()
+                        SettingsToggle(title: "Chống lấy dấu vân tay", subtitle: "Ngăn kỹ thuật nhận diện trình duyệt", icon: "fingerprint", isOn: $prefs.isBlockFingerprintingEnabled)
+                        SettingsDivider()
+                        SettingsToggle(title: "Chặn popup", subtitle: "Ngăn các cửa sổ bật lên không mong muốn", icon: "rectangle.on.rectangle.slash", isOn: $prefs.isBlockPopupsEnabled)
+
+                        SettingsDivider()
+
+                        // Privacy stats
+                        HStack {
+                            Image(systemName: "shield.checkered")
+                                .font(.system(size: 14))
+                                .foregroundColor(BrandColors.secureGreen)
+                                .frame(width: 28)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Trình theo dõi đã chặn")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(BrandColors.textPrimary)
+                                Text("\(viewModel.trackersBlocked) trình theo dõi")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(BrandColors.secureGreen)
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+
+                        SettingsDivider()
+
+                        // Clear data buttons
+                        HStack {
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(BrandColors.accentPink)
+                                .frame(width: 28)
+                            Text("Xóa dữ liệu duyệt web")
+                                .font(.system(size: 13))
+                                .foregroundColor(BrandColors.textPrimary)
+                            Spacer()
+                            Button("Xóa tất cả") {
+                                viewModel.clearAllBrowsingData()
+                            }
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(BrandColors.accentPink.opacity(0.8))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                        .padding(.vertical, 4)
                     }
                     
                     // Search Engine
@@ -55,6 +111,7 @@ struct SettingsView: View {
                                 Text("Bing").tag("bing")
                                 Text("DuckDuckGo").tag("duckduckgo")
                                 Text("Yahoo").tag("yahoo")
+                                Text("Brave").tag("brave")
                             }
                             .pickerStyle(.menu)
                             .frame(width: 140)
@@ -132,6 +189,15 @@ struct SettingsView: View {
                         .padding(.vertical, 4)
                     }
                     
+                    // Tab behavior
+                    SettingsSection(title: "Quản lý tab", icon: "square.on.square") {
+                        SettingsToggle(title: "Khôi phục tab khi khởi động", subtitle: "Mở lại các tab từ phiên trước", icon: "arrow.counterclockwise", isOn: $prefs.isRestoreTabsEnabled)
+                        SettingsDivider()
+                        SettingsToggle(title: "Tạm ngưng tab không hoạt động", subtitle: "Tiết kiệm bộ nhớ bằng cách tạm dừng tab cũ", icon: "moon.zzz.fill", isOn: $prefs.isSuspendInactiveEnabled)
+                        SettingsDivider()
+                        SettingsToggle(title: "Xác nhận khi đóng nhiều tab", subtitle: "Hỏi trước khi đóng nhiều tab cùng lúc", icon: "exclamationmark.triangle.fill", isOn: $prefs.isConfirmCloseMultiple)
+                    }
+
                     // About
                     SettingsSection(title: "Thông tin", icon: "info.circle.fill") {
                         HStack {
@@ -139,10 +205,13 @@ struct SettingsView: View {
                                 Text("Helix Browser")
                                     .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(BrandColors.textPrimary)
-                                Text("Phiên bản 2.1 (Build 3)")
+                                Text("Phiên bản 3.0 (Build 1)")
                                     .font(.system(size: 12))
                                     .foregroundColor(BrandColors.textSecondary)
                                 Text("WebKit Engine • Universal Binary (arm64 + x86_64)")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(BrandColors.textSecondary.opacity(0.7))
+                                Text("Hỗ trợ: macOS, iOS, Android, Windows, Linux")
                                     .font(.system(size: 11))
                                     .foregroundColor(BrandColors.textSecondary.opacity(0.7))
                             }
