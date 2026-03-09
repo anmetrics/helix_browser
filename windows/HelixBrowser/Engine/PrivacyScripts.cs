@@ -44,4 +44,109 @@ public static class PrivacyScripts
         return origXHR.apply(this, arguments);
     };
 })();";
+
+    public const string YoutubeAdBlockJs = @"
+(function() {
+    if (!location.hostname.includes('youtube.com')) return;
+    var style = document.createElement('style');
+    style.textContent = '' +
+        '.ytp-ad-module, .ytp-ad-overlay-container, .ytp-ad-text-overlay,' +
+        '.ytp-ad-player-overlay, .ytp-ad-player-overlay-instream-info,' +
+        '.ytp-ad-survey, .ytp-ad-image-overlay,' +
+        '#player-ads, #masthead-ad,' +
+        'ytd-promoted-sparkles-web-renderer, ytd-display-ad-renderer,' +
+        'ytd-ad-slot-renderer, ytd-in-feed-ad-layout-renderer,' +
+        'ytd-banner-promo-renderer, ytd-promoted-video-renderer,' +
+        'ytd-compact-promoted-video-renderer, ytd-video-masthead-ad-v3-renderer,' +
+        'ytd-primetime-promo-renderer, .ytd-mealbar-promo-renderer,' +
+        'ytd-statement-banner-renderer, .ytp-suggested-action,' +
+        'ytd-merch-shelf-renderer,' +
+        'ytd-engagement-panel-section-list-renderer[target-id=""engagement-panel-ads""]' +
+        '{ display: none !important; height: 0 !important; overflow: hidden !important; }' +
+        '.ytp-ad-skip-button-slot { opacity: 1 !important; }';
+    (document.head || document.documentElement).appendChild(style);
+
+    function skipAds() {
+        var skipBtns = document.querySelectorAll(
+            '.ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button, ' +
+            'button.ytp-ad-skip-button-modern, .ytp-ad-skip-button-container button'
+        );
+        skipBtns.forEach(function(btn) { try { btn.click(); } catch(e) {} });
+        var video = document.querySelector('video.html5-main-video, .html5-video-player video');
+        if (video) {
+            var adPlaying = document.querySelector('.ad-showing, .ad-interrupting');
+            if (adPlaying) {
+                video.playbackRate = 16;
+                video.muted = true;
+                if (video.duration && isFinite(video.duration)) video.currentTime = video.duration;
+            }
+        }
+        document.querySelectorAll('.ytp-ad-overlay-container, .ytp-ad-text-overlay').forEach(function(el) { el.remove(); });
+    }
+
+    var adObserver = new MutationObserver(skipAds);
+    adObserver.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    setInterval(skipAds, 500);
+
+    var adUrlPatterns = ['/api/stats/ads', '/pagead/', '/get_midroll_info', '/ptracking',
+        '/api/stats/atr', 'googleads.g.doubleclick.net', 'imasdk.googleapis.com',
+        'securepubads.g.doubleclick.net', '/youtubei/v1/log_event', 'play.google.com/log'];
+    var origFetch = window.fetch;
+    window.fetch = function(input) {
+        var url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+        if (adUrlPatterns.some(function(p) { return url.includes(p); })) return Promise.resolve(new Response('', {status: 200}));
+        return origFetch.apply(this, arguments);
+    };
+    var origXhrOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+        if (typeof url === 'string' && adUrlPatterns.some(function(p) { return url.includes(p); })) { this._blocked = true; }
+        return origXhrOpen.apply(this, arguments);
+    };
+    var origXhrSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function() {
+        if (this._blocked) { this._blocked = false; return; }
+        return origXhrSend.apply(this, arguments);
+    };
+})();";
+
+    public const string CosmeticAdBlockJs = @"
+(function() {
+    var style = document.createElement('style');
+    style.textContent = '' +
+        '[id*=""google_ads""], [class*=""google-ad""],' +
+        '[id*=""ad-container""], [class*=""ad-container""],' +
+        '[id*=""adBanner""], [class*=""adBanner""], [class*=""ad-banner""],' +
+        'iframe[src*=""doubleclick""], iframe[src*=""googlesyndication""],' +
+        'ins.adsbygoogle, div[data-ad], div[data-ad-slot],' +
+        '.ad-wrapper, .ad-unit, .ad-slot, .ad-block, .ad-placement,' +
+        '.sponsored-content, .sponsored-ad, .native-ad,' +
+        'amp-ad, amp-sticky-ad, amp-auto-ads' +
+        '{ display: none !important; }';
+    (document.head || document.documentElement).appendChild(style);
+})();";
+
+    public const string PopupBlockerJs = @"
+(function() {
+    var adDomains = ['popads.net','popcash.net','propellerads.com','juicyads.com',
+        'exoclick.com','trafficjunky.net','revcontent.com','mgid.com',
+        'adsterra.com','hilltopads.net','clickadu.com','ad-maven.com',
+        'googlesyndication.com','doubleclick.net','adnxs.com','taboola.com','outbrain.com'];
+    function isAdUrl(url) {
+        if (!url) return false;
+        try { var u = new URL(url, location.href); return adDomains.some(function(d) { return u.hostname.includes(d); }); }
+        catch(e) { return false; }
+    }
+    var origOpen = window.open;
+    window.open = function(url) {
+        if (isAdUrl(url)) return null;
+        if (!navigator.userActivation || !navigator.userActivation.isActive) {
+            if (url && url !== 'about:blank') return null;
+        }
+        return origOpen.apply(this, arguments);
+    };
+    document.addEventListener('click', function(e) {
+        var target = e.target.closest ? e.target.closest('a') : null;
+        if (target && target.href && isAdUrl(target.href)) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+})();";
 }

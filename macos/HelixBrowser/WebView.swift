@@ -353,8 +353,31 @@ struct WebView: NSViewRepresentable {
         
         // MARK: - WKUIDelegate
         
+        // Ad domains to block when they try to open new tabs/popups
+        private static let popupAdDomains: Set<String> = [
+            "popads.net", "popcash.net", "propellerads.com", "juicyads.com",
+            "exoclick.com", "trafficjunky.net", "revcontent.com", "mgid.com",
+            "adsterra.com", "hilltopads.net", "clickadu.com", "ad-maven.com",
+            "richpush.co", "trafficstars.com", "doubleclick.net", "googlesyndication.com",
+            "adnxs.com", "taboola.com", "outbrain.com", "criteo.com",
+            "amazon-adsystem.com", "ads.yahoo.com", "moatads.com", "imasdk.googleapis.com"
+        ]
+
+        private func isAdPopup(url: URL) -> Bool {
+            let host = url.host?.lowercased() ?? ""
+            return Self.popupAdDomains.contains(where: { host.contains($0) })
+        }
+
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if let url = navigationAction.request.url {
+                // Block ad popups
+                if isAdPopup(url) {
+                    return nil
+                }
+                // Block popups without user interaction
+                if Prefs.shared.isBlockPopupsEnabled && navigationAction.navigationType == .other {
+                    return nil
+                }
                 DispatchQueue.main.async {
                     self.viewModel.createNewTab(url: url.absoluteString)
                 }

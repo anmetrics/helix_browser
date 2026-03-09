@@ -6,7 +6,7 @@ class AdBlockEngine {
 
     private var ruleList: WKContentRuleList?
     private let store = WKContentRuleListStore.default()
-    private let ruleListID = "helix-adblock-rules-ios"
+    private let ruleListID = "helix-adblock-ios-v3"
 
     private init() {}
 
@@ -43,6 +43,7 @@ class AdBlockEngine {
     private static let adBlockJSON = """
     [
         {"trigger": {"url-filter": ".*", "resource-type": ["popup"]}, "action": {"type": "block"}},
+
         {"trigger": {"url-filter": "googlesyndication\\\\.com"}, "action": {"type": "block"}},
         {"trigger": {"url-filter": "doubleclick\\\\.net"}, "action": {"type": "block"}},
         {"trigger": {"url-filter": "google-analytics\\\\.com"}, "action": {"type": "block"}},
@@ -77,8 +78,41 @@ class AdBlockEngine {
         {"trigger": {"url-filter": "heapanalytics\\\\.com"}, "action": {"type": "block"}},
         {"trigger": {"url-filter": "cookiebot\\\\.com"}, "action": {"type": "block"}},
         {"trigger": {"url-filter": "onetrust\\\\.com"}, "action": {"type": "block"}},
+
+        {"trigger": {"url-filter": "youtube\\\\.com/api/stats/ads"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "youtube\\\\.com/pagead"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "youtube\\\\.com/get_midroll_info"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "youtube\\\\.com/ptracking"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "youtube\\\\.com/api/stats/atr"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "youtube\\\\.com/error_204.*adformat"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "youtube\\\\.com/generate_204.*adformat"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "youtube\\\\.com/youtubei/v1/log_event"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "googleads\\\\.g\\\\.doubleclick\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "static\\\\.doubleclick\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "s0\\\\.2mdn\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "imasdk\\\\.googleapis\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "tpc\\\\.googlesyndication\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "securepubads\\\\.g\\\\.doubleclick\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "fundingchoicesmessages\\\\.google\\\\.com"}, "action": {"type": "block"}},
+
+        {"trigger": {"url-filter": "popads\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "popcash\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "propellerads\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "juicyads\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "exoclick\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "trafficjunky\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "revcontent\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "mgid\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "adsterra\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "hilltopads\\\\.net"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "clickadu\\\\.com"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": "ad-maven\\\\.com"}, "action": {"type": "block"}},
+
         {"trigger": {"url-filter": ".*\\\\/ads\\\\/"}, "action": {"type": "block"}},
-        {"trigger": {"url-filter": ".*\\\\/ad\\\\.js"}, "action": {"type": "block"}}
+        {"trigger": {"url-filter": ".*\\\\/ad\\\\.js"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": ".*\\\\/advert"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": ".*\\\\/ad-banner"}, "action": {"type": "block"}},
+        {"trigger": {"url-filter": ".*\\\\/pop(under|up).*\\\\.js"}, "action": {"type": "block"}}
     ]
     """
 }
