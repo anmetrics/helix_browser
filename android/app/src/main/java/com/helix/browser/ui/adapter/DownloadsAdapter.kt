@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.helix.browser.R
 import com.helix.browser.databinding.ItemDownloadBinding
 import com.helix.browser.ui.DownloadItem
 
@@ -26,15 +27,20 @@ class DownloadsAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: DownloadItem) {
             binding.title.text = item.title
+            val context = binding.root.context
             val statusText = when (item.status) {
-                DownloadManager.STATUS_SUCCESSFUL -> "✅ Hoàn tất"
+                DownloadManager.STATUS_SUCCESSFUL ->
+                    "✅ ${context.getString(R.string.download_complete)}"
                 DownloadManager.STATUS_RUNNING -> {
-                    val pct = if (item.totalBytes > 0) (item.downloadedBytes * 100 / item.totalBytes) else 0
-                    "⬇️ Đang tải... $pct%"
+                    val pct = if (item.totalBytes > 0) (item.downloadedBytes * 100 / item.totalBytes).toInt() else 0
+                    "⬇️ ${context.getString(R.string.download_in_progress, pct)}"
                 }
-                DownloadManager.STATUS_FAILED -> "❌ Lỗi"
-                DownloadManager.STATUS_PAUSED -> "⏸️ Tạm dừng"
-                else -> "⏳ Đang chờ"
+                DownloadManager.STATUS_FAILED ->
+                    "❌ ${context.getString(R.string.download_failed)}"
+                DownloadManager.STATUS_PAUSED ->
+                    "⏸️ ${context.getString(R.string.download_paused)}"
+                else ->
+                    "⏳ ${context.getString(R.string.download_pending)}"
             }
             binding.status.text = statusText
             if (item.totalBytes > 0) {

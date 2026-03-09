@@ -9,5 +9,11 @@ data class BrowserTab(
     var url: String = "",
     var favicon: Bitmap? = null,
     var isIncognito: Boolean = false,
-    var thumbnail: Bitmap? = null
+    var thumbnail: Bitmap? = null,
+    var isPinned: Boolean = false,
+    var groupId: String? = null,
+    var groupName: String? = null,
+    var lastAccessTime: Long = System.currentTimeMillis(),
+    var isMuted: Boolean = false,
+    var isSuspended: Boolean = false
 )

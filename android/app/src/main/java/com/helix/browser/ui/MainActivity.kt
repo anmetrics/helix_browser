@@ -16,6 +16,7 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,6 +35,7 @@ import com.helix.browser.databinding.ActivityMainBinding
 import com.helix.browser.engine.HelixWebChromeClient
 import com.helix.browser.engine.HelixWebView
 import com.helix.browser.engine.HelixWebViewClient
+import com.helix.browser.engine.PrivacyManager
 import com.helix.browser.tabs.BrowserTab
 import com.helix.browser.utils.Prefs
 import com.helix.browser.utils.UrlUtils
@@ -105,8 +107,16 @@ class MainActivity : BaseActivity() {
         setupObservers()
         handleIntent(intent)
 
+        // Restore tabs if enabled, otherwise create a new one
         if (tabManager.tabCount == 0) {
-            createNewTab()
+            val restored = if (PrivacyManager.isRestoreTabsEnabled(this)) {
+                tabManager.restoreTabs(this)
+            } else false
+            if (restored && tabManager.tabCount > 0) {
+                tabManager.currentTab?.let { switchToTab(it) }
+            } else {
+                createNewTab()
+            }
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -315,8 +325,14 @@ class MainActivity : BaseActivity() {
             onPageError = { _, _, _ ->
                 if (tabManager.currentTab?.id == tab.id) runOnUiThread { viewModel.isLoading.value = false }
             },
-            isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) }
+            isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) },
+            isTrackerBlockEnabled = { PrivacyManager.isBlockTrackersEnabled(this) },
+            isHttpsUpgradeEnabled = { PrivacyManager.isHttpsUpgradeEnabled(this) },
+            getPrivacyScripts = { PrivacyManager.getPrivacyScripts(this) },
+            onTrackerBlocked = { PrivacyManager.incrementTrackersBlocked(this) }
         )
+        // Apply third-party cookie policy
+        PrivacyManager.applyThirdPartyCookiePolicy(this, webView)
         webView.webChromeClient = HelixWebChromeClient(
             onProgressChanged = { progress -> if (tabManager.currentTab?.id == tab.id) runOnUiThread { viewModel.onProgressChanged(progress) } },
             onTitleReceived = { title ->
@@ -518,12 +534,33 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#3
     }
 
     override fun onResume() { super.onResume() ; currentWebView?.onResume() }
-    override fun onPause() { super.onPause() ; webViewPool.values.forEach { it.onPause() } }
+    override fun onPause() {
+        super.onPause()
+        webViewPool.values.forEach { it.onPause() }
+        // Save tabs if restore is enabled
+        if (PrivacyManager.isRestoreTabsEnabled(this)) {
+            tabManager.saveTabs(this)
+        }
+        // Suspend inactive tabs if enabled
+        if (PrivacyManager.isSuspendInactiveTabsEnabled(this)) {
+            tabManager.suspendInactiveTabs()
+        }
+    }
     override fun onDestroy() {
-        super.onDestroy()
-        tabManager.closeAllIncognito()
-        webViewPool.values.forEach { it.destroy() }
+        // Remove all WebViews from their parent before destroying to prevent memory leaks
+        binding.webViewContainer.removeAllViews()
+        currentWebView = null
+        webViewPool.values.forEach { webView ->
+            (webView.parent as? android.view.ViewGroup)?.removeView(webView)
+            webView.stopLoading()
+            webView.webViewClient = WebViewClient()
+            webView.webChromeClient = null
+            webView.removeAllViews()
+            webView.destroy()
+        }
         webViewPool.clear()
+        tabManager.closeAllIncognito()
+        super.onDestroy()
     }
 
     companion object { const val REQUEST_TAB_SWITCHER = 1001 }

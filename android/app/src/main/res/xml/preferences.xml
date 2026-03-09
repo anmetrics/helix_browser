@@ -44,6 +44,55 @@
             app:defaultValue="true"
             app:icon="@drawable/ic_security" />
 
+        <SwitchPreferenceCompat
+            app:key="block_trackers"
+            app:title="@string/block_trackers"
+            app:summary="Chặn các trình theo dõi thu thập dữ liệu"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_security" />
+
+        <SwitchPreferenceCompat
+            app:key="block_third_party_cookies"
+            app:title="@string/block_third_party_cookies"
+            app:summary="Chặn cookie từ trang web bên thứ ba"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_security" />
+
+        <SwitchPreferenceCompat
+            app:key="do_not_track"
+            app:title="@string/do_not_track"
+            app:summary="Gửi yêu cầu Do Not Track đến trang web"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_security" />
+
+        <SwitchPreferenceCompat
+            app:key="https_upgrade"
+            app:title="@string/https_upgrade"
+            app:summary="Tự động nâng cấp kết nối HTTP lên HTTPS"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_security" />
+
+        <SwitchPreferenceCompat
+            app:key="anti_fingerprinting"
+            app:title="@string/anti_fingerprinting"
+            app:summary="Chặn thu thập dấu vân tay trình duyệt (Canvas, WebGL, Audio)"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_security" />
+
+        <SwitchPreferenceCompat
+            app:key="block_popups"
+            app:title="@string/block_popups"
+            app:summary="Chặn cửa sổ popup tự động mở"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_security" />
+
+        <Preference
+            app:key="trackers_blocked"
+            app:title="@string/trackers_blocked"
+            app:summary="0 trình theo dõi đã bị chặn"
+            app:icon="@drawable/ic_security"
+            app:selectable="false" />
+
         <Preference
             app:key="clear_cache"
             app:title="Xoá bộ nhớ cache"
@@ -61,6 +110,28 @@
             app:title="Xoá lịch sử"
             app:summary="Xoá lịch sử duyệt web"
             app:icon="@drawable/ic_history" />
+
+        <Preference
+            app:key="clear_all_data"
+            app:title="@string/clear_all_data"
+            app:summary="Xoá tất cả cookie, cache, lịch sử và dữ liệu web"
+            app:icon="@drawable/ic_delete" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Tab">
+        <SwitchPreferenceCompat
+            app:key="restore_tabs"
+            app:title="@string/restore_tabs"
+            app:summary="Khôi phục các tab khi khởi động lại"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_settings" />
+
+        <SwitchPreferenceCompat
+            app:key="suspend_inactive_tabs"
+            app:title="@string/suspend_tabs"
+            app:summary="Tạm ngưng các tab không hoạt động sau 10 phút"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_settings" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Thông tin">
