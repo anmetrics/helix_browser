@@ -1,218 +1,168 @@
-"""Settings dialog for Helix Browser"""
+"""Settings dialog for Helix Browser (GTK3)"""
 
 import gi
-gi.require_version("Gtk", "4.0")
-gi.require_version("Adw", "1")
-from gi.repository import Gtk, Adw
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 from prefs import Prefs
 from database import Database
 
 
-class SettingsDialog(Adw.PreferencesWindow):
+class SettingsDialog(Gtk.Dialog):
     def __init__(self, parent=None):
         super().__init__(
-            title="Cài đặt",
+            title="Settings - Helix Browser",
             transient_for=parent,
             modal=True,
-            default_width=600,
-            default_height=700,
+            destroy_with_parent=True,
         )
-        self.prefs = Prefs.get_instance()
+        self.set_default_size(500, 600)
+        self.add_button("Close", Gtk.ResponseType.CLOSE)
+
+        self.prefs = Prefs()
         self.db = Database.get_instance()
 
-        self._build_general_page()
-        self._build_privacy_page()
-        self._build_tabs_page()
-        self._build_about_page()
+        notebook = Gtk.Notebook()
+        content = self.get_content_area()
+        content.pack_start(notebook, True, True, 0)
+
+        notebook.append_page(self._build_general_page(), Gtk.Label(label="General"))
+        notebook.append_page(self._build_privacy_page(), Gtk.Label(label="Privacy"))
+        notebook.append_page(self._build_tabs_page(), Gtk.Label(label="Tabs"))
+        notebook.append_page(self._build_about_page(), Gtk.Label(label="About"))
+
+        self.show_all()
+
+    def _make_section(self, title):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        box.set_margin_top(12)
+        box.set_margin_bottom(6)
+        box.set_margin_start(16)
+        box.set_margin_end(16)
+        label = Gtk.Label()
+        label.set_markup(f"<b>{title}</b>")
+        label.set_halign(Gtk.Align.START)
+        box.pack_start(label, False, False, 0)
+        return box
+
+    def _make_switch_row(self, label_text, key):
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        row.set_margin_start(8)
+        row.set_margin_end(8)
+        label = Gtk.Label(label=label_text)
+        label.set_halign(Gtk.Align.START)
+        label.set_hexpand(True)
+        switch = Gtk.Switch()
+        switch.set_active(getattr(self.prefs, key, True))
+        switch.connect("notify::active", lambda sw, _: setattr(self.prefs, key, sw.get_active()))
+        switch.set_valign(Gtk.Align.CENTER)
+        row.pack_start(label, True, True, 0)
+        row.pack_end(switch, False, False, 0)
+        return row
 
     def _build_general_page(self):
-        page = Adw.PreferencesPage(title="Chung", icon_name="preferences-system-symbolic")
-        self.add(page)
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
 
         # Search engine
-        group = Adw.PreferencesGroup(title="Công cụ tìm kiếm")
-        page.add(group)
-
-        search_row = Adw.ComboRow(title="Công cụ tìm kiếm mặc định")
-        engines = Gtk.StringList.new(["Google", "DuckDuckGo", "Bing", "Brave", "Yahoo"])
-        search_row.set_model(engines)
-
-        engine_map = {"google": 0, "duckduckgo": 1, "bing": 2, "brave": 3, "yahoo": 4}
+        section = self._make_section("Search Engine")
+        combo = Gtk.ComboBoxText()
+        engines = ["Google", "DuckDuckGo", "Bing", "Brave", "Yahoo"]
+        engine_keys = ["google", "duckduckgo", "bing", "brave", "yahoo"]
+        for e in engines:
+            combo.append_text(e)
         current = self.prefs.search_engine
-        search_row.set_selected(engine_map.get(current, 0))
-        search_row.connect("notify::selected", self._on_search_engine_changed)
-        group.add(search_row)
+        combo.set_active(engine_keys.index(current) if current in engine_keys else 0)
+        combo.connect("changed", lambda c: setattr(self.prefs, "search_engine", engine_keys[c.get_active()]))
+        section.pack_start(combo, False, False, 0)
+        page.pack_start(section, False, False, 0)
 
         # Homepage
-        home_group = Adw.PreferencesGroup(title="Trang chủ")
-        page.add(home_group)
+        section = self._make_section("Homepage")
+        entry = Gtk.Entry()
+        entry.set_text(self.prefs.homepage)
+        entry.connect("changed", lambda e: setattr(self.prefs, "homepage", e.get_text()))
+        section.pack_start(entry, False, False, 0)
+        page.pack_start(section, False, False, 0)
 
-        home_row = Adw.EntryRow(title="URL trang chủ")
-        home_row.set_text(self.prefs.homepage)
-        home_row.connect("changed", self._on_homepage_changed)
-        home_group.add(home_row)
+        return page
 
     def _build_privacy_page(self):
-        page = Adw.PreferencesPage(title="Quyền riêng tư", icon_name="security-high-symbolic")
-        self.add(page)
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
 
-        # Tracker stats
-        stats_group = Adw.PreferencesGroup(title="Thống kê bảo mật")
-        page.add(stats_group)
-
-        from privacy_manager import PrivacyManager
-        pm = PrivacyManager.get_instance()
-        stats_row = Adw.ActionRow(
-            title=f"{pm.trackers_blocked} trình theo dõi đã bị chặn",
-            icon_name="shield-safe-symbolic",
-        )
-        stats_group.add(stats_row)
-
-        # Privacy toggles
-        privacy_group = Adw.PreferencesGroup(title="Bảo vệ quyền riêng tư")
-        page.add(privacy_group)
-
+        section = self._make_section("Privacy Protection")
         toggles = [
-            ("is_block_trackers_enabled", "Chặn trình theo dõi", "Chặn quảng cáo và trình theo dõi trên web"),
-            ("is_block_third_party_cookies_enabled", "Chặn cookie bên thứ ba", "Ngăn trang web theo dõi qua cookie"),
-            ("is_do_not_track_enabled", "Gửi Do Not Track", "Yêu cầu trang web không theo dõi bạn"),
-            ("is_https_upgrade_enabled", "Nâng cấp HTTPS", "Tự động dùng kết nối an toàn khi có thể"),
-            ("is_block_fingerprinting_enabled", "Chống dấu vân tay", "Bảo vệ khỏi kỹ thuật fingerprinting"),
-            ("is_block_popups_enabled", "Chặn popup", "Chặn cửa sổ bật lên không mong muốn"),
-            ("is_block_autoplay_enabled", "Chặn tự phát", "Chặn video/audio tự động phát"),
+            ("Block Trackers", "is_block_trackers"),
+            ("Block 3rd Party Cookies", "is_block_third_party_cookies"),
+            ("Do Not Track", "is_do_not_track"),
+            ("HTTPS Upgrade", "is_https_upgrade"),
+            ("Block Fingerprinting", "is_block_fingerprinting"),
+            ("Block Popups", "is_block_popups"),
+            ("Block Ads", "is_ad_block"),
         ]
-
-        for key, title, subtitle in toggles:
-            row = Adw.SwitchRow(title=title, subtitle=subtitle)
-            row.set_active(getattr(self.prefs, key, True))
-            row.connect("notify::active", self._make_toggle_handler(key))
-            privacy_group.add(row)
+        for label, key in toggles:
+            section.pack_start(self._make_switch_row(label, key), False, False, 2)
+        page.pack_start(section, False, False, 0)
 
         # Clear data
-        clear_group = Adw.PreferencesGroup(title="Xóa dữ liệu")
-        page.add(clear_group)
+        section = self._make_section("Clear Data")
+        for label, callback in [
+            ("Clear History", lambda b: self._confirm_clear("history")),
+            ("Clear Bookmarks", lambda b: self._confirm_clear("bookmarks")),
+            ("Clear Downloads", lambda b: self._confirm_clear("downloads")),
+        ]:
+            btn = Gtk.Button(label=label)
+            btn.connect("clicked", callback)
+            section.pack_start(btn, False, False, 2)
+        page.pack_start(section, False, False, 0)
 
-        clear_history_row = Adw.ActionRow(title="Xóa lịch sử duyệt web", activatable=True)
-        clear_history_row.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
-        clear_history_row.connect("activated", self._on_clear_history)
-        clear_group.add(clear_history_row)
-
-        clear_bookmarks_row = Adw.ActionRow(title="Xóa tất cả dấu trang", activatable=True)
-        clear_bookmarks_row.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
-        clear_bookmarks_row.connect("activated", self._on_clear_bookmarks)
-        clear_group.add(clear_bookmarks_row)
-
-        clear_downloads_row = Adw.ActionRow(title="Xóa lịch sử tải xuống", activatable=True)
-        clear_downloads_row.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
-        clear_downloads_row.connect("activated", self._on_clear_downloads)
-        clear_group.add(clear_downloads_row)
+        return page
 
     def _build_tabs_page(self):
-        page = Adw.PreferencesPage(title="Tab", icon_name="tab-new-symbolic")
-        self.add(page)
-
-        group = Adw.PreferencesGroup(title="Hành vi tab")
-        page.add(group)
-
-        restore_row = Adw.SwitchRow(
-            title="Khôi phục tab khi khởi động",
-            subtitle="Mở lại các tab từ phiên trước"
-        )
-        restore_row.set_active(getattr(self.prefs, "is_restore_tabs_enabled", True))
-        restore_row.connect("notify::active", self._make_toggle_handler("is_restore_tabs_enabled"))
-        group.add(restore_row)
-
-        suspend_row = Adw.SwitchRow(
-            title="Tạm ngưng tab không hoạt động",
-            subtitle="Giải phóng bộ nhớ cho tab lâu không dùng"
-        )
-        suspend_row.set_active(getattr(self.prefs, "is_suspend_inactive_enabled", True))
-        suspend_row.connect("notify::active", self._make_toggle_handler("is_suspend_inactive_enabled"))
-        group.add(suspend_row)
-
-        confirm_row = Adw.SwitchRow(
-            title="Xác nhận khi đóng nhiều tab",
-            subtitle="Hỏi trước khi đóng cửa sổ có nhiều tab"
-        )
-        confirm_row.set_active(getattr(self.prefs, "is_confirm_close_multiple", True))
-        confirm_row.connect("notify::active", self._make_toggle_handler("is_confirm_close_multiple"))
-        group.add(confirm_row)
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        section = self._make_section("Tab Behavior")
+        section.pack_start(self._make_switch_row("Restore tabs on startup", "is_restore_tabs"), False, False, 2)
+        section.pack_start(self._make_switch_row("Suspend inactive tabs", "is_suspend_inactive"), False, False, 2)
+        page.pack_start(section, False, False, 0)
+        return page
 
     def _build_about_page(self):
-        page = Adw.PreferencesPage(title="Giới thiệu", icon_name="help-about-symbolic")
-        self.add(page)
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        page.set_margin_top(40)
+        page.set_valign(Gtk.Align.CENTER)
 
-        group = Adw.PreferencesGroup()
-        page.add(group)
+        title = Gtk.Label()
+        title.set_markup("<span size='xx-large' weight='bold'>Helix Browser</span>")
+        page.pack_start(title, False, False, 0)
 
-        version_row = Adw.ActionRow(title="Phiên bản", subtitle="3.0.0")
-        group.add(version_row)
+        ver = Gtk.Label(label="Version 3.0.0")
+        ver.get_style_context().add_class("dim-label")
+        page.pack_start(ver, False, False, 0)
 
-        engine_row = Adw.ActionRow(title="Engine", subtitle="WebKitGTK")
-        group.add(engine_row)
+        engine = Gtk.Label(label="Engine: WebKitGTK 2")
+        engine.get_style_context().add_class("dim-label")
+        page.pack_start(engine, False, False, 0)
 
-        platform_row = Adw.ActionRow(title="Nền tảng", subtitle="Linux (GTK4 + libadwaita)")
-        group.add(platform_row)
+        platform = Gtk.Label(label="Platform: Linux (GTK3)")
+        platform.get_style_context().add_class("dim-label")
+        page.pack_start(platform, False, False, 0)
 
-    def _make_toggle_handler(self, key):
-        def handler(row, _):
-            setattr(self.prefs, key, row.get_active())
-        return handler
+        return page
 
-    def _on_search_engine_changed(self, row, _):
-        engines = ["google", "duckduckgo", "bing", "brave", "yahoo"]
-        idx = row.get_selected()
-        if 0 <= idx < len(engines):
-            self.prefs.search_engine = engines[idx]
-
-    def _on_homepage_changed(self, row):
-        self.prefs.homepage = row.get_text()
-
-    def _on_clear_history(self, _):
-        dialog = Adw.MessageDialog(
+    def _confirm_clear(self, data_type):
+        dialog = Gtk.MessageDialog(
             transient_for=self,
-            heading="Xóa lịch sử?",
-            body="Hành động này không thể hoàn tác.",
+            modal=True,
+            message_type=Gtk.MessageType.WARNING,
+            buttons=Gtk.ButtonsType.YES_NO,
+            text=f"Clear all {data_type}?",
         )
-        dialog.add_response("cancel", "Hủy")
-        dialog.add_response("delete", "Xóa")
-        dialog.set_response_appearance("delete", Adw.ResponseAppearance.DESTRUCTIVE)
-        dialog.connect("response", self._on_clear_history_response)
-        dialog.present()
-
-    def _on_clear_history_response(self, dialog, response):
-        if response == "delete":
-            self.db.clear_history()
-
-    def _on_clear_bookmarks(self, _):
-        dialog = Adw.MessageDialog(
-            transient_for=self,
-            heading="Xóa tất cả dấu trang?",
-            body="Hành động này không thể hoàn tác.",
-        )
-        dialog.add_response("cancel", "Hủy")
-        dialog.add_response("delete", "Xóa")
-        dialog.set_response_appearance("delete", Adw.ResponseAppearance.DESTRUCTIVE)
-        dialog.connect("response", self._on_clear_bookmarks_response)
-        dialog.present()
-
-    def _on_clear_bookmarks_response(self, dialog, response):
-        if response == "delete":
-            self.db.clear_bookmarks()
-
-    def _on_clear_downloads(self, _):
-        dialog = Adw.MessageDialog(
-            transient_for=self,
-            heading="Xóa lịch sử tải xuống?",
-            body="Hành động này không thể hoàn tác.",
-        )
-        dialog.add_response("cancel", "Hủy")
-        dialog.add_response("delete", "Xóa")
-        dialog.set_response_appearance("delete", Adw.ResponseAppearance.DESTRUCTIVE)
-        dialog.connect("response", self._on_clear_downloads_response)
-        dialog.present()
-
-    def _on_clear_downloads_response(self, dialog, response):
-        if response == "delete":
-            self.db.clear_downloads()
+        dialog.format_secondary_text("This action cannot be undone.")
+        response = dialog.run()
+        dialog.destroy()
+        if response == Gtk.ResponseType.YES:
+            if data_type == "history":
+                self.db.clear_history()
+            elif data_type == "bookmarks":
+                self.db.clear_bookmarks()
+            elif data_type == "downloads":
+                self.db.clear_downloads()

@@ -81,14 +81,14 @@ class Database:
             self._conn.commit()
             self._trim_history()
 
-    def get_history(self, limit: int = 500) -> list[dict]:
+    def get_history(self, limit=500):
         rows = self._conn.execute(
             "SELECT url, title, timestamp FROM history ORDER BY timestamp DESC LIMIT ?",
             (limit,)
         ).fetchall()
         return [dict(r) for r in rows]
 
-    def search_history(self, query: str, limit: int = 100) -> list[dict]:
+    def search_history(self, query, limit=100):
         q = f"%{query}%"
         rows = self._conn.execute(
             "SELECT url, title, timestamp FROM history WHERE url LIKE ? OR title LIKE ? ORDER BY timestamp DESC LIMIT ?",
@@ -138,7 +138,7 @@ class Database:
         row = self._conn.execute("SELECT id FROM bookmarks WHERE url = ?", (url,)).fetchone()
         return row is not None
 
-    def get_bookmarks(self, folder: str = "") -> list[dict]:
+    def get_bookmarks(self, folder=""):
         if folder:
             rows = self._conn.execute(
                 "SELECT url, title, created_at, folder FROM bookmarks WHERE folder = ? ORDER BY created_at DESC",
@@ -150,7 +150,7 @@ class Database:
             ).fetchall()
         return [dict(r) for r in rows]
 
-    def search_bookmarks(self, query: str) -> list[dict]:
+    def search_bookmarks(self, query):
         q = f"%{query}%"
         rows = self._conn.execute(
             "SELECT url, title, created_at, folder FROM bookmarks WHERE url LIKE ? OR title LIKE ? ORDER BY created_at DESC",
@@ -183,7 +183,7 @@ class Database:
             )
             self._conn.commit()
 
-    def get_downloads(self, limit: int = 100) -> list[dict]:
+    def get_downloads(self, limit=100):
         rows = self._conn.execute(
             "SELECT id, url, filename, filepath, filesize, status, created_at, completed_at FROM downloads ORDER BY created_at DESC LIMIT ?",
             (limit,)

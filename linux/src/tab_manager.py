@@ -4,7 +4,7 @@ import json
 import os
 import time
 from dataclasses import dataclass, field, asdict
-from typing import Optional
+from typing import Optional, List, Tuple
 
 
 @dataclass
@@ -40,9 +40,9 @@ class TabGroup:
 
 class TabManager:
     def __init__(self):
-        self.tabs: list[BrowserTab] = []
+        self.tabs: List[BrowserTab] = []
         self.active_tab_index: int = -1
-        self.groups: list[TabGroup] = []
+        self.groups: List[TabGroup] = []
         self._session_path = os.path.join(
             os.path.expanduser("~"), ".config", "helix-browser", "session.json"
         )
@@ -154,7 +154,7 @@ class TabManager:
                 if now - tab.last_access > timeout_seconds:
                     tab.is_suspended = True
 
-    def search_tabs(self, query: str) -> list[tuple[int, BrowserTab]]:
+    def search_tabs(self, query: str) -> List[Tuple[int, BrowserTab]]:
         query = query.lower()
         results = []
         for i, tab in enumerate(self.tabs):

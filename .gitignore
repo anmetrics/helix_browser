@@ -42,6 +42,25 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 
+# ─── Python ──────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.egg-info/
+*.egg
+dist/
+*.whl
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+
+# ─── Linux .deb build ────────────────────────────────────────────
+linux/build/
+linux/*.deb
+
 # ─── Misc ────────────────────────────────────────────────────────
 *.log
 *.hprof

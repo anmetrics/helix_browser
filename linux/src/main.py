@@ -4,14 +4,13 @@
 import os
 import sys
 import gi
-gi.require_version('Gtk', '4.0')
-gi.require_version('Adw', '1')
-gi.require_version('WebKit', '6.0')
-from gi.repository import Gtk, Adw, Gio, GLib, Gdk
+gi.require_version('Gtk', '3.0')
+gi.require_version('WebKit2', '4.0')
+from gi.repository import Gtk, Gio, GLib, Gdk
 from browser_window import BrowserWindow
 
 
-class HelixBrowserApp(Adw.Application):
+class HelixBrowserApp(Gtk.Application):
     def __init__(self):
         super().__init__(
             application_id="com.helix.browser.linux",
@@ -21,7 +20,7 @@ class HelixBrowserApp(Adw.Application):
         self.connect("open", self.on_open)
 
     def do_startup(self):
-        Adw.Application.do_startup(self)
+        Gtk.Application.do_startup(self)
         self._load_css()
 
     def _load_css(self):
@@ -29,21 +28,21 @@ class HelixBrowserApp(Adw.Application):
         if os.path.exists(css_path):
             provider = Gtk.CssProvider()
             provider.load_from_path(css_path)
-            display = Gdk.Display.get_default()
-            if display:
-                Gtk.StyleContext.add_provider_for_display(
-                    display, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            screen = Gdk.Screen.get_default()
+            if screen:
+                Gtk.StyleContext.add_provider_for_screen(
+                    screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
                 )
 
     def on_activate(self, app):
         win = BrowserWindow(application=app)
-        win.present()
+        win.show_all()
 
     def on_open(self, app, files, n_files, hint):
         win = BrowserWindow(application=app)
         if files:
             win.load_url(files[0].get_uri())
-        win.present()
+        win.show_all()
 
 
 def main():

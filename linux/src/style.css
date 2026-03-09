@@ -1,4 +1,4 @@
-/* Helix Browser - GTK4 Theme */
+/* Helix Browser - GTK3 Theme */
 
 /* Main window */
 window {
@@ -6,49 +6,47 @@ window {
     color: #FFFFFF;
 }
 
-/* Header bar / toolbar */
-headerbar, .toolbar {
+/* Header bar */
+headerbar {
     background-color: #141235;
+    background-image: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     padding: 4px 8px;
+    color: #FFFFFF;
+}
+
+headerbar .title {
+    color: #FFFFFF;
 }
 
 /* Address bar */
-.address-bar {
+.helix-address-bar {
     background-color: #1E1B45;
+    background-image: none;
     border-radius: 8px;
     border: 1px solid rgba(139, 139, 255, 0.2);
     padding: 6px 12px;
     color: #FFFFFF;
     font-size: 13px;
     min-height: 32px;
-    transition: border-color 200ms ease;
 }
 
-.address-bar:focus-within {
+.helix-address-bar:focus {
     border-color: #8B8BFF;
     box-shadow: 0 0 0 2px rgba(139, 139, 255, 0.15);
 }
 
-/* SSL indicator */
-.ssl-secure {
-    color: #00E676;
-}
-
-.ssl-insecure {
-    color: #FF7EB3;
-}
-
 /* Tab bar */
-.tab-bar {
+.helix-tab-bar {
     background-color: #0D0C24;
     padding: 4px 4px 0;
     min-height: 36px;
 }
 
 /* Individual tabs */
-.browser-tab {
+.helix-tab {
     background-color: #141235;
+    background-image: none;
     border-radius: 8px 8px 0 0;
     padding: 6px 12px;
     margin: 0 1px;
@@ -57,197 +55,151 @@ headerbar, .toolbar {
     font-weight: 500;
     min-width: 120px;
     max-width: 220px;
-    transition: all 150ms ease;
+    border: none;
+    box-shadow: none;
 }
 
-.browser-tab:hover {
+.helix-tab:hover {
     background-color: #1E1B45;
+    background-image: none;
     color: #FFFFFF;
 }
 
-.browser-tab.active {
+.helix-tab.active {
     background-color: #1E1B45;
+    background-image: none;
     color: #FFFFFF;
     border-bottom: 2px solid #8B8BFF;
 }
 
-.browser-tab.pinned {
-    min-width: 40px;
-    max-width: 40px;
-    padding: 6px 8px;
-}
-
-.browser-tab.incognito {
+.helix-tab.incognito {
     background-color: #1a1540;
+    background-image: none;
     border-left: 2px solid #FF7EB3;
 }
 
-.tab-close {
+.helix-tab-close {
     border-radius: 50%;
     padding: 2px;
     min-width: 18px;
     min-height: 18px;
-    opacity: 0;
-    transition: opacity 150ms ease;
+    background: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
 }
 
-.browser-tab:hover .tab-close {
-    opacity: 0.7;
-}
-
-.tab-close:hover {
+.helix-tab-close:hover {
     background-color: rgba(255, 126, 179, 0.3);
-    opacity: 1;
+    background-image: none;
 }
 
 /* New tab button */
-.new-tab-btn {
+.helix-new-tab-btn {
+    background: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
     border-radius: 8px;
     padding: 4px 8px;
     color: #A0A0D0;
-    transition: all 150ms ease;
 }
 
-.new-tab-btn:hover {
+.helix-new-tab-btn:hover {
     background-color: #1E1B45;
+    background-image: none;
     color: #8B8BFF;
 }
 
 /* Navigation buttons */
-.nav-button {
+headerbar button {
+    background: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
     border-radius: 6px;
     padding: 4px 8px;
     color: #A0A0D0;
     min-width: 32px;
     min-height: 32px;
-    transition: all 150ms ease;
 }
 
-.nav-button:hover {
+headerbar button:hover {
     background-color: #1E1B45;
+    background-image: none;
     color: #FFFFFF;
 }
 
-.nav-button:disabled {
+headerbar button:disabled {
     opacity: 0.3;
 }
 
 /* Progress bar */
-.progress-bar {
+.helix-progress {
     min-height: 2px;
     background-color: transparent;
 }
 
-.progress-bar progress {
-    background: linear-gradient(90deg, #8B8BFF, #FF7EB3);
+.helix-progress progress {
+    background-color: #8B8BFF;
     border-radius: 1px;
     min-height: 2px;
 }
 
+.helix-progress trough {
+    background-color: transparent;
+    min-height: 2px;
+}
+
 /* Find bar */
-.find-bar {
+.helix-find-bar {
     background-color: #141235;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     padding: 6px 12px;
 }
 
-.find-bar entry {
+.helix-find-bar entry {
     background-color: #1E1B45;
+    background-image: none;
     border-radius: 6px;
     border: 1px solid rgba(139, 139, 255, 0.2);
     color: #FFFFFF;
     padding: 4px 8px;
 }
 
-/* Menu / Popover */
-popover, popover.menu {
+/* Menu */
+popover, .popup {
     background-color: #141235;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 4px;
+    color: #FFFFFF;
 }
 
-popover modelbutton, popover .model {
+modelbutton {
     color: #FFFFFF;
     padding: 8px 12px;
     border-radius: 8px;
 }
 
-popover modelbutton:hover {
+modelbutton:hover {
     background-color: #1E1B45;
 }
 
-/* Start page */
-.start-page {
-    background-color: #0A091E;
-}
-
-.start-page-title {
-    font-size: 28px;
-    font-weight: bold;
-    color: #FFFFFF;
-}
-
-.start-page-subtitle {
-    font-size: 14px;
-    color: #A0A0D0;
-}
-
-/* Favorite items on start page */
-.favorite-item {
-    background-color: rgba(255, 255, 255, 0.04);
-    border-radius: 14px;
-    padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 200ms ease;
-}
-
-.favorite-item:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-    transform: scale(1.05);
-}
-
-.favorite-item label {
-    color: #A0A0D0;
-    font-size: 11px;
-}
-
-/* Privacy shield banner */
-.privacy-banner {
-    background-color: rgba(0, 230, 118, 0.08);
+/* Tab count badge */
+.helix-tab-count {
+    background: transparent;
+    background-image: none;
+    border: 1px solid #8B8BFF;
     border-radius: 12px;
-    border: 1px solid rgba(0, 230, 118, 0.2);
-    padding: 16px;
-}
-
-.privacy-banner .count {
-    color: #00E676;
-    font-size: 20px;
+    color: #8B8BFF;
     font-weight: bold;
+    min-width: 28px;
+    padding: 2px 6px;
+    box-shadow: none;
 }
 
-/* Section cards */
-.section-card {
-    background-color: rgba(255, 255, 255, 0.04);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 16px;
-}
-
-/* Recent items */
-.recent-item {
-    background-color: rgba(255, 255, 255, 0.02);
-    border-radius: 10px;
-    padding: 10px;
-    transition: background-color 150ms ease;
-}
-
-.recent-item:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-}
-
-/* Scrollbar styling */
+/* Scrollbar */
 scrollbar {
     background-color: transparent;
 }
@@ -263,41 +215,63 @@ scrollbar slider:hover {
     background-color: rgba(139, 139, 255, 0.5);
 }
 
-/* Context menu */
-menu {
-    background-color: #141235;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 4px;
+/* Dialog / Settings */
+dialog {
+    background-color: #0A091E;
+    color: #FFFFFF;
 }
 
-menuitem {
+notebook {
+    background-color: #0A091E;
+}
+
+notebook header {
+    background-color: #141235;
+}
+
+notebook tab {
+    background-color: #141235;
+    color: #A0A0D0;
+    padding: 8px 16px;
+    border: none;
+}
+
+notebook tab:checked {
+    background-color: #1E1B45;
     color: #FFFFFF;
-    padding: 6px 12px;
+    border-bottom: 2px solid #8B8BFF;
+}
+
+switch {
+    background-color: #1E1B45;
+    border-radius: 12px;
+}
+
+switch:checked {
+    background-color: #8B8BFF;
+}
+
+combobox {
+    background-color: #1E1B45;
+    color: #FFFFFF;
+}
+
+entry {
+    background-color: #1E1B45;
+    background-image: none;
+    color: #FFFFFF;
+    border: 1px solid rgba(139, 139, 255, 0.2);
     border-radius: 6px;
 }
 
-menuitem:hover {
-    background-color: #1E1B45;
-}
-
-/* Toast notifications */
-.toast {
-    background-color: #1E1B45;
+button {
     color: #FFFFFF;
-    border-radius: 8px;
-    border: 1px solid rgba(139, 139, 255, 0.3);
 }
 
-/* Group indicator */
-.tab-group-indicator {
-    border-radius: 3px;
-    min-width: 6px;
-    min-height: 6px;
-    margin-right: 4px;
+label {
+    color: #FFFFFF;
 }
 
-/* Muted indicator */
-.tab-muted {
-    opacity: 0.6;
+.dim-label {
+    color: #A0A0D0;
 }

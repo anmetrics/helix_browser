@@ -261,18 +261,17 @@ class PrivacyManager:
 
     def get_all_scripts(self, prefs):
         scripts = []
-        if getattr(prefs, "is_block_fingerprinting_enabled", True):
+        if getattr(prefs, "is_block_fingerprinting", True):
             scripts.append(self.ANTI_FINGERPRINT_JS)
-        if getattr(prefs, "is_do_not_track_enabled", True):
+        if getattr(prefs, "is_do_not_track", True):
             scripts.append(self.DO_NOT_TRACK_JS)
-        if getattr(prefs, "is_block_trackers_enabled", True):
+        if getattr(prefs, "is_block_trackers", True):
             scripts.append(self.get_tracker_blocking_js())
-        if getattr(prefs, "is_https_upgrade_enabled", True):
+        if getattr(prefs, "is_https_upgrade", True):
             scripts.append(self.HTTPS_UPGRADE_JS)
-        # YouTube ad blocking + cosmetic filtering + popup blocking
-        if getattr(prefs, "is_ad_block_enabled", True):
+        if getattr(prefs, "is_ad_block", True):
             scripts.append(self.YOUTUBE_AD_BLOCK_JS)
             scripts.append(self.COSMETIC_AD_BLOCK_JS)
-        if getattr(prefs, "is_block_popups_enabled", True):
+        if getattr(prefs, "is_block_popups", True):
             scripts.append(self.POPUP_BLOCKER_JS)
         return "\n".join(scripts)
