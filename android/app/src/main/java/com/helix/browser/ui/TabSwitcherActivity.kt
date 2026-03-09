@@ -3,25 +3,28 @@ package com.helix.browser.ui
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import android.view.View
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.helix.browser.HelixApp
+import com.helix.browser.billing.BillingManager
 import com.helix.browser.databinding.ActivityTabSwitcherBinding
-import com.helix.browser.tabs.BrowserTab
 import com.helix.browser.ui.adapter.TabsAdapter
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class TabSwitcherActivity : BaseActivity() {
 
     private lateinit var binding: ActivityTabSwitcherBinding
     private lateinit var adapter: TabsAdapter
+    private lateinit var billingManager: BillingManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTabSwitcherBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        billingManager = BillingManager.getInstance(this)
 
         val tabManager = (application as HelixApp).tabManager
 
@@ -34,7 +37,6 @@ class TabSwitcherActivity : BaseActivity() {
             onTabClose = { tab ->
                 tabManager.closeTab(tab.id)
                 if (tabManager.tabCount == 0) {
-                    // Return with new_tab request
                     val result = Intent().putExtra("new_tab", true)
                     setResult(Activity.RESULT_OK, result)
                     finish()
@@ -81,6 +83,31 @@ class TabSwitcherActivity : BaseActivity() {
             tabManager.closeAllTabs()
             setResult(Activity.RESULT_OK, Intent().putExtra("new_tab", true))
             finish()
+        }
+
+        // --- Banner Ad / Premium ---
+        setupBannerAd()
+    }
+
+    private fun setupBannerAd() {
+        // Observe premium status
+        lifecycleScope.launch {
+            billingManager.isPremium.collectLatest { isPremium ->
+                binding.bannerAdContainer.visibility = if (isPremium) View.GONE else View.VISIBLE
+            }
+        }
+
+        // Update price text
+        binding.btnSubscribe.text = billingManager.getFormattedPrice()
+
+        // Subscribe button
+        binding.btnSubscribe.setOnClickListener {
+            billingManager.launchSubscription(this)
+        }
+
+        // Dismiss button (temporarily hides for this session)
+        binding.btnDismissAd.setOnClickListener {
+            binding.bannerAdContainer.visibility = View.GONE
         }
     }
 }

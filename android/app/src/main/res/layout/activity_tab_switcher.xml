@@ -36,11 +36,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="12dp"
-        android:paddingBottom="72dp"
+        android:paddingBottom="180dp"
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Bottom Actions — wraps buttons + nav bar space -->
+    <!-- Bottom section: banner ad + action buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -49,6 +49,76 @@
         android:background="@color/toolbar_background"
         android:elevation="8dp">
 
+        <!-- Premium Banner Ad -->
+        <LinearLayout
+            android:id="@+id/bannerAdContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <!-- Ad content -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="#1A1845"
+                android:paddingHorizontal="16dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚡ Helix Premium"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/adSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Remove ads &amp; unlock all features"
+                        android:textColor="#A0A0D0"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSubscribe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="$2.99/mo"
+                    android:textSize="12sp"
+                    android:textAllCaps="false"
+                    app:cornerRadius="18dp"
+                    app:backgroundTint="@color/accent_purple" />
+
+                <ImageButton
+                    android:id="@+id/btnDismissAd"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_close"
+                    android:padding="8dp"
+                    android:alpha="0.5"
+                    android:contentDescription="Dismiss" />
+            </LinearLayout>
+
+            <!-- Separator -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#2A2755" />
+        </LinearLayout>
+
+        <!-- Action buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="64dp"
@@ -85,7 +155,7 @@
                 style="@style/Widget.Material3.Button.OutlinedButton" />
         </LinearLayout>
 
-        <!-- Navigation bar spacer — height applied by code in TabSwitcherActivity -->
+        <!-- Navigation bar spacer -->
         <View
             android:id="@+id/navBarSpace"
             android:layout_width="match_parent"

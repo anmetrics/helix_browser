@@ -4,6 +4,7 @@ import android.app.Application
 import com.helix.browser.data.AppDatabase
 import com.helix.browser.data.BookmarkRepository
 import com.helix.browser.data.HistoryRepository
+import com.helix.browser.billing.BillingManager
 import com.helix.browser.tabs.TabManager
 
 class HelixApp : Application() {
@@ -12,10 +13,13 @@ class HelixApp : Application() {
     val bookmarkRepository by lazy { BookmarkRepository(database.bookmarkDao()) }
     val historyRepository by lazy { HistoryRepository(database.historyDao()) }
     val tabManager by lazy { TabManager() }
+    val billingManager by lazy { BillingManager.getInstance(this) }
 
     override fun onCreate() {
         super.onCreate()
         instance = this
+        // Init billing early so subscription status is ready
+        billingManager
     }
 
     companion object {
