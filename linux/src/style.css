@@ -1,96 +1,116 @@
-/* Helix Browser - GTK3 Theme */
+/* Helix Browser - Custom Chrome-like Dark Theme */
 
-/* Main window */
+/* ===== Global ===== */
+* {
+    outline-style: none;
+    outline-width: 0;
+    -gtk-icon-shadow: none;
+    text-shadow: none;
+}
+
 window {
-    background-color: #0A091E;
-    color: #FFFFFF;
+    background-color: #0e1a33;
+    color: #e0e0e0;
 }
 
-/* Header bar */
-headerbar {
-    background-color: #141235;
+.helix-main {
+    background-color: #0e1a33;
+}
+
+/* ===== Tab Row ===== */
+.helix-tab-row {
+    background-color: #0a1225;
     background-image: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 4px 8px;
-    color: #FFFFFF;
+    padding: 4px 0 0 8px;
+    min-height: 42px;
 }
 
-headerbar .title {
-    color: #FFFFFF;
-}
-
-/* Address bar */
-.helix-address-bar {
-    background-color: #1E1B45;
-    background-image: none;
-    border-radius: 8px;
-    border: 1px solid rgba(139, 139, 255, 0.2);
-    padding: 6px 12px;
-    color: #FFFFFF;
-    font-size: 13px;
-    min-height: 32px;
-}
-
-.helix-address-bar:focus {
-    border-color: #8B8BFF;
-    box-shadow: 0 0 0 2px rgba(139, 139, 255, 0.15);
-}
-
-/* Tab bar */
 .helix-tab-bar {
-    background-color: #0D0C24;
-    padding: 4px 4px 0;
-    min-height: 36px;
+    background-color: transparent;
+    background-image: none;
 }
 
-/* Individual tabs */
+/* ===== Tab ===== */
 .helix-tab {
-    background-color: #141235;
+    background-color: rgba(255, 255, 255, 0.04);
     background-image: none;
-    border-radius: 8px 8px 0 0;
-    padding: 6px 12px;
+    border-radius: 10px 10px 0 0;
     margin: 0 1px;
-    color: #A0A0D0;
-    font-size: 12px;
-    font-weight: 500;
-    min-width: 120px;
-    max-width: 220px;
+    padding: 0;
+    min-width: 160px;
     border: none;
     box-shadow: none;
 }
 
-.helix-tab:hover {
-    background-color: #1E1B45;
+.helix-tab.active {
+    background-color: #16213e;
     background-image: none;
-    color: #FFFFFF;
 }
 
-.helix-tab.active {
-    background-color: #1E1B45;
+.helix-tab:hover {
+    background-color: rgba(255, 255, 255, 0.07);
     background-image: none;
-    color: #FFFFFF;
-    border-bottom: 2px solid #8B8BFF;
+}
+
+.helix-tab.active:hover {
+    background-color: #16213e;
+    background-image: none;
 }
 
 .helix-tab.incognito {
-    background-color: #1a1540;
-    background-image: none;
-    border-left: 2px solid #FF7EB3;
+    border-top: 2px solid #e94560;
 }
 
-.helix-tab-close {
-    border-radius: 50%;
-    padding: 2px;
-    min-width: 18px;
-    min-height: 18px;
+/* Tab title button */
+.helix-tab-title-btn {
     background: transparent;
     background-image: none;
     border: none;
     box-shadow: none;
+    padding: 8px 6px 8px 14px;
+    border-radius: 10px 0 0 0;
+    min-height: 30px;
+}
+
+.helix-tab-title-btn:hover {
+    background: transparent;
+    background-image: none;
+}
+
+.helix-tab-title-btn label {
+    color: #6a7a9a;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.helix-tab.active .helix-tab-title-btn label {
+    color: #e0e0e0;
+    font-weight: 600;
+}
+
+/* Tab close button */
+.helix-tab-close {
+    background: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 6px;
+    padding: 2px 6px;
+    margin: 4px 4px 4px 0;
+    min-width: 22px;
+    min-height: 22px;
+    color: #4a5a7a;
+    font-size: 10px;
 }
 
 .helix-tab-close:hover {
-    background-color: rgba(255, 126, 179, 0.3);
+    background-color: rgba(233, 69, 96, 0.3);
+    background-image: none;
+    color: #e94560;
+}
+
+.helix-tab-close:active {
+    background-color: rgba(233, 69, 96, 0.5);
     background-image: none;
 }
 
@@ -101,177 +121,351 @@ headerbar .title {
     border: none;
     box-shadow: none;
     border-radius: 8px;
-    padding: 4px 8px;
-    color: #A0A0D0;
+    padding: 4px 10px;
+    min-width: 32px;
+    min-height: 32px;
+    color: #6a7a9a;
+    font-size: 18px;
 }
 
 .helix-new-tab-btn:hover {
-    background-color: #1E1B45;
+    background-color: rgba(139, 139, 255, 0.15);
     background-image: none;
-    color: #8B8BFF;
+    color: #8b8bff;
 }
 
-/* Navigation buttons */
-headerbar button {
+/* ===== Window Control Buttons ===== */
+.helix-win-btn {
     background: transparent;
     background-image: none;
     border: none;
     box-shadow: none;
-    border-radius: 6px;
-    padding: 4px 8px;
-    color: #A0A0D0;
-    min-width: 32px;
-    min-height: 32px;
+    border-radius: 0;
+    padding: 8px 16px;
+    min-width: 46px;
+    min-height: 38px;
+    color: #6a7a9a;
+    font-size: 12px;
 }
 
-headerbar button:hover {
-    background-color: #1E1B45;
+.helix-win-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
     background-image: none;
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
-headerbar button:disabled {
+.helix-win-close:hover {
+    background-color: #e81123;
+    background-image: none;
+    color: #ffffff;
+}
+
+/* ===== Navigation Row ===== */
+.helix-nav-row {
+    background-color: #16213e;
+    background-image: none;
+    padding: 6px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Nav buttons */
+.helix-nav-btn {
+    background: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 8px;
+    padding: 4px 8px;
+    min-width: 36px;
+    min-height: 36px;
+    color: #8a8ab5;
+    font-size: 15px;
+}
+
+.helix-nav-btn:hover {
+    background-color: rgba(139, 139, 255, 0.12);
+    background-image: none;
+    color: #c0c0ff;
+}
+
+.helix-nav-btn:active {
+    background-color: rgba(139, 139, 255, 0.22);
+    background-image: none;
+}
+
+.helix-nav-btn:disabled {
     opacity: 0.3;
 }
 
-/* Progress bar */
-.helix-progress {
-    min-height: 2px;
-    background-color: transparent;
-}
-
-.helix-progress progress {
-    background-color: #8B8BFF;
-    border-radius: 1px;
-    min-height: 2px;
-}
-
-.helix-progress trough {
-    background-color: transparent;
-    min-height: 2px;
-}
-
-/* Find bar */
-.helix-find-bar {
-    background-color: #141235;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 6px 12px;
-}
-
-.helix-find-bar entry {
-    background-color: #1E1B45;
+/* ===== Address Bar ===== */
+.helix-address-bar,
+.helix-address-bar:backdrop {
+    background-color: #0f3460;
     background-image: none;
-    border-radius: 6px;
-    border: 1px solid rgba(139, 139, 255, 0.2);
-    color: #FFFFFF;
-    padding: 4px 8px;
+    border-radius: 22px;
+    border: 2px solid transparent;
+    padding: 6px 16px;
+    color: #e0e0e0;
+    font-size: 14px;
+    min-height: 36px;
+    box-shadow: none;
 }
 
-/* Menu */
-popover, .popup {
-    background-color: #141235;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 4px;
-    color: #FFFFFF;
+.helix-address-bar:focus {
+    background-color: #1a1a4e;
+    border-color: #533483;
 }
 
-modelbutton {
-    color: #FFFFFF;
-    padding: 8px 12px;
-    border-radius: 8px;
+.helix-address-bar:hover:not(:focus) {
+    background-color: #132d56;
 }
 
-modelbutton:hover {
-    background-color: #1E1B45;
+.helix-address-bar image {
+    -gtk-icon-shadow: none;
+    color: #6a7a9a;
 }
 
-/* Tab count badge */
+.helix-address-bar selection {
+    background-color: rgba(83, 52, 131, 0.5);
+    color: #ffffff;
+}
+
+/* ===== Tab Count Badge ===== */
 .helix-tab-count {
     background: transparent;
     background-image: none;
-    border: 1px solid #8B8BFF;
-    border-radius: 12px;
-    color: #8B8BFF;
-    font-weight: bold;
+    border: 1.5px solid #533483;
+    border-radius: 6px;
+    color: #8b8bff;
+    font-weight: 700;
+    font-size: 11px;
     min-width: 28px;
+    min-height: 24px;
     padding: 2px 6px;
     box-shadow: none;
 }
 
-/* Scrollbar */
-scrollbar {
+.helix-tab-count:hover {
+    background-color: rgba(83, 52, 131, 0.2);
+    background-image: none;
+    border-color: #8b8bff;
+}
+
+/* ===== Progress Bar ===== */
+.helix-progress,
+.helix-progress trough {
+    min-height: 2px;
     background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
 }
 
-scrollbar slider {
-    background-color: rgba(139, 139, 255, 0.3);
-    border-radius: 4px;
-    min-width: 6px;
-    min-height: 6px;
+.helix-progress progress {
+    background-color: #533483;
+    background-image: none;
+    border-radius: 1px;
+    min-height: 2px;
+    border: none;
+    box-shadow: none;
 }
 
-scrollbar slider:hover {
-    background-color: rgba(139, 139, 255, 0.5);
-}
-
-/* Dialog / Settings */
-dialog {
-    background-color: #0A091E;
-    color: #FFFFFF;
-}
-
-notebook {
-    background-color: #0A091E;
-}
-
-notebook header {
-    background-color: #141235;
-}
-
-notebook tab {
-    background-color: #141235;
-    color: #A0A0D0;
+/* ===== Find Bar ===== */
+.helix-find-bar {
+    background-color: #16213e;
+    background-image: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
     padding: 8px 16px;
+}
+
+/* ===== Popover / Menu ===== */
+popover,
+popover.background,
+.popup {
+    background-color: #16213e;
+    background-image: none;
+    border: 1px solid #0f3460;
+    border-radius: 12px;
+    padding: 6px;
+    color: #e0e0e0;
+}
+
+popover contents {
+    background-color: transparent;
+    background-image: none;
     border: none;
 }
 
-notebook tab:checked {
-    background-color: #1E1B45;
-    color: #FFFFFF;
-    border-bottom: 2px solid #8B8BFF;
-}
-
-switch {
-    background-color: #1E1B45;
-    border-radius: 12px;
-}
-
-switch:checked {
-    background-color: #8B8BFF;
-}
-
-combobox {
-    background-color: #1E1B45;
-    color: #FFFFFF;
-}
-
-entry {
-    background-color: #1E1B45;
+modelbutton {
+    color: #e0e0e0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: transparent;
     background-image: none;
-    color: #FFFFFF;
-    border: 1px solid rgba(139, 139, 255, 0.2);
-    border-radius: 6px;
 }
 
-button {
-    color: #FFFFFF;
+modelbutton:hover {
+    background-color: rgba(83, 52, 131, 0.25);
+    background-image: none;
+    color: #ffffff;
 }
 
+/* ===== Generic Entry ===== */
+entry,
+entry:backdrop {
+    background-color: #0f3460;
+    background-image: none;
+    color: #e0e0e0;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    box-shadow: none;
+    padding: 6px 10px;
+}
+
+entry:focus {
+    border-color: #533483;
+}
+
+entry selection {
+    background-color: rgba(83, 52, 131, 0.5);
+    color: #ffffff;
+}
+
+/* ===== Generic Button ===== */
+button,
+button:backdrop {
+    background: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    color: #e0e0e0;
+    border-radius: 8px;
+    -gtk-icon-shadow: none;
+}
+
+button image {
+    -gtk-icon-shadow: none;
+}
+
+/* ===== Labels ===== */
 label {
-    color: #FFFFFF;
+    color: #e0e0e0;
 }
 
 .dim-label {
-    color: #A0A0D0;
+    color: #6a7a9a;
+}
+
+/* ===== Scrollbar ===== */
+scrollbar {
+    background-color: transparent;
+    border: none;
+}
+
+scrollbar slider {
+    background-color: rgba(83, 52, 131, 0.35);
+    border-radius: 100px;
+    min-width: 4px;
+    min-height: 4px;
+    border: none;
+}
+
+scrollbar slider:hover {
+    background-color: rgba(83, 52, 131, 0.55);
+}
+
+scrollbar trough {
+    background-color: transparent;
+    border: none;
+}
+
+/* ===== Dialog / Settings ===== */
+dialog {
+    background-color: #0e1a33;
+    color: #e0e0e0;
+}
+
+notebook {
+    background-color: #0e1a33;
+    background-image: none;
+}
+
+notebook header {
+    background-color: #16213e;
+    background-image: none;
+}
+
+notebook tab {
+    background-color: transparent;
+    background-image: none;
+    color: #6a7a9a;
+    padding: 10px 20px;
+    border: none;
+    box-shadow: none;
+}
+
+notebook tab:checked {
+    color: #ffffff;
+    border-bottom: 2px solid #533483;
+}
+
+switch {
+    background-color: #2a2a4e;
+    background-image: none;
+    border-radius: 100px;
+    border: none;
+    box-shadow: none;
+}
+
+switch:checked {
+    background-color: #533483;
+    background-image: none;
+}
+
+switch slider {
+    background-color: #e0e0e0;
+    background-image: none;
+    border-radius: 50%;
+    border: none;
+    box-shadow: none;
+}
+
+combobox button {
+    background-color: #0f3460;
+    background-image: none;
+    color: #e0e0e0;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+tooltip,
+tooltip.background {
+    background-color: #16213e;
+    background-image: none;
+    border: 1px solid #0f3460;
+    border-radius: 8px;
+    color: #e0e0e0;
+}
+
+menu {
+    background-color: #16213e;
+    border: 1px solid #0f3460;
+    border-radius: 8px;
+    color: #e0e0e0;
+}
+
+menuitem {
+    padding: 8px 16px;
+    color: #e0e0e0;
+    border-radius: 6px;
+}
+
+menuitem:hover {
+    background-color: rgba(83, 52, 131, 0.25);
+    color: #ffffff;
+}
+
+separator {
+    background-color: #0f3460;
+    min-height: 1px;
 }

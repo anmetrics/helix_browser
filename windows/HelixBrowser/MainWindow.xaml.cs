@@ -367,7 +367,6 @@ public sealed partial class MainWindow : Window
             }
         };
     }
-}
 
     // MARK: - Session Save/Restore
 

@@ -24,6 +24,12 @@ class HelixBrowserApp(Gtk.Application):
         self._load_css()
 
     def _load_css(self):
+        # Force minimal GTK theme so Ubuntu/GNOME theme doesn't override our styles
+        settings = Gtk.Settings.get_default()
+        if settings:
+            settings.set_property("gtk-theme-name", "Adwaita")
+            settings.set_property("gtk-application-prefer-dark-theme", True)
+
         css_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "style.css")
         if os.path.exists(css_path):
             provider = Gtk.CssProvider()
@@ -31,7 +37,7 @@ class HelixBrowserApp(Gtk.Application):
             screen = Gdk.Screen.get_default()
             if screen:
                 Gtk.StyleContext.add_provider_for_screen(
-                    screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+                    screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER + 100
                 )
 
     def on_activate(self, app):

@@ -10,24 +10,29 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
+        android:fitsSystemWindows="true"
+        android:background="@color/toolbar_background"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Tabs"
+            app:titleTextColor="@color/text_primary"
             app:navigationIcon="@drawable/ic_close"
+            app:navigationIconTint="@color/text_primary"
             android:background="@color/toolbar_background" />
 
         <TextView
             android:id="@+id/tabCountText"
             android:layout_width="match_parent"
-            android:layout_height="32dp"
+            android:layout_height="28dp"
             android:gravity="center"
             android:text="0 tab"
             android:textColor="@color/text_secondary"
-            android:textSize="13sp"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-medium"
             android:background="@color/toolbar_background" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -35,21 +40,21 @@
         android:id="@+id/tabsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="12dp"
-        android:paddingBottom="180dp"
+        android:padding="8dp"
+        android:paddingBottom="200dp"
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Bottom section: banner ad + action buttons -->
+    <!-- Bottom section: premium banner + action buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
         android:background="@color/toolbar_background"
-        android:elevation="8dp">
+        android:elevation="12dp">
 
-        <!-- Premium Banner Ad -->
+        <!-- ===== Premium Banner ===== -->
         <LinearLayout
             android:id="@+id/bannerAdContainer"
             android:layout_width="match_parent"
@@ -57,101 +62,139 @@
             android:orientation="vertical"
             android:visibility="visible">
 
-            <!-- Ad content -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#2A2755" />
+
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="64dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:background="#1A1845"
+                android:background="@drawable/bg_premium_banner"
                 android:paddingHorizontal="16dp">
+
+                <!-- Glow icon -->
+                <TextView
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="✦"
+                    android:textSize="20sp"
+                    android:textColor="#FFD700"
+                    android:background="@drawable/bg_premium_icon" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="⚡ Helix Premium"
+                        android:text="Helix Premium"
                         android:textColor="#FFFFFF"
                         android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium" />
 
                     <TextView
                         android:id="@+id/adSubtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Remove ads &amp; unlock all features"
-                        android:textColor="#A0A0D0"
-                        android:textSize="11sp" />
+                        android:text="Ad-free browsing + exclusive features"
+                        android:textColor="#9090C0"
+                        android:textSize="11sp"
+                        android:layout_marginTop="1dp" />
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
+                <!-- Subscribe button with gradient -->
+                <TextView
                     android:id="@+id/btnSubscribe"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="34dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="16dp"
                     android:text="$2.99/mo"
+                    android:textColor="#FFFFFF"
                     android:textSize="12sp"
-                    android:textAllCaps="false"
-                    app:cornerRadius="18dp"
-                    app:backgroundTint="@color/accent_purple" />
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    android:background="@drawable/bg_premium_button"
+                    android:clickable="true"
+                    android:focusable="true" />
 
                 <ImageButton
                     android:id="@+id/btnDismissAd"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_marginStart="4dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginStart="6dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_close"
-                    android:padding="8dp"
-                    android:alpha="0.5"
+                    android:padding="6dp"
+                    android:alpha="0.35"
                     android:contentDescription="Dismiss" />
             </LinearLayout>
 
-            <!-- Separator -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#2A2755" />
         </LinearLayout>
 
-        <!-- Action buttons -->
+        <!-- ===== Action Buttons ===== -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="60dp"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:gravity="center"
+            android:paddingHorizontal="8dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnIncognito"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="42dp"
                 android:layout_weight="1"
-                android:layout_margin="8dp"
-                android:text="🕵️ Ẩn danh"
-                android:textSize="13sp"
+                android:layout_marginHorizontal="4dp"
+                android:text="Private"
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_incognito"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:cornerRadius="12dp"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnNewTab"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="42dp"
                 android:layout_weight="1"
-                android:layout_margin="8dp"
-                android:text="+ Tab mới"
-                android:textSize="13sp" />
+                android:layout_marginHorizontal="4dp"
+                android:text="New Tab"
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_add"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:cornerRadius="12dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCloseAll"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="42dp"
                 android:layout_weight="1"
-                android:layout_margin="8dp"
-                android:text="Đóng tất cả"
-                android:textSize="13sp"
+                android:layout_marginHorizontal="4dp"
+                android:text="Close All"
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_close"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:cornerRadius="12dp"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
         </LinearLayout>
 

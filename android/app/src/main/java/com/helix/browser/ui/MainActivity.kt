@@ -218,6 +218,7 @@ class MainActivity : BaseActivity() {
             }
             val intent = Intent(this, TabSwitcherActivity::class.java)
             startActivityForResult(intent, REQUEST_TAB_SWITCHER)
+            overridePendingTransition(R.anim.slide_up, R.anim.fade_out)
         }
         binding.btnMenu.setOnClickListener { showMoreOptionsMenu() }
     }

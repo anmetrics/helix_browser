@@ -17,6 +17,7 @@ class BrowserWindow(Gtk.ApplicationWindow):
         super().__init__(**kwargs)
         self.set_default_size(1200, 800)
         self.set_title("Helix Browser")
+        self.set_decorated(False)
 
         self.prefs = Prefs()
         self.ad_block = AdBlockEngine()
@@ -24,11 +25,12 @@ class BrowserWindow(Gtk.ApplicationWindow):
         self.tab_manager = TabManager()
         self.db = Database.get_instance()
         self._current_webview = None
+        self._is_maximized = False
 
         self._build_ui()
+        self._apply_colors()
         self._setup_shortcuts()
 
-        # Restore previous session or create new tab
         if self.prefs.is_restore_tabs and self.tab_manager.restore_session():
             for tab in self.tab_manager.tabs:
                 webview = self._create_webview(tab.is_incognito)
@@ -44,39 +46,85 @@ class BrowserWindow(Gtk.ApplicationWindow):
         else:
             self._new_tab()
 
-        # Save session on close
         self.connect("delete-event", self._on_window_close)
+
+    def _apply_colors(self):
+        """Apply colors programmatically to guarantee they work."""
+        colors = {
+            "helix-tab-row": Gdk.RGBA(0.04, 0.07, 0.15, 1.0),     # #0a1225
+            "helix-nav-row": Gdk.RGBA(0.086, 0.13, 0.24, 1.0),    # #16213e
+            "helix-main": Gdk.RGBA(0.055, 0.1, 0.2, 1.0),         # #0e1a33
+        }
+        # These are applied via CSS since override_background_color is deprecated
 
     def _build_ui(self):
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        main_box.get_style_context().add_class("helix-main")
         self.add(main_box)
 
-        # --- Header bar ---
-        self.header = Gtk.HeaderBar()
-        self.header.set_show_close_button(True)
-        self.header.set_title("Helix Browser")
-        self.header.get_style_context().add_class("helix-toolbar")
-        self.set_titlebar(self.header)
+        # === Row 1: Tab bar + window controls ===
+        tab_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        tab_row.get_style_context().add_class("helix-tab-row")
 
-        # Nav buttons
+        # Tab scroll area
+        tab_scroll = Gtk.ScrolledWindow()
+        tab_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
+        tab_scroll.set_hexpand(True)
+        self.tab_bar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        self.tab_bar_box.get_style_context().add_class("helix-tab-bar")
+        tab_scroll.add(self.tab_bar_box)
+        tab_row.pack_start(tab_scroll, True, True, 0)
+
+        # New tab button
+        new_tab_btn = Gtk.Button(label="+")
+        new_tab_btn.set_relief(Gtk.ReliefStyle.NONE)
+        new_tab_btn.get_style_context().add_class("helix-new-tab-btn")
+        new_tab_btn.set_tooltip_text("New Tab (Ctrl+T)")
+        new_tab_btn.connect("clicked", lambda b: self._new_tab())
+        tab_row.pack_start(new_tab_btn, False, False, 4)
+
+        # Window control buttons
+        for label_text, css_extra, callback in [
+            ("\u2500", None, lambda b: self.iconify()),
+            ("\u25A1", None, lambda b: self._toggle_maximize()),
+            ("\u2715", "helix-win-close", lambda b: self.close()),
+        ]:
+            btn = Gtk.Button(label=label_text)
+            btn.set_relief(Gtk.ReliefStyle.NONE)
+            btn.get_style_context().add_class("helix-win-btn")
+            if css_extra:
+                btn.get_style_context().add_class(css_extra)
+            btn.connect("clicked", callback)
+            tab_row.pack_end(btn, False, False, 0)
+
+        main_box.pack_start(tab_row, False, False, 0)
+
+        # === Row 2: Navigation + Address bar ===
+        nav_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        nav_row.get_style_context().add_class("helix-nav-row")
+
+        # Nav buttons using unicode text (no GTK icons = no system theme)
         nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-        self.back_btn = Gtk.Button.new_from_icon_name("go-previous-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-        self.back_btn.set_tooltip_text("Back")
+        self.back_btn = Gtk.Button(label="\u25C0")
+        self.back_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.back_btn.get_style_context().add_class("helix-nav-btn")
         self.back_btn.connect("clicked", lambda b: self._go_back())
-        self.forward_btn = Gtk.Button.new_from_icon_name("go-next-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-        self.forward_btn.set_tooltip_text("Forward")
+        self.forward_btn = Gtk.Button(label="\u25B6")
+        self.forward_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.forward_btn.get_style_context().add_class("helix-nav-btn")
         self.forward_btn.connect("clicked", lambda b: self._go_forward())
-        self.reload_btn = Gtk.Button.new_from_icon_name("view-refresh-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-        self.reload_btn.set_tooltip_text("Reload")
+        self.reload_btn = Gtk.Button(label="\u27F3")
+        self.reload_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.reload_btn.get_style_context().add_class("helix-nav-btn")
         self.reload_btn.connect("clicked", lambda b: self._reload())
-        self.home_btn = Gtk.Button.new_from_icon_name("go-home-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-        self.home_btn.set_tooltip_text("Home")
+        self.home_btn = Gtk.Button(label="\u2302")
+        self.home_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.home_btn.get_style_context().add_class("helix-nav-btn")
         self.home_btn.connect("clicked", lambda b: self.load_url(self.prefs.homepage))
-        nav_box.pack_start(self.back_btn, False, False, 0)
-        nav_box.pack_start(self.forward_btn, False, False, 0)
-        nav_box.pack_start(self.reload_btn, False, False, 0)
-        nav_box.pack_start(self.home_btn, False, False, 0)
-        self.header.pack_start(nav_box)
+
+        for btn in [self.back_btn, self.forward_btn, self.reload_btn, self.home_btn]:
+            nav_box.pack_start(btn, False, False, 0)
+        nav_row.pack_start(nav_box, False, False, 0)
 
         # Address bar
         self.url_entry = Gtk.Entry()
@@ -84,45 +132,30 @@ class BrowserWindow(Gtk.ApplicationWindow):
         self.url_entry.set_hexpand(True)
         self.url_entry.get_style_context().add_class("helix-address-bar")
         self.url_entry.connect("activate", self._on_url_activate)
-        self.header.set_custom_title(self.url_entry)
+        nav_row.pack_start(self.url_entry, True, True, 0)
 
-        # Right buttons
-        right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-        self.bookmark_btn = Gtk.Button.new_from_icon_name("starred-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-        self.bookmark_btn.set_tooltip_text("Bookmark (Ctrl+D)")
+        # Right action buttons
+        action_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        self.bookmark_btn = Gtk.Button(label="\u2606")
+        self.bookmark_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.bookmark_btn.get_style_context().add_class("helix-nav-btn")
         self.bookmark_btn.connect("clicked", lambda b: self._toggle_bookmark())
 
         self.tabs_btn = Gtk.Button(label="1")
-        self.tabs_btn.set_tooltip_text("Tabs")
+        self.tabs_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.tabs_btn.get_style_context().add_class("helix-tab-count")
 
-        menu_btn = Gtk.MenuButton()
-        menu_btn.set_image(Gtk.Image.new_from_icon_name("open-menu-symbolic", Gtk.IconSize.SMALL_TOOLBAR))
+        menu_btn = Gtk.MenuButton(label="\u22EE")
+        menu_btn.set_relief(Gtk.ReliefStyle.NONE)
+        menu_btn.get_style_context().add_class("helix-nav-btn")
         menu_btn.set_menu_model(self._build_menu())
 
-        right_box.pack_start(self.bookmark_btn, False, False, 0)
-        right_box.pack_start(self.tabs_btn, False, False, 0)
-        right_box.pack_start(menu_btn, False, False, 0)
-        self.header.pack_end(right_box)
+        action_box.pack_start(self.bookmark_btn, False, False, 0)
+        action_box.pack_start(self.tabs_btn, False, False, 0)
+        action_box.pack_start(menu_btn, False, False, 0)
+        nav_row.pack_end(action_box, False, False, 0)
 
-        # --- Tab bar ---
-        tab_bar_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        tab_bar_container.get_style_context().add_class("helix-tab-bar")
-
-        tab_scroll = Gtk.ScrolledWindow()
-        tab_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
-        tab_scroll.set_hexpand(True)
-        self.tab_bar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=1)
-        tab_scroll.add(self.tab_bar_box)
-        tab_bar_container.pack_start(tab_scroll, True, True, 0)
-
-        new_tab_btn = Gtk.Button.new_from_icon_name("list-add-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-        new_tab_btn.set_tooltip_text("New Tab (Ctrl+T)")
-        new_tab_btn.connect("clicked", lambda b: self._new_tab())
-        new_tab_btn.get_style_context().add_class("helix-new-tab-btn")
-        tab_bar_container.pack_end(new_tab_btn, False, False, 0)
-
-        main_box.pack_start(tab_bar_container, False, False, 0)
+        main_box.pack_start(nav_row, False, False, 0)
 
         # Progress bar
         self.progress_bar = Gtk.ProgressBar()
@@ -143,17 +176,40 @@ class BrowserWindow(Gtk.ApplicationWindow):
         self.find_entry.set_placeholder_text("Find on page...")
         self.find_entry.set_hexpand(True)
         self.find_entry.connect("activate", self._on_find)
-        find_next = Gtk.Button.new_from_icon_name("go-down-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-        find_next.connect("clicked", lambda b: self._find_next())
-        find_prev = Gtk.Button.new_from_icon_name("go-up-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
+        find_prev = Gtk.Button(label="\u25B2")
+        find_prev.set_relief(Gtk.ReliefStyle.NONE)
         find_prev.connect("clicked", lambda b: self._find_prev())
-        find_close = Gtk.Button.new_from_icon_name("window-close-symbolic", Gtk.IconSize.SMALL_TOOLBAR)
-        find_close.connect("clicked", lambda b: self.find_bar.hide())
+        find_next = Gtk.Button(label="\u25BC")
+        find_next.set_relief(Gtk.ReliefStyle.NONE)
+        find_next.connect("clicked", lambda b: self._find_next())
+        find_close_btn = Gtk.Button(label="\u2715")
+        find_close_btn.set_relief(Gtk.ReliefStyle.NONE)
+        find_close_btn.connect("clicked", lambda b: self.find_bar.hide())
         self.find_bar.pack_start(self.find_entry, True, True, 0)
         self.find_bar.pack_start(find_prev, False, False, 0)
         self.find_bar.pack_start(find_next, False, False, 0)
-        self.find_bar.pack_start(find_close, False, False, 0)
+        self.find_bar.pack_start(find_close_btn, False, False, 0)
         main_box.pack_end(self.find_bar, False, False, 0)
+
+        # Enable window move by dragging empty tab bar area
+        tab_scroll.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        tab_scroll.connect("button-press-event", self._on_empty_area_press)
+
+    def _on_empty_area_press(self, widget, event):
+        """Only handle drag on empty area of tab bar."""
+        if event.button == 1 and event.type == Gdk.EventType.BUTTON_PRESS:
+            self.begin_move_drag(event.button, int(event.x_root), int(event.y_root), event.time)
+        elif event.button == 1 and event.type == Gdk.EventType._2BUTTON_PRESS:
+            self._toggle_maximize()
+        return False
+
+    def _toggle_maximize(self):
+        if self._is_maximized:
+            self.unmaximize()
+            self._is_maximized = False
+        else:
+            self.maximize()
+            self._is_maximized = True
 
     def _build_menu(self):
         menu = Gio.Menu()
@@ -228,10 +284,8 @@ class BrowserWindow(Gtk.ApplicationWindow):
         idx = next((i for i, t in enumerate(self.tab_manager.tabs) if t.id == tab.id), -1)
         if idx >= 0:
             self.tab_manager.switch_to_tab(idx)
-        # Remove current webview
         for child in self.webview_container.get_children():
             self.webview_container.remove(child)
-        # Add tab's webview
         if tab.webview:
             self.webview_container.pack_start(tab.webview, True, True, 0)
             tab.webview.show()
@@ -246,34 +300,40 @@ class BrowserWindow(Gtk.ApplicationWindow):
 
         for i, tab in enumerate(self.tab_manager.tabs):
             is_active = (i == self.tab_manager.active_tab_index)
-            btn = Gtk.Button()
-            ctx = btn.get_style_context()
-            ctx.add_class("helix-tab")
+
+            # Each tab is a simple HBox - no EventBox, no nested buttons
+            tab_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            tab_box.get_style_context().add_class("helix-tab")
             if is_active:
-                ctx.add_class("active")
+                tab_box.get_style_context().add_class("active")
             if tab.is_incognito:
-                ctx.add_class("incognito")
+                tab_box.get_style_context().add_class("incognito")
 
-            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-            if tab.is_pinned:
-                pin_icon = Gtk.Image.new_from_icon_name("view-pin-symbolic", Gtk.IconSize.MENU)
-                box.pack_start(pin_icon, False, False, 0)
-            label = Gtk.Label(label=tab.title[:20] if tab.title else "New Tab")
-            label.set_ellipsize(Pango.EllipsizeMode.END)
-            label.set_max_width_chars(18)
-            box.pack_start(label, True, True, 0)
+            # Tab title as a clickable button (not wrapping other buttons)
+            title_btn = Gtk.Button()
+            title_btn.set_relief(Gtk.ReliefStyle.NONE)
+            title_btn.get_style_context().add_class("helix-tab-title-btn")
+            title_text = tab.title[:22] if tab.title else "New Tab"
+            title_label = Gtk.Label(label=title_text)
+            title_label.set_ellipsize(Pango.EllipsizeMode.END)
+            title_label.set_max_width_chars(20)
+            title_label.set_xalign(0)
+            title_btn.add(title_label)
+            title_btn.set_hexpand(True)
+            tab_ref = tab
+            title_btn.connect("clicked", lambda b, t=tab_ref: self._switch_to_tab(t))
+            tab_box.pack_start(title_btn, True, True, 0)
 
+            # Close button - separate sibling, not nested inside title_btn
             if not tab.is_pinned:
-                close_btn = Gtk.Button.new_from_icon_name("window-close-symbolic", Gtk.IconSize.MENU)
+                close_btn = Gtk.Button(label="\u2715")
+                close_btn.set_relief(Gtk.ReliefStyle.NONE)
                 close_btn.get_style_context().add_class("helix-tab-close")
                 tab_idx = i
                 close_btn.connect("clicked", lambda b, idx=tab_idx: self._close_tab_by_index(idx))
-                box.pack_end(close_btn, False, False, 0)
+                tab_box.pack_end(close_btn, False, False, 0)
 
-            btn.add(box)
-            tab_ref = tab
-            btn.connect("clicked", lambda b, t=tab_ref: self._switch_to_tab(t))
-            self.tab_bar_box.pack_start(btn, False, False, 0)
+            self.tab_bar_box.pack_start(tab_box, False, False, 0)
 
         self.tabs_btn.set_label(str(len(self.tab_manager.tabs)))
         self.tab_bar_box.show_all()
@@ -316,7 +376,6 @@ class BrowserWindow(Gtk.ApplicationWindow):
         webview.connect("notify::estimated-load-progress", self._on_progress)
         webview.connect("decide-policy", self._on_decide_policy)
 
-        # Inject privacy scripts
         ucm = webview.get_user_content_manager()
         all_scripts = self.privacy.get_all_scripts(self.prefs)
         if all_scripts.strip():
@@ -452,10 +511,8 @@ class BrowserWindow(Gtk.ApplicationWindow):
             return
         if self.db.is_bookmarked(tab.url):
             self.db.remove_bookmark(tab.url)
-            self.bookmark_btn.set_image(Gtk.Image.new_from_icon_name("non-starred-symbolic", Gtk.IconSize.SMALL_TOOLBAR))
         else:
             self.db.add_bookmark(tab.url, tab.title)
-            self.bookmark_btn.set_image(Gtk.Image.new_from_icon_name("starred-symbolic", Gtk.IconSize.SMALL_TOOLBAR))
 
     # --- Dialogs ---
 
@@ -484,15 +541,15 @@ class BrowserWindow(Gtk.ApplicationWindow):
         return """<!DOCTYPE html>
 <html><head><meta charset='utf-8'><style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,sans-serif;background:#0A091E;color:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:60px 20px}
-.logo{font-size:72px;margin-bottom:16px}
-h1{font-size:28px;font-weight:700;margin-bottom:6px}
-.sub{color:#A0A0D0;font-size:14px;margin-bottom:40px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:500px}
-.fav{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-decoration:none}
-.fav-icon{width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:24px;transition:all .2s}
-.fav-icon:hover{background:rgba(255,255,255,0.08);transform:scale(1.08)}
-.fav span{font-size:11px;color:#A0A0D0}
+body{font-family:system-ui,sans-serif;background:#0e1a33;color:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:80px 20px}
+.logo{font-size:64px;margin-bottom:12px}
+h1{font-size:26px;font-weight:700;margin-bottom:6px;background:linear-gradient(135deg,#8b8bff,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:#7a7aaa;font-size:14px;margin-bottom:48px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:520px}
+.fav{display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;text-decoration:none}
+.fav-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,rgba(83,52,131,0.3),rgba(15,52,96,0.5));border:1px solid rgba(139,139,255,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;color:#8b8bff;font-weight:700;transition:all .2s}
+.fav-icon:hover{background:linear-gradient(135deg,rgba(83,52,131,0.5),rgba(15,52,96,0.7));transform:scale(1.1);border-color:rgba(139,139,255,0.3)}
+.fav span{font-size:11px;color:#7a7aaa}
 </style></head><body>
 <div class='logo'>&#127760;</div>
 <h1>Helix Browser</h1>

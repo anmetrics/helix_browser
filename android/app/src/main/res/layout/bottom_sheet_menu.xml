@@ -7,28 +7,91 @@
     android:background="@color/sheet_background"
     android:paddingBottom="24dp">
 
-    <!-- Handle -->
+    <!-- Handle bar -->
     <View
         android:layout_width="40dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="8dp"
-        android:background="@color/divider_color"
-        android:backgroundTint="@color/divider_color" />
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_sheet_handle" />
 
-    <!-- New Tab -->
-    <LinearLayout android:id="@+id/menu_new_tab"
-        style="@style/MenuItemStyle">
-        <ImageView android:src="@drawable/ic_add" style="@style/MenuIconStyle" />
-        <TextView android:text="Tab mới" style="@style/MenuTextStyle" />
-    </LinearLayout>
+    <!-- Quick actions row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="12dp">
 
-    <!-- Incognito -->
-    <LinearLayout android:id="@+id/menu_incognito_tab"
-        style="@style/MenuItemStyle">
-        <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIconStyle" />
-        <TextView android:text="Tab ẩn danh" style="@style/MenuTextStyle" />
+        <!-- New Tab -->
+        <LinearLayout
+            android:id="@+id/menu_new_tab"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:src="@drawable/ic_add" style="@style/MenuIconStyle"
+                android:layout_width="28dp" android:layout_height="28dp" />
+            <TextView android:text="Tab mới" android:textColor="@color/text_secondary"
+                android:textSize="10sp" android:layout_marginTop="4dp"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Incognito -->
+        <LinearLayout
+            android:id="@+id/menu_incognito_tab"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIconStyle"
+                android:layout_width="28dp" android:layout_height="28dp" />
+            <TextView android:text="Ẩn danh" android:textColor="@color/text_secondary"
+                android:textSize="10sp" android:layout_marginTop="4dp"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Share -->
+        <LinearLayout
+            android:id="@+id/menu_share"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:src="@drawable/ic_share" style="@style/MenuIconStyle"
+                android:layout_width="28dp" android:layout_height="28dp" />
+            <TextView android:text="Chia sẻ" android:textColor="@color/text_secondary"
+                android:textSize="10sp" android:layout_marginTop="4dp"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Find -->
+        <LinearLayout
+            android:id="@+id/menu_find_in_page"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:src="@drawable/ic_search" style="@style/MenuIconStyle"
+                android:layout_width="28dp" android:layout_height="28dp" />
+            <TextView android:text="Tìm" android:textColor="@color/text_secondary"
+                android:textSize="10sp" android:layout_marginTop="4dp"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
     </LinearLayout>
 
     <View style="@style/MenuDivider" />
@@ -37,14 +100,14 @@
     <LinearLayout android:id="@+id/menu_bookmark"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_bookmark" style="@style/MenuIconStyle" />
-        <TextView android:text="Thêm bookmark" style="@style/MenuTextStyle" />
+        <TextView android:text="Đánh dấu" style="@style/MenuTextStyle" />
     </LinearLayout>
 
     <!-- Bookmarks list -->
     <LinearLayout android:id="@+id/menu_bookmarks"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_bookmark_filled" style="@style/MenuIconStyle" />
-        <TextView android:text="Bookmarks" style="@style/MenuTextStyle" />
+        <TextView android:text="Trang đánh dấu" style="@style/MenuTextStyle" />
     </LinearLayout>
 
     <!-- History -->
@@ -76,32 +139,17 @@
             android:checked="true" />
     </LinearLayout>
 
-    <View style="@style/MenuDivider" />
-
-    <!-- Find in page -->
-    <LinearLayout android:id="@+id/menu_find_in_page"
-        style="@style/MenuItemStyle">
-        <ImageView android:src="@drawable/ic_search" style="@style/MenuIconStyle" />
-        <TextView android:text="Tìm trong trang" style="@style/MenuTextStyle" />
-    </LinearLayout>
-
+    <!-- Desktop Site -->
     <LinearLayout android:id="@+id/menu_desktop_site"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_desktop" style="@style/MenuIconStyle" />
-        <TextView android:text="Phiên bản máy tính" style="@style/MenuTextStyle"
+        <TextView android:text="Trang desktop" style="@style/MenuTextStyle"
             android:layout_weight="1" />
         <ImageView android:id="@+id/ic_check_desktop"
             android:src="@drawable/ic_check"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:visibility="gone" />
-    </LinearLayout>
-
-    <!-- Share -->
-    <LinearLayout android:id="@+id/menu_share"
-        style="@style/MenuItemStyle">
-        <ImageView android:src="@drawable/ic_share" style="@style/MenuIconStyle" />
-        <TextView android:text="Chia sẻ" style="@style/MenuTextStyle" />
     </LinearLayout>
 
     <View style="@style/MenuDivider" />

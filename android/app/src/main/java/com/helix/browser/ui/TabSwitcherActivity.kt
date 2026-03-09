@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.animation.AnimationUtils
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.helix.browser.HelixApp
+import com.helix.browser.R
 import com.helix.browser.billing.BillingManager
 import com.helix.browser.databinding.ActivityTabSwitcherBinding
 import com.helix.browser.ui.adapter.TabsAdapter
@@ -44,7 +46,8 @@ class TabSwitcherActivity : BaseActivity() {
                     adapter.submitList(tabManager.tabs.toMutableList())
                     binding.tabCountText.text = "${tabManager.tabCount} tab"
                 }
-            }
+            },
+            activeTabId = tabManager.currentTab?.id
         )
 
         binding.tabsRecyclerView.apply {
@@ -87,6 +90,17 @@ class TabSwitcherActivity : BaseActivity() {
 
         // --- Banner Ad / Premium ---
         setupBannerAd()
+
+        // Animate RecyclerView items
+        val layoutAnim = AnimationUtils.loadLayoutAnimation(
+            this, R.anim.layout_animation_fall_down
+        )
+        binding.tabsRecyclerView.layoutAnimation = layoutAnim
+    }
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.fade_in, R.anim.slide_down)
     }
 
     private fun setupBannerAd() {
