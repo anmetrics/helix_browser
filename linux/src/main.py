@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Helix Browser - Fast, Secure, Private Web Browser for Linux"""
 
+import os
 import sys
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 gi.require_version('WebKit', '6.0')
-from gi.repository import Gtk, Adw, Gio, GLib
+from gi.repository import Gtk, Adw, Gio, GLib, Gdk
 from browser_window import BrowserWindow
 
 
@@ -19,20 +20,20 @@ class HelixBrowserApp(Adw.Application):
         self.connect("activate", self.on_activate)
         self.connect("open", self.on_open)
 
-        # Load CSS
+    def do_startup(self):
+        Adw.Application.do_startup(self)
         self._load_css()
 
     def _load_css(self):
-        import os
-        css_path = os.path.join(os.path.dirname(__file__), "style.css")
+        css_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "style.css")
         if os.path.exists(css_path):
             provider = Gtk.CssProvider()
             provider.load_from_path(css_path)
-            Gtk.StyleContext.add_provider_for_display(
-                Gdk.Display.get_default() if hasattr(Gdk := __import__('gi').repository.Gdk, 'Display') else None,
-                provider,
-                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-            )
+            display = Gdk.Display.get_default()
+            if display:
+                Gtk.StyleContext.add_provider_for_display(
+                    display, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+                )
 
     def on_activate(self, app):
         win = BrowserWindow(application=app)
