@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Helix Browser
+Comment=Fast, Secure, Private Web Browser
+Exec=python3 /opt/helix-browser/src/main.py %u
+Icon=helix-browser
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true
+Keywords=web;browser;internet;helix;
