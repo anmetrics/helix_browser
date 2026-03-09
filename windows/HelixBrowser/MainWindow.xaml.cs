@@ -4,7 +4,9 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.Web.WebView2.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Windows.System;
 
 namespace HelixBrowser;
@@ -16,11 +18,25 @@ public sealed partial class MainWindow : Window
     private readonly Prefs _prefs = Prefs.Instance;
     private readonly AdBlockEngine _adBlock = new();
 
+    private static readonly string SessionPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "HelixBrowser", "session.json");
+
     public MainWindow()
     {
         this.InitializeComponent();
-        CreateNewTab("helix://start");
         SetupKeyboardShortcuts();
+
+        if (_prefs.IsRestoreTabsEnabled && RestoreSession())
+        {
+            // Tabs restored from session
+        }
+        else
+        {
+            CreateNewTab("helix://start");
+        }
+
+        this.Closed += OnWindowClosed;
     }
 
     // MARK: - Tab Management
@@ -353,6 +369,69 @@ public sealed partial class MainWindow : Window
     }
 }
 
+    // MARK: - Session Save/Restore
+
+    private void OnWindowClosed(object sender, WindowEventArgs args)
+    {
+        if (_prefs.IsRestoreTabsEnabled)
+            SaveSession();
+    }
+
+    private void SaveSession()
+    {
+        try
+        {
+            var tabData = _tabs
+                .Where(t => !t.IsIncognito)
+                .Select(t => new TabSessionData
+                {
+                    Url = t.Url,
+                    Title = t.Title,
+                    IsPinned = t.IsPinned
+                })
+                .ToList();
+
+            var session = new SessionData
+            {
+                Tabs = tabData,
+                ActiveIndex = _activeTab != null ? _tabs.IndexOf(_activeTab) : 0
+            };
+
+            var dir = Path.GetDirectoryName(SessionPath)!;
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            File.WriteAllText(SessionPath, JsonSerializer.Serialize(session));
+        }
+        catch { /* ignore */ }
+    }
+
+    private bool RestoreSession()
+    {
+        try
+        {
+            if (!File.Exists(SessionPath)) return false;
+            var json = File.ReadAllText(SessionPath);
+            var session = JsonSerializer.Deserialize<SessionData>(json);
+            if (session?.Tabs == null || session.Tabs.Count == 0) return false;
+
+            foreach (var tabData in session.Tabs)
+            {
+                CreateNewTab(tabData.Url);
+                var tab = _tabs.Last();
+                tab.Title = tabData.Title;
+                tab.IsPinned = tabData.IsPinned;
+            }
+
+            var activeIdx = Math.Min(session.ActiveIndex, _tabs.Count - 1);
+            if (activeIdx >= 0 && activeIdx < _tabs.Count)
+                SwitchToTab(_tabs[activeIdx]);
+
+            UpdateTabBar();
+            return true;
+        }
+        catch { return false; }
+    }
+}
+
 // MARK: - Supporting Types
 
 public class BrowserTab
@@ -365,4 +444,17 @@ public class BrowserTab
     public bool IsMuted { get; set; }
     public string? GroupId { get; set; }
     public Microsoft.UI.Xaml.Controls.WebView2? WebView { get; set; }
+}
+
+public class TabSessionData
+{
+    public string Url { get; set; } = "";
+    public string Title { get; set; } = "";
+    public bool IsPinned { get; set; }
+}
+
+public class SessionData
+{
+    public List<TabSessionData> Tabs { get; set; } = new();
+    public int ActiveIndex { get; set; }
 }

@@ -62,7 +62,7 @@ object PrivacyManager {
         prefs(context).getBoolean(KEY_BLOCK_POPUPS, true)
 
     fun isRestoreTabsEnabled(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_RESTORE_TABS, false)
+        prefs(context).getBoolean(KEY_RESTORE_TABS, true)
 
     fun isSuspendInactiveTabsEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_SUSPEND_INACTIVE_TABS, false)
