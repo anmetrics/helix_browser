@@ -1,0 +1,99 @@
+<Window
+    x:Class="HelixBrowser.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:wv2="using:Microsoft.Web.WebView2.Core">
+
+    <Grid Background="{StaticResource HelixBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Tab Bar -->
+            <RowDefinition Height="Auto"/>  <!-- Address Bar -->
+            <RowDefinition Height="Auto"/>  <!-- Progress Bar -->
+            <RowDefinition Height="*"/>     <!-- WebView -->
+            <RowDefinition Height="Auto"/>  <!-- Find Bar -->
+        </Grid.RowDefinitions>
+
+        <!-- Tab Bar -->
+        <Grid Grid.Row="0" Background="{StaticResource HelixToolbarBrush}" Height="36">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Column="0" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Hidden" VerticalScrollMode="Disabled">
+                <StackPanel x:Name="TabBar" Orientation="Horizontal" Spacing="1"/>
+            </ScrollViewer>
+            <Button Grid.Column="1" x:Name="NewTabButton" Click="NewTab_Click"
+                    Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                    Width="36" Height="36" Background="Transparent" Foreground="{StaticResource HelixPurpleBrush}"
+                    BorderThickness="0"/>
+        </Grid>
+
+        <!-- Address Bar -->
+        <Grid Grid.Row="1" Background="{StaticResource HelixToolbarBrush}" Padding="8,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>  <!-- Nav buttons -->
+                <ColumnDefinition Width="*"/>     <!-- Address -->
+                <ColumnDefinition Width="Auto"/>  <!-- Actions -->
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2">
+                <Button x:Name="BackBtn" Click="Back_Click" Content="&#xE72B;" FontFamily="Segoe MDL2 Assets"
+                        Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+                <Button x:Name="ForwardBtn" Click="Forward_Click" Content="&#xE72A;" FontFamily="Segoe MDL2 Assets"
+                        Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+                <Button x:Name="ReloadBtn" Click="Reload_Click" Content="&#xE72C;" FontFamily="Segoe MDL2 Assets"
+                        Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+            </StackPanel>
+
+            <Grid Grid.Column="1" Background="{StaticResource HelixAddressBarBrush}" CornerRadius="6"
+                  Padding="10,0" Margin="8,0" MaxWidth="700" HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <FontIcon Grid.Column="0" x:Name="SslIcon" Glyph="&#xE72E;" FontFamily="Segoe MDL2 Assets"
+                          FontSize="12" Foreground="{StaticResource HelixGreenBrush}" Margin="0,0,8,0"/>
+                <TextBox Grid.Column="1" x:Name="AddressBox" PlaceholderText="Tìm kiếm hoặc nhập địa chỉ"
+                         KeyDown="AddressBox_KeyDown" Background="Transparent" Foreground="White"
+                         BorderThickness="0" FontSize="13"/>
+            </Grid>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
+                <Button x:Name="BookmarkBtn" Click="Bookmark_Click" Content="&#xE734;" FontFamily="Segoe MDL2 Assets"
+                        Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+                <Button x:Name="HomeBtn" Click="Home_Click" Content="&#xE80F;" FontFamily="Segoe MDL2 Assets"
+                        Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+                <Button x:Name="MenuBtn" Click="Menu_Click" Content="&#xE712;" FontFamily="Segoe MDL2 Assets"
+                        Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Progress Bar -->
+        <ProgressBar Grid.Row="2" x:Name="ProgressBar" IsIndeterminate="False" Value="0" Maximum="100"
+                     Height="2" Foreground="{StaticResource HelixPurpleBrush}" Background="Transparent"
+                     Visibility="Collapsed"/>
+
+        <!-- WebView -->
+        <Grid Grid.Row="3" x:Name="WebViewContainer"/>
+
+        <!-- Find Bar -->
+        <Grid Grid.Row="4" x:Name="FindBar" Background="{StaticResource HelixToolbarBrush}"
+              Padding="12,6" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" x:Name="FindBox" PlaceholderText="Tìm trên trang..."
+                     Background="{StaticResource HelixAddressBarBrush}" Foreground="White" BorderThickness="0"
+                     TextChanged="FindBox_TextChanged"/>
+            <Button Grid.Column="1" Click="FindPrev_Click" Content="&#xE70E;" FontFamily="Segoe MDL2 Assets"
+                    Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+            <Button Grid.Column="2" Click="FindNext_Click" Content="&#xE70D;" FontFamily="Segoe MDL2 Assets"
+                    Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+            <Button Grid.Column="3" Click="FindClose_Click" Content="&#xE711;" FontFamily="Segoe MDL2 Assets"
+                    Width="32" Height="32" Background="Transparent" Foreground="White" BorderThickness="0"/>
+        </Grid>
+    </Grid>
+</Window>

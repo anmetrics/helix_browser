@@ -1,0 +1,24 @@
+<Application
+    x:Class="HelixBrowser.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    RequestedTheme="Dark">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="HelixBackground">#0A091E</Color>
+            <Color x:Key="HelixToolbar">#141235</Color>
+            <Color x:Key="HelixAddressBar">#1E1B45</Color>
+            <Color x:Key="HelixPurple">#8B8BFF</Color>
+            <Color x:Key="HelixPink">#FF7EB3</Color>
+            <Color x:Key="HelixGreen">#00E676</Color>
+            <Color x:Key="HelixTextPrimary">#FFFFFF</Color>
+            <Color x:Key="HelixTextSecondary">#A0A0D0</Color>
+            <SolidColorBrush x:Key="HelixBackgroundBrush" Color="{StaticResource HelixBackground}" />
+            <SolidColorBrush x:Key="HelixToolbarBrush" Color="{StaticResource HelixToolbar}" />
+            <SolidColorBrush x:Key="HelixAddressBarBrush" Color="{StaticResource HelixAddressBar}" />
+            <SolidColorBrush x:Key="HelixPurpleBrush" Color="{StaticResource HelixPurple}" />
+            <SolidColorBrush x:Key="HelixPinkBrush" Color="{StaticResource HelixPink}" />
+            <SolidColorBrush x:Key="HelixGreenBrush" Color="{StaticResource HelixGreen}" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
