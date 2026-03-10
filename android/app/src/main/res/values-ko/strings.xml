@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">검색 또는 URL 입력</string>
+    <string name="new_tab">새 탭</string>
+    <string name="incognito_tab">시크릿 탭</string>
+    <string name="bookmarks">북마크</string>
+    <string name="history">기록</string>
+    <string name="downloads">다운로드</string>
+    <string name="settings">설정</string>
+    <string name="share">공유</string>
+    <string name="find_in_page">페이지에서 찾기</string>
+    <string name="desktop_site">데스크톱 사이트</string>
+    <string name="mobile_site">모바일 사이트</string>
+    <string name="add_bookmark">북마크 추가</string>
+    <string name="remove_bookmark">북마크 삭제</string>
+    <string name="clear_history">기록 삭제</string>
+    <string name="downloading">다운로드 중</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">추적기 차단</string>
+    <string name="block_third_party_cookies">타사 쿠키 차단</string>
+    <string name="do_not_track">추적 안 함</string>
+    <string name="https_upgrade">HTTPS 업그레이드</string>
+    <string name="anti_fingerprinting">지문 방지</string>
+    <string name="block_popups">팝업 차단</string>
+    <string name="clear_all_data">모든 브라우징 데이터 삭제</string>
+    <string name="privacy_settings">개인정보</string>
+    <string name="trackers_blocked">차단된 추적기</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">탭 그룹</string>
+    <string name="pin_tab">탭 고정</string>
+    <string name="mute_tab">탭 음소거</string>
+    <string name="restore_tabs">탭 복원</string>
+    <string name="suspend_tabs">비활성 탭 일시 중지</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">완료</string>
+    <string name="download_in_progress">다운로드 중… %d%%</string>
+    <string name="download_failed">실패</string>
+    <string name="download_paused">일시 중지</string>
+    <string name="download_pending">대기 중</string>
+
+    <!-- Language settings -->
+    <string name="language">언어</string>
+    <string name="select_language">언어 선택</string>
+    <string name="system_default">시스템 기본값</string>
+</resources>

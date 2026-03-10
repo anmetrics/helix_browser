@@ -67,6 +67,7 @@ object Prefs {
     private const val KEY_BLOCK_ADS = "block_ads"
     private const val KEY_BLOCK_POPUPS = "block_popups"
     private const val KEY_SAVE_HISTORY = "save_history"
+    private const val KEY_LANGUAGE = "app_language"
     private const val DEFAULT_HOMEPAGE = "https://www.google.com"
 
     private fun prefs(context: Context): SharedPreferences =
@@ -86,4 +87,7 @@ object Prefs {
 
     fun isSaveHistoryEnabled(context: Context) = prefs(context).getBoolean(KEY_SAVE_HISTORY, true)
     fun setSaveHistoryEnabled(context: Context, enabled: Boolean) = prefs(context).edit().putBoolean(KEY_SAVE_HISTORY, enabled).apply()
+
+    fun getLanguage(context: Context) = prefs(context).getString(KEY_LANGUAGE, "system") ?: "system"
+    fun setLanguage(context: Context, lang: String) = prefs(context).edit().putString(KEY_LANGUAGE, lang).apply()
 }

@@ -56,7 +56,24 @@ class HelixWebView @JvmOverloads constructor(
             useWideViewPort = true
             loadWithOverviewMode = true
             defaultTextEncodingName = "UTF-8"
-            userAgentString = getDefaultUserAgent()
+            
+            val isTablet = context.resources.getBoolean(com.helix.browser.R.bool.is_tablet)
+            userAgentString = if (isTablet) DESKTOP_USER_AGENT else getDefaultUserAgent()
+            if (isTablet) {
+                useWideViewPort = true
+                loadWithOverviewMode = true
+            }
+
+            // Set Accept-Language header based on current locale
+            val locale = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                context.resources.configuration.locales[0]
+            } else {
+                @Suppress("DEPRECATION")
+                context.resources.configuration.locale
+            }
+            val languageTag = locale.toLanguageTag()
+            // Some websites prefer comma separated list (e.g. en-US,en;q=0.9)
+            // But just the current one is usually enough for redirection
         }
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
         isScrollbarFadingEnabled = true

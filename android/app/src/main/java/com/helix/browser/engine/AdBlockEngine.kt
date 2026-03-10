@@ -19,10 +19,16 @@ object AdBlockEngine {
         "securepubads.g.doubleclick.net",
         "tpc.googlesyndication.com",
         "fundingchoicesmessages.google.com",
+        "www.googletagmanager.com",
+        "partner.googleadservices.com",
+        "cm.g.doubleclick.net",
         // YouTube ad serving
         "imasdk.googleapis.com",
         "jnn-pa.googleapis.com",
         "s0.2mdn.net",
+        "ad.youtube.com",
+        "ads.youtube.com",
+        "youtube.cleverads.vn",
         // General ad networks
         "adnxs.com",
         "advertising.com",
@@ -43,12 +49,26 @@ object AdBlockEngine {
         "casalemedia.com",
         "buysellads.com",
         "carbonads.net",
+        "adroll.com",
+        "adsymptotic.com",
+        "serving-sys.com",
+        "eyeota.net",
+        "mathtag.com",
+        "rlcdn.com",
+        "demdex.net",
+        "krxd.net",
+        "bluekai.com",
+        "exelator.com",
+        "turn.com",
+        "medianet.com",
+        "media.net",
         // Social media ads
         "ads-twitter.com",
         "static.ads-twitter.com",
         "ads.linkedin.com",
         "facebook.net",
         "connect.facebook.net",
+        "an.facebook.com",
         // Programmatic
         "criteo.com",
         "rubiconproject.com",
@@ -59,6 +79,7 @@ object AdBlockEngine {
         "ads.yahoo.com",
         "mads.amazon-adsystem.com",
         "amazon-adsystem.com",
+        "aax.amazon-adsystem.com",
         // Popup/redirect ad networks
         "popads.net",
         "popcash.net",
@@ -77,7 +98,13 @@ object AdBlockEngine {
         // Consent/cookie banners
         "cookiebot.com",
         "onetrust.com",
-        "consensu.org"
+        "consensu.org",
+        // Vietnamese ad networks
+        "adtima.vn",
+        "admicro.vn",
+        "adsplay.net",
+        "eclick.vn",
+        "novaon.asia"
     )
 
     // YouTube-specific ad URL patterns
@@ -89,7 +116,16 @@ object AdBlockEngine {
         "/api/stats/atr",
         "/error_204?",
         "/generate_204?",
-        "/youtubei/v1/log_event"
+        "/youtubei/v1/log_event",
+        "/youtubei/v1/player/ad",
+        "/get_video_info?.*ad",
+        "google_companion_ad",
+        "googleads",
+        "/ad_break",
+        "ctier=L",
+        "&ad_type=",
+        "&adurl=",
+        "play.google.com/log"
     )
 
     private val blockedPathPatterns = listOf(
@@ -98,7 +134,10 @@ object AdBlockEngine {
         "/advert",
         "/ad-banner",
         "/popunder",
-        "/popup"
+        "/popup",
+        "/sponsor",
+        "/prebid",
+        "/admanager"
     )
 
     fun isAd(url: String): Boolean {
@@ -113,9 +152,12 @@ object AdBlockEngine {
             if (domainMatch) return true
 
             // Check YouTube-specific ad URL patterns
-            if (host.contains("youtube.com") || host.contains("youtube-nocookie.com")) {
+            if (host.contains("youtube.com") || host.contains("youtube-nocookie.com")
+                || host.contains("googlevideo.com") || host.contains("ytimg.com")) {
                 val fullUrl = url.lowercase()
                 if (youtubeAdPaths.any { pattern -> fullUrl.contains(pattern) }) return true
+                // Block YouTube ad video streams (redirector with ctier/oad params)
+                if (host.contains("googlevideo.com") && (fullUrl.contains("&oad=") || fullUrl.contains("&ctier=L") || fullUrl.contains("ctier=L"))) return true
             }
 
             // Check URL path patterns
@@ -134,7 +176,9 @@ object AdBlockEngine {
                 "popads.net", "popcash.net", "propellerads.com", "juicyads.com",
                 "exoclick.com", "trafficjunky.net", "revcontent.com", "mgid.com",
                 "adsterra.com", "hilltopads.net", "clickadu.com", "ad-maven.com",
-                "richpush.co", "trafficstars.com", "doubleclick.net", "googlesyndication.com"
+                "richpush.co", "trafficstars.com", "doubleclick.net", "googlesyndication.com",
+                "googleadservices.com", "serving-sys.com", "adnxs.com", "taboola.com",
+                "outbrain.com", "adsplay.net", "eclick.vn"
             )
             popupDomains.any { host.contains(it) }
         } catch (e: Exception) {

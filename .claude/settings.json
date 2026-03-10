@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash build-deb.sh)",
+      "Bash(sudo rm -rf build)",
+      "Bash(./gradlew assembleDebug)",
+      "Read(//home/thien/Projects/helix_browser/android/$HOME/Android/**)",
+      "Bash(env)",
+      "Read(//usr/local/lib/**)",
+      "Read(//opt/**)"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">Buscar o escribir URL</string>
+    <string name="new_tab">Nueva pestaña</string>
+    <string name="incognito_tab">Pestaña de incógnito</string>
+    <string name="bookmarks">Marcadores</string>
+    <string name="history">Historial</string>
+    <string name="downloads">Descargas</string>
+    <string name="settings">Ajustes</string>
+    <string name="share">Compartir</string>
+    <string name="find_in_page">Buscar en la página</string>
+    <string name="desktop_site">Sitio de escritorio</string>
+    <string name="mobile_site">Sitio móvil</string>
+    <string name="add_bookmark">Añadir marcador</string>
+    <string name="remove_bookmark">Eliminar marcador</string>
+    <string name="clear_history">Borrar historial</string>
+    <string name="downloading">Descargando</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">Bloquear rastreadores</string>
+    <string name="block_third_party_cookies">Bloquear cookies de terceros</string>
+    <string name="do_not_track">No rastrear</string>
+    <string name="https_upgrade">Actualización HTTPS</string>
+    <string name="anti_fingerprinting">Anti-huella digital</string>
+    <string name="block_popups">Bloquear ventanas emergentes</string>
+    <string name="clear_all_data">Borrar todos los datos de navegación</string>
+    <string name="privacy_settings">Privacidad</string>
+    <string name="trackers_blocked">Rastreadores bloqueados</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">Grupos de pestañas</string>
+    <string name="pin_tab">Fijar pestaña</string>
+    <string name="mute_tab">Silenciar pestaña</string>
+    <string name="restore_tabs">Restaurar pestañas</string>
+    <string name="suspend_tabs">Suspender pestañas inactivas</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">Completado</string>
+    <string name="download_in_progress">Descargando… %d%%</string>
+    <string name="download_failed">Error</string>
+    <string name="download_paused">Pausado</string>
+    <string name="download_pending">Pendiente</string>
+
+    <!-- Language settings -->
+    <string name="language">Idioma</string>
+    <string name="select_language">Seleccionar idioma</string>
+    <string name="system_default">Predeterminado del sistema</string>
+</resources>

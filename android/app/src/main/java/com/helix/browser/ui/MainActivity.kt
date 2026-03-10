@@ -40,12 +40,19 @@ import com.helix.browser.tabs.BrowserTab
 import com.helix.browser.utils.Prefs
 import com.helix.browser.utils.UrlUtils
 import com.helix.browser.viewmodel.BrowserViewModel
+import com.helix.browser.ui.adapter.DesktopTabAdapter
+import androidx.recyclerview.widget.RecyclerView
+import android.widget.ImageButton
+import androidx.recyclerview.widget.LinearLayoutManager
 
 class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: BrowserViewModel by viewModels()
     private lateinit var tabManager: com.helix.browser.tabs.TabManager
+
+    private var desktopTabAdapter: DesktopTabAdapter? = null
+    private var isTablet = false
 
     private val webViewPool = LinkedHashMap<String, HelixWebView>()
     private var currentWebView: HelixWebView? = null
@@ -101,10 +108,18 @@ class MainActivity : BaseActivity() {
         }
 
         tabManager = (application as HelixApp).tabManager
+        isTablet = resources.getBoolean(R.bool.is_tablet)
 
         setupAddressBar()
         setupBottomNavigation()
+        setupDesktopTabBar()
         setupObservers()
+        
+        // Initialize desktop mode state based on device type if not already set
+        if (viewModel.isDesktopMode.value == null) {
+            viewModel.isDesktopMode.value = isTablet
+        }
+        
         handleIntent(intent)
 
         // Restore tabs if enabled, otherwise create a new one
@@ -202,25 +217,78 @@ class MainActivity : BaseActivity() {
         binding.btnHome.setOnClickListener {
             loadUrl(Prefs.getHomepage(this))
         }
-        binding.btnTabs.setOnClickListener {
-            currentWebView?.let { webView ->
-                val tab = tabManager.currentTab
-                if (tab != null && webView.width > 0 && webView.height > 0) {
-                    try {
-                        val bitmap = android.graphics.Bitmap.createBitmap(webView.width, webView.height, android.graphics.Bitmap.Config.ARGB_8888)
-                        val canvas = android.graphics.Canvas(bitmap)
-                        webView.draw(canvas)
-                        val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, webView.width / 4, webView.height / 4, true)
-                        tab.thumbnail = scaledBitmap
-                        if (bitmap != scaledBitmap) bitmap.recycle()
-                    } catch (e: Exception) { e.printStackTrace() }
+
+        if (isTablet) {
+            binding.btnTabs.isVisible = false
+            // Hide the borderless container if possible, or just the whole button
+            // To properly hide the frame layout since btnTabs is the content
+            binding.btnTabs.layoutParams = android.widget.LinearLayout.LayoutParams(0, 0, 0f)
+            binding.btnTabs.requestLayout()
+        } else {
+            binding.btnTabs.setOnClickListener {
+                currentWebView?.let { webView ->
+                    val tab = tabManager.currentTab
+                    if (tab != null && webView.width > 0 && webView.height > 0) {
+                        try {
+                            val bitmap = android.graphics.Bitmap.createBitmap(webView.width, webView.height, android.graphics.Bitmap.Config.ARGB_8888)
+                            val canvas = android.graphics.Canvas(bitmap)
+                            webView.draw(canvas)
+                            val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, webView.width / 4, webView.height / 4, true)
+                            tab.thumbnail = scaledBitmap
+                            if (bitmap != scaledBitmap) bitmap.recycle()
+                        } catch (e: Exception) { e.printStackTrace() }
+                    }
                 }
+                val intent = Intent(this, TabSwitcherActivity::class.java)
+                startActivityForResult(intent, REQUEST_TAB_SWITCHER)
+                overridePendingTransition(R.anim.slide_up, R.anim.fade_out)
             }
-            val intent = Intent(this, TabSwitcherActivity::class.java)
-            startActivityForResult(intent, REQUEST_TAB_SWITCHER)
-            overridePendingTransition(R.anim.slide_up, R.anim.fade_out)
         }
         binding.btnMenu.setOnClickListener { showMoreOptionsMenu() }
+    }
+
+    private fun setupDesktopTabBar() {
+        val desktopTabBar = findViewById<View>(R.id.desktopTabBar)
+        if (!isTablet) {
+            desktopTabBar?.isVisible = false
+            return
+        }
+
+        desktopTabBar?.isVisible = true
+        val rvDesktopTabs = findViewById<RecyclerView>(R.id.rvDesktopTabs)
+        val btnNewDesktopTab = findViewById<ImageButton>(R.id.btnNewDesktopTab)
+        
+        btnNewDesktopTab?.setOnClickListener { createNewTab() }
+
+        desktopTabAdapter = DesktopTabAdapter(
+            onTabSelected = { tab -> switchToTab(tab) },
+            onTabClosed = { tab ->
+                val isClosingCurrent = tab.id == tabManager.currentTab?.id
+                tabManager.closeTab(tab.id)
+                // If closing the active tab, TabManager auto-switches to previous
+                // We just need to attach the new current tab's webview
+                if (isClosingCurrent) {
+                    tabManager.currentTab?.let { switchToTab(it) } ?: run {
+                        // All tabs closed
+                        webViewPool.remove(tab.id)?.destroy()
+                        binding.webViewContainer.removeAllViews()
+                        currentWebView = null
+                        createNewTab()
+                    }
+                } else {
+                    // Just clean up the webview
+                    webViewPool.remove(tab.id)?.destroy()
+                }
+            }
+        )
+        
+        rvDesktopTabs?.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+            adapter = desktopTabAdapter
+            itemAnimator = null // Prevent flashing on updates
+        }
+
+        btnNewDesktopTab?.setOnClickListener { createNewTab() }
     }
 
     private fun setupObservers() {
@@ -251,6 +319,21 @@ class MainActivity : BaseActivity() {
         viewModel.showFindInPage.observe(this) { show ->
             binding.findInPageBar.isVisible = show
             if (show) binding.findInPageInput.requestFocus()
+        }
+
+        if (isTablet) {
+            tabManager.tabsLiveData.observe(this) { tabs ->
+                desktopTabAdapter?.submitList(tabs) {
+                    // Scroll to end when new tab is added
+                    if (tabs.isNotEmpty()) {
+                        val rv = findViewById<RecyclerView>(R.id.rvDesktopTabs)
+                        rv?.smoothScrollToPosition(tabManager.currentIndex)
+                    }
+                }
+            }
+            tabManager.currentTabLiveData.observe(this) { tab ->
+                desktopTabAdapter?.currentTabId = tab?.id
+            }
         }
 
         binding.btnFindNext.setOnClickListener { currentWebView?.findNext(true) }
@@ -288,6 +371,11 @@ class MainActivity : BaseActivity() {
         viewModel.currentUrl.value = webView.url ?: tab.url
         viewModel.currentTitle.value = webView.title ?: tab.title
         updateAddressBarDisplay()
+
+        // Sync desktop mode state when switching tabs
+        if (viewModel.isDesktopMode.value == true) {
+            webView.setDesktopMode(true)
+        }
 
         headerHideRunnable?.let { binding.root.removeCallbacks(it) }
         setToolbarScrollable(false)
@@ -338,9 +426,19 @@ class MainActivity : BaseActivity() {
             onProgressChanged = { progress -> if (tabManager.currentTab?.id == tab.id) runOnUiThread { viewModel.onProgressChanged(progress) } },
             onTitleReceived = { title ->
                 tab.title = title
-                if (tabManager.currentTab?.id == tab.id) runOnUiThread { viewModel.currentTitle.value = title }
+                if (tabManager.currentTab?.id == tab.id) runOnUiThread { 
+                    viewModel.currentTitle.value = title 
+                    // Force refresh tab adapter for title update
+                    desktopTabAdapter?.notifyItemChanged(tabManager.currentIndex)
+                }
             },
-            onFaviconReceived = { favicon -> tab.favicon = favicon },
+            onFaviconReceived = { favicon -> 
+                tab.favicon = favicon 
+                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
+                    // Force refresh tab adapter for favicon update
+                    desktopTabAdapter?.notifyItemChanged(tabManager.currentIndex)
+                }
+            },
             onShowFileChooser = { callback, _ ->
                 fileChooserCallback?.onReceiveValue(null)
                 fileChooserCallback = callback
@@ -360,7 +458,8 @@ class MainActivity : BaseActivity() {
                 fullscreenCallback = null
                 showSystemUI()
             },
-            onGeolocationPermission = { origin, callback -> callback.invoke(origin, true, false) }
+            onGeolocationPermission = { origin, callback -> callback.invoke(origin, true, false) },
+            isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) }
         )
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ -> downloadFile(url, userAgent, contentDisposition, mimeType) }
         if (tab.isIncognito) webView.setIncognitoMode(true)
@@ -390,7 +489,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun buildNewTabHtml(): String = """
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>New Tab</title>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>${getString(R.string.new_tab)}</title>
 <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;-webkit-user-select:none;}
@@ -401,7 +500,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#3
 .shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:90%;max-width:360px;}
 .shortcut{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:16px;background:rgba(255,255,255,0.06);text-decoration:none;color:white;font-size:11px;border:1px solid rgba(255,255,255,0.08);transition:background 0.2s;}
 .shortcut:active{background:rgba(124,124,255,0.2);}.shortcut-icon{font-size:24px;}</style></head>
-<body><div class="logo">⬡ Helix</div><div class="tagline">Fast • Secure • Private</div><div class="search-box"><span>🔍</span><span>Search or enter URL...</span></div>
+<body><div class="logo">⬡ Helix</div><div class="tagline">${getString(R.string.fast_secure_private)}</div><div class="search-box"><span>🔍</span><span>${getString(R.string.search_or_type_url)}</span></div>
 <div class="shortcuts">
 <a class="shortcut" href="https://google.com"><span class="shortcut-icon">🔍</span>Google</a>
 <a class="shortcut" href="https://youtube.com"><span class="shortcut-icon">▶️</span>YouTube</a>
@@ -439,7 +538,10 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#3
         view.findViewById<View>(R.id.menu_desktop_site).setOnClickListener {
             val isDesktop = viewModel.isDesktopMode.value?.not() ?: false
             viewModel.isDesktopMode.value = isDesktop
-            currentWebView?.setDesktopMode(isDesktop)
+            
+            // Apply to all active WebViews
+            webViewPool.values.forEach { it.setDesktopMode(isDesktop) }
+            
             dialog.dismiss()
         }
         view.findViewById<View>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
@@ -454,7 +556,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#3
             putExtra(Intent.EXTRA_SUBJECT, viewModel.currentTitle.value ?: url)
             putExtra(Intent.EXTRA_TEXT, url)
         }
-        startActivity(Intent.createChooser(intent, "Share via"))
+        startActivity(Intent.createChooser(intent, getString(R.string.share_via)))
     }
 
     private fun downloadFile(url: String, userAgent: String, contentDisposition: String, mimeType: String) {
@@ -465,14 +567,14 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#3
         val fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
         val request = DownloadManager.Request(Uri.parse(url)).apply {
             setTitle(fileName)
-            setDescription("Downloading via Helix Browser")
+            setDescription(getString(R.string.downloading_via_helix))
             setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
             addRequestHeader("User-Agent", userAgent)
             allowScanningByMediaScanner()
         }
         (getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
-        Toast.makeText(this, "Đang tải: $fileName", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.download_started, fileName), Toast.LENGTH_SHORT).show()
     }
 
     private fun updateAddressBarDisplay() {

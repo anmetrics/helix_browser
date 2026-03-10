@@ -2,10 +2,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="Tìm kiếm">
+    <PreferenceCategory app:title="@string/settings">
+        <Preference
+            app:key="language_settings"
+            app:title="@string/language"
+            app:icon="@drawable/ic_settings" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/search_hint">
         <ListPreference
             app:key="search_engine"
-            app:title="Công cụ tìm kiếm"
+            app:title="@string/search_engine_pref"
             app:summary="%s"
             app:entries="@array/search_engine_names"
             app:entryValues="@array/search_engine_values"
@@ -14,137 +21,207 @@
 
         <EditTextPreference
             app:key="homepage"
-            app:title="Trang chủ"
-            app:summary="https://www.google.com"
+            app:title="@string/homepage_pref"
+            app:summary="@string/homepage_summary"
             app:defaultValue="https://www.google.com"
             app:icon="@drawable/ic_home" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Nội dung">
+    <PreferenceCategory app:title="@string/new_tab">
         <SwitchPreferenceCompat
             app:key="javascript_enabled"
-            app:title="JavaScript"
-            app:summary="Bật JavaScript cho các trang web"
+            app:title="@string/javascript_pref"
+            app:summary="@string/javascript_summary"
             app:defaultValue="true"
             app:icon="@drawable/ic_settings" />
 
         <SwitchPreferenceCompat
             app:key="desktop_mode"
-            app:title="Chế độ máy tính mặc định"
-            app:summary="Luôn dùng phiên bản máy tính"
+            app:title="@string/desktop_site"
+            app:summary="@string/desktop_site_summary"
             app:defaultValue="false"
             app:icon="@drawable/ic_desktop" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Quyền riêng tư">
+    <PreferenceCategory app:title="@string/privacy_settings">
         <SwitchPreferenceCompat
             app:key="block_ads"
-            app:title="Chặn quảng cáo"
-            app:summary="Chặn quảng cáo và trình theo dõi"
+            app:title="@string/block_ads_title"
+            app:summary="@string/block_ads_summary"
             app:defaultValue="true"
             app:icon="@drawable/ic_security" />
 
         <SwitchPreferenceCompat
             app:key="block_trackers"
             app:title="@string/block_trackers"
-            app:summary="Chặn các trình theo dõi thu thập dữ liệu"
+            app:summary="@string/block_trackers_summary"
             app:defaultValue="true"
             app:icon="@drawable/ic_security" />
 
         <SwitchPreferenceCompat
             app:key="block_third_party_cookies"
             app:title="@string/block_third_party_cookies"
-            app:summary="Chặn cookie từ trang web bên thứ ba"
+            app:summary="@string/block_third_party_cookies_summary"
             app:defaultValue="true"
             app:icon="@drawable/ic_security" />
 
         <SwitchPreferenceCompat
             app:key="do_not_track"
             app:title="@string/do_not_track"
-            app:summary="Gửi yêu cầu Do Not Track đến trang web"
+            app:summary="@string/do_not_track_summary"
             app:defaultValue="true"
             app:icon="@drawable/ic_security" />
 
         <SwitchPreferenceCompat
             app:key="https_upgrade"
             app:title="@string/https_upgrade"
-            app:summary="Tự động nâng cấp kết nối HTTP lên HTTPS"
+            app:summary="@string/https_upgrade_summary"
             app:defaultValue="true"
             app:icon="@drawable/ic_security" />
 
         <SwitchPreferenceCompat
             app:key="anti_fingerprinting"
             app:title="@string/anti_fingerprinting"
-            app:summary="Chặn thu thập dấu vân tay trình duyệt (Canvas, WebGL, Audio)"
+            app:summary="@string/anti_fingerprinting_summary"
             app:defaultValue="false"
             app:icon="@drawable/ic_security" />
 
         <SwitchPreferenceCompat
             app:key="block_popups"
             app:title="@string/block_popups"
-            app:summary="Chặn cửa sổ popup tự động mở"
+            app:summary="@string/block_popups_summary"
             app:defaultValue="true"
             app:icon="@drawable/ic_security" />
 
         <Preference
             app:key="trackers_blocked"
             app:title="@string/trackers_blocked"
-            app:summary="0 trình theo dõi đã bị chặn"
+            app:summary="@string/trackers_blocked_summary_format"
+ vehicular
+ vehicular
+ vehicular
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
             app:icon="@drawable/ic_security"
             app:selectable="false" />
 
         <Preference
             app:key="clear_cache"
-            app:title="Xoá bộ nhớ cache"
-            app:summary="Xoá cache của tất cả trang web"
+            app:title="@string/clear_cache"
+            app:summary="@string/clear_cache_summary"
             app:icon="@drawable/ic_delete" />
 
         <Preference
             app:key="clear_cookies"
-            app:title="Xoá Cookies"
-            app:summary="Xoá cookies của tất cả trang web"
+            app:title="@string/clear_cookies"
+            app:summary="@string/clear_cookies_summary"
             app:icon="@drawable/ic_delete" />
 
         <Preference
             app:key="clear_history"
-            app:title="Xoá lịch sử"
-            app:summary="Xoá lịch sử duyệt web"
+            app:title="@string/clear_history"
+            app:summary="@string/clear_history_summary"
             app:icon="@drawable/ic_history" />
 
         <Preference
             app:key="clear_all_data"
             app:title="@string/clear_all_data"
-            app:summary="Xoá tất cả cookie, cache, lịch sử và dữ liệu web"
+            app:summary="@string/clear_all_data_summary"
             app:icon="@drawable/ic_delete" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Tab">
+    <PreferenceCategory app:title="@string/tabs_category">
         <SwitchPreferenceCompat
             app:key="restore_tabs"
             app:title="@string/restore_tabs"
-            app:summary="Khôi phục các tab khi khởi động lại"
+            app:summary="@string/restore_tabs_summary"
             app:defaultValue="true"
             app:icon="@drawable/ic_settings" />
 
         <SwitchPreferenceCompat
             app:key="suspend_inactive_tabs"
             app:title="@string/suspend_tabs"
-            app:summary="Tạm ngưng các tab không hoạt động sau 10 phút"
+            app:summary="@string/suspend_tabs_summary"
             app:defaultValue="false"
             app:icon="@drawable/ic_settings" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Thông tin">
+    <PreferenceCategory app:title="@string/info_category">
         <Preference
             app:key="version"
-            app:title="Phiên bản"
-            app:summary="1.0.0"
+            app:title="@string/version_pref"
+            app:summary="@string/version_summary"
             app:selectable="false" />
 
         <Preference
             app:key="engine"
-            app:title="Engine"
-            app:summary="WebKit (Android WebView)"
+            app:title="@string/engine_pref"
+            app:summary="@string/engine_summary"
             app:selectable="false" />
     </PreferenceCategory>
 

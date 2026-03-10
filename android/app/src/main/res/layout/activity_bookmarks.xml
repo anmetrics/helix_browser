@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Bookmarks"
+            app:title="@string/bookmarks"
             app:navigationIcon="@drawable/ic_arrow_back"
             android:background="@color/toolbar_background" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -33,7 +33,7 @@
             android:layout_margin="12dp"
             android:background="@drawable/bg_address_bar"
             android:paddingHorizontal="16dp"
-            android:hint="Tìm kiếm trong bookmarks..."
+            android:hint="@string/bookmarks_hint"
             android:textSize="14sp"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/hint_color"
@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="📌\n\nChưa có bookmark nào"
+            android:text="@string/no_bookmarks"
             android:textColor="@color/text_secondary"
             android:textSize="16sp"
             android:visibility="gone" />

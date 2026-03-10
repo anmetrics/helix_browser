@@ -24,4 +24,5 @@
     <color name="divider_color">#2A2550</color>
     <color name="white">#FFFFFF</color>
     <color name="green_secure">#4CAF50</color>
+    <color name="warning_red">#F44336</color>
 </resources>

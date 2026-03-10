@@ -65,6 +65,14 @@ class HelixWebViewClient(
 
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
+
+        // Re-inject privacy/ad-block scripts on page finish
+        // Critical for YouTube SPA navigation where page doesn't fully reload
+        val scripts = getPrivacyScripts()
+        if (scripts.isNotEmpty()) {
+            view.evaluateJavascript(scripts, null)
+        }
+
         onPageFinished(url)
     }
 
@@ -97,23 +105,23 @@ class HelixWebViewClient(
         // Show a dialog asking user whether to proceed
         val context = view.context
         val errorMessage = when (error.primaryError) {
-            SslError.SSL_UNTRUSTED -> "Chứng chỉ bảo mật không được tin cậy."
-            SslError.SSL_EXPIRED -> "Chứng chỉ bảo mật đã hết hạn."
-            SslError.SSL_IDMISMATCH -> "Tên miền không khớp với chứng chỉ."
-            SslError.SSL_NOTYETVALID -> "Chứng chỉ bảo mật chưa có hiệu lực."
-            SslError.SSL_DATE_INVALID -> "Ngày trên chứng chỉ không hợp lệ."
-            SslError.SSL_INVALID -> "Chứng chỉ bảo mật không hợp lệ."
-            else -> "Lỗi SSL không xác định."
+            SslError.SSL_UNTRUSTED -> context.getString(com.helix.browser.R.string.ssl_untrusted)
+            SslError.SSL_EXPIRED -> context.getString(com.helix.browser.R.string.ssl_expired)
+            SslError.SSL_IDMISMATCH -> context.getString(com.helix.browser.R.string.ssl_id_mismatch)
+            SslError.SSL_NOTYETVALID -> context.getString(com.helix.browser.R.string.ssl_not_yet_valid)
+            SslError.SSL_DATE_INVALID -> context.getString(com.helix.browser.R.string.ssl_date_invalid)
+            SslError.SSL_INVALID -> context.getString(com.helix.browser.R.string.ssl_invalid)
+            else -> context.getString(com.helix.browser.R.string.ssl_unknown)
         }
 
         try {
             AlertDialog.Builder(context)
-                .setTitle("Kết nối không an toàn")
-                .setMessage("$errorMessage\n\nURL: ${error.url}\n\nBạn có muốn tiếp tục không?")
-                .setPositiveButton("Tiếp tục") { _, _ ->
+                .setTitle(context.getString(com.helix.browser.R.string.ssl_title))
+                .setMessage(context.getString(com.helix.browser.R.string.ssl_message, errorMessage, error.url))
+                .setPositiveButton(context.getString(com.helix.browser.R.string.continue_button)) { _, _ ->
                     handler.proceed()
                 }
-                .setNegativeButton("Quay lại") { _, _ ->
+                .setNegativeButton(context.getString(com.helix.browser.R.string.go_back_button)) { _, _ ->
                     handler.cancel()
                 }
                 .setOnCancelListener {
@@ -131,6 +139,11 @@ class HelixWebViewClient(
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         val url = request.url.toString()
+
+        // Block ad redirect URLs
+        if (isAdBlockEnabled() && (AdBlockEngine.isAd(url) || AdBlockEngine.isPopupAd(url))) {
+            return true
+        }
 
         // HTTPS upgrade: redirect http to https
         if (isHttpsUpgradeEnabled()) {
@@ -177,10 +190,10 @@ class HelixWebViewClient(
             </head>
             <body>
                 <div class="icon">⚠️</div>
-                <h1>Không thể kết nối</h1>
+                <h1>${context.getString(com.helix.browser.R.string.error_page_title)}</h1>
                 <p>$description</p>
                 <p class="url">$url</p>
-                <button onclick="history.back()">Quay lại</button>
+                <button onclick="history.back()">${context.getString(com.helix.browser.R.string.error_page_go_back)}</button>
             </body>
             </html>
         """.trimIndent()
@@ -206,10 +219,10 @@ class HelixWebViewClient(
             </head>
             <body>
                 <div class="icon">🔒</div>
-                <h1>Kết nối không an toàn</h1>
-                <p>Trang web này có chứng chỉ bảo mật không hợp lệ (Lỗi SSL $errorCode).</p>
+                <h1>${context.getString(com.helix.browser.R.string.ssl_error_page_title)}</h1>
+                <p>${context.getString(com.helix.browser.R.string.ssl_error_page_message, errorCode)}</p>
                 <p class="url">$url</p>
-                <button onclick="history.back()">Quay lại an toàn</button>
+                <button onclick="history.back()">${context.getString(com.helix.browser.R.string.ssl_error_page_go_back)}</button>
             </body>
             </html>
         """.trimIndent()

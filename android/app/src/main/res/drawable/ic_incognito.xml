@@ -2,9 +2,47 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="960"
-    android:viewportHeight="960"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
     android:tint="@color/text_primary">
-    <path android:fillColor="@android:color/white"
-        android:pathData="M280,680q-33,0 -56.5,-23.5T200,600q0,-33 23.5,-56.5T280,520q33,0 56.5,23.5T360,600q0,33 -23.5,56.5T280,680ZM680,680q-33,0 -56.5,-23.5T600,600q0,-33 23.5,-56.5T680,520q33,0 56.5,23.5T760,600q0,33 -23.5,56.5T680,680ZM480,440q-12,0 -21,-9t-9,-21v-90l-142,46q-16,5 -30.5,-3T258,338q-5,-16 3,-30.5t24,-19.5l174,-56q10,-3 20.5,-3t20.5,3l174,56q16,5 24,19.5t3,30.5q-5,16 -19.5,24t-30.5,3l-142,-46v90q0,12 -9,21t-21,9Z"/>
+    <!-- Hat brim -->
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M2,11h20" />
+    <!-- Hat top -->
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M7,11V8a5,5 0,0 1,10 0v3" />
+    <!-- Left eye/glasses -->
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M7.5,17a2.5,2.5 0,1 0,0 -5a2.5,2.5 0,0 0,0 5z" />
+    <!-- Right eye/glasses -->
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M16.5,17a2.5,2.5 0,1 0,0 -5a2.5,2.5 0,0 0,0 5z" />
+    <!-- Bridge -->
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M10,14h4" />
 </vector>

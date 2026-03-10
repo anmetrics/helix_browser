@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Lịch sử"
+            app:title="@string/history"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:menu="@menu/menu_history"
             android:background="@color/toolbar_background" />
@@ -34,7 +34,7 @@
             android:layout_margin="12dp"
             android:background="@drawable/bg_address_bar"
             android:paddingHorizontal="16dp"
-            android:hint="Tìm kiếm lịch sử..."
+            android:hint="@string/history_hint"
             android:textSize="14sp"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/hint_color"
@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="🕐\n\nChưa có lịch sử duyệt web"
+            android:text="@string/no_history"
             android:textColor="@color/text_secondary"
             android:textSize="16sp"
             android:visibility="gone" />

@@ -1,18 +1,17 @@
 package com.helix.browser.ui
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Canvas
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.view.animation.DecelerateInterpolator
-import android.view.animation.OvershootInterpolator
+import android.widget.PopupMenu
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.helix.browser.HelixApp
 import com.helix.browser.R
@@ -59,10 +58,10 @@ class TabSwitcherActivity : BaseActivity() {
             activeTabId = tabManager.currentTab?.id
         )
 
+        // Grid layout with 2 columns
         binding.tabsRecyclerView.apply {
-            layoutManager = LinearLayoutManager(this@TabSwitcherActivity)
+            layoutManager = GridLayoutManager(this@TabSwitcherActivity, 2)
             adapter = this@TabSwitcherActivity.adapter
-            // Smooth scroll deceleration
             setHasFixedSize(false)
         }
 
@@ -119,9 +118,6 @@ class TabSwitcherActivity : BaseActivity() {
             binding.tabsRecyclerView.scrollToPosition(activeIndex)
         }
 
-        // Toolbar
-        binding.toolbar.setNavigationOnClickListener { finish() }
-
         // New tab button
         binding.btnNewTab.setOnClickListener {
             val result = Intent().apply {
@@ -130,6 +126,24 @@ class TabSwitcherActivity : BaseActivity() {
             }
             setResult(Activity.RESULT_OK, result)
             finish()
+        }
+
+        // More options menu
+        binding.btnMore.setOnClickListener { view ->
+            val popup = PopupMenu(this, view)
+            popup.menu.add(0, 1, 0, getString(R.string.close_all))
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    1 -> {
+                        tabManager.closeAllTabs()
+                        setResult(Activity.RESULT_OK, Intent().putExtra("new_tab", true))
+                        finish()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
         }
 
         // New incognito
@@ -149,6 +163,24 @@ class TabSwitcherActivity : BaseActivity() {
             finish()
         }
 
+        // Search tabs
+        binding.searchTabs.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s?.toString()?.trim() ?: ""
+                if (query.isEmpty()) {
+                    adapter.submitList(tabManager.tabs.toMutableList())
+                } else {
+                    val filtered = tabManager.tabs.filter {
+                        it.title.contains(query, ignoreCase = true) ||
+                                it.url.contains(query, ignoreCase = true)
+                    }
+                    adapter.submitList(filtered.toMutableList())
+                }
+            }
+        })
+
         // --- Banner Ad / Premium ---
         setupBannerAd()
 
@@ -164,7 +196,7 @@ class TabSwitcherActivity : BaseActivity() {
     }
 
     private fun updateTabCount(count: Int) {
-        binding.tabCountText.text = if (count == 1) "1 tab" else "$count tabs"
+        binding.tabCountText.text = count.toString()
     }
 
     override fun finish() {

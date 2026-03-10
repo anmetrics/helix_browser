@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">Suchen oder URL eingeben</string>
+    <string name="new_tab">Neuer Tab</string>
+    <string name="incognito_tab">Inkognito-Tab</string>
+    <string name="bookmarks">Lesezeichen</string>
+    <string name="history">Verlauf</string>
+    <string name="downloads">Downloads</string>
+    <string name="settings">Einstellungen</string>
+    <string name="share">Teilen</string>
+    <string name="find_in_page">Auf Seite suchen</string>
+    <string name="desktop_site">Desktop-Website</string>
+    <string name="mobile_site">Mobile Website</string>
+    <string name="add_bookmark">Lesezeichen hinzufügen</string>
+    <string name="remove_bookmark">Lesezeichen entfernen</string>
+    <string name="clear_history">Verlauf löschen</string>
+    <string name="downloading">Wird heruntergeladen</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">Tracker blockieren</string>
+    <string name="block_third_party_cookies">Drittanbieter-Cookies blockieren</string>
+    <string name="do_not_track">Do Not Track</string>
+    <string name="https_upgrade">HTTPS-Upgrade</string>
+    <string name="anti_fingerprinting">Anti-Fingerprinting</string>
+    <string name="block_popups">Popups blockieren</string>
+    <string name="clear_all_data">Alle Browserdaten löschen</string>
+    <string name="privacy_settings">Datenschutz</string>
+    <string name="trackers_blocked">Tracker blockiert</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">Tab-Gruppen</string>
+    <string name="pin_tab">Tab anheften</string>
+    <string name="mute_tab">Tab stummschalten</string>
+    <string name="restore_tabs">Tabs wiederherstellen</string>
+    <string name="suspend_tabs">Inaktive Tabs anhalten</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">Abgeschlossen</string>
+    <string name="download_in_progress">Wird heruntergeladen… %d%%</string>
+    <string name="download_failed">Fehlgeschlagen</string>
+    <string name="download_paused">Pausiert</string>
+    <string name="download_pending">Ausstehend</string>
+
+    <!-- Language settings -->
+    <string name="language">Sprache</string>
+    <string name="select_language">Sprache wählen</string>
+    <string name="system_default">Systemstandard</string>
+</resources>

@@ -19,7 +19,15 @@ import androidx.activity.enableEdgeToEdge
  * Instead, we color-match the status bar and nav bar to our toolbar background
  * so it looks seamless. The system handles all safe-area padding automatically.
  */
+import android.content.Context
+import com.helix.browser.utils.LocaleHelper
+
 open class BaseActivity : AppCompatActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

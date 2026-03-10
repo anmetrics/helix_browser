@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">搜索或输入网址</string>
+    <string name="new_tab">新标签页</string>
+    <string name="incognito_tab">无痕标签页</string>
+    <string name="bookmarks">书签</string>
+    <string name="history">历史记录</string>
+    <string name="downloads">下载</string>
+    <string name="settings">设置</string>
+    <string name="share">分享</string>
+    <string name="find_in_page">在页面中查找</string>
+    <string name="desktop_site">桌面版网站</string>
+    <string name="mobile_site">移动版网站</string>
+    <string name="add_bookmark">添加书签</string>
+    <string name="remove_bookmark">删除书签</string>
+    <string name="clear_history">清除历史记录</string>
+    <string name="downloading">正在下载</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">屏蔽追踪器</string>
+    <string name="block_third_party_cookies">屏蔽第三方 Cookie</string>
+    <string name="do_not_track">请勿追踪</string>
+    <string name="https_upgrade">HTTPS 升级</string>
+    <string name="anti_fingerprinting">反指纹识别</string>
+    <string name="block_popups">屏蔽弹窗</string>
+    <string name="clear_all_data">清除所有浏览数据</string>
+    <string name="privacy_settings">隐私</string>
+    <string name="trackers_blocked">已屏蔽追踪器</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">标签组</string>
+    <string name="pin_tab">固定标签页</string>
+    <string name="mute_tab">静音标签页</string>
+    <string name="restore_tabs">恢复标签页</string>
+    <string name="suspend_tabs">暂停非活动标签页</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">完成</string>
+    <string name="download_in_progress">正在下载… %d%%</string>
+    <string name="download_failed">失败</string>
+    <string name="download_paused">已暂停</string>
+    <string name="download_pending">等待中</string>
+
+    <!-- Language settings -->
+    <string name="language">语言</string>
+    <string name="select_language">选择语言</string>
+    <string name="system_default">系统默认</string>
+</resources>

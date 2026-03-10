@@ -11,38 +11,112 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
-        android:background="@color/toolbar_background"
+        android:background="@color/tab_switcher_background"
         app:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <!-- Top bar: + button | tab count badge | grid icon | more -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:titleTextColor="@color/text_primary"
-            app:navigationIcon="@drawable/ic_close"
-            app:navigationIconTint="@color/text_primary"
-            android:background="@color/toolbar_background">
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="8dp">
 
-            <!-- Tab count centered -->
+            <!-- New tab button (circular +) -->
+            <ImageButton
+                android:id="@+id/btnNewTab"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="10dp"
+                android:background="@drawable/bg_tab_count_badge"
+                android:src="@drawable/ic_add"
+                app:tint="@color/text_primary"
+                android:contentDescription="@string/new_tab" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Tab count badge -->
             <TextView
                 android:id="@+id/tabCountText"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="0 tabs"
+                android:layout_height="32dp"
+                android:minWidth="32dp"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:text="7"
                 android:textColor="@color/text_primary"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:fontFamily="sans-serif-medium" />
-        </com.google.android.material.appbar.MaterialToolbar>
+                android:fontFamily="sans-serif-medium"
+                android:background="@drawable/bg_tab_count_badge" />
+
+            <!-- Grid view toggle -->
+            <ImageButton
+                android:id="@+id/btnGridToggle"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="8dp"
+                android:padding="10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_grid_view"
+                app:tint="@color/text_primary"
+                android:contentDescription="Grid view" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- More options -->
+            <ImageButton
+                android:id="@+id/btnMore"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_more_vert"
+                app:tint="@color/text_primary"
+                android:contentDescription="More options" />
+        </LinearLayout>
+
+        <!-- Search bar -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="12dp">
+
+            <EditText
+                android:id="@+id/searchTabs"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_search_bar"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/hint_color"
+                android:paddingHorizontal="16dp"
+                android:hint="@string/search_tabs_hint"
+                android:textColorHint="@color/hint_color"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:maxLines="1"
+                android:importantForAutofill="no" />
+        </FrameLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tabsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="8dp"
+        android:paddingTop="4dp"
         android:paddingBottom="180dp"
+        android:paddingHorizontal="6dp"
         android:clipToPadding="false"
         android:scrollbars="none"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
@@ -96,7 +170,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Helix Premium"
+                        android:text="@string/premium_banner_title"
                         android:textColor="#FFFFFF"
                         android:textSize="14sp"
                         android:textStyle="bold"
@@ -106,7 +180,7 @@
                         android:id="@+id/adSubtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ad-free browsing + exclusive features"
+                        android:text="@string/premium_banner_subtitle"
                         android:textColor="#9090C0"
                         android:textSize="11sp"
                         android:layout_marginTop="1dp" />
@@ -136,7 +210,7 @@
                     android:src="@drawable/ic_close"
                     android:padding="6dp"
                     android:alpha="0.35"
-                    android:contentDescription="Dismiss" />
+                    android:contentDescription="@string/dismiss" />
             </LinearLayout>
 
             <View
@@ -159,7 +233,7 @@
                 android:layout_height="42dp"
                 android:layout_weight="1"
                 android:layout_marginHorizontal="4dp"
-                android:text="Private"
+                android:text="@string/private_tab_label"
                 android:textSize="12sp"
                 android:textAllCaps="false"
                 app:icon="@drawable/ic_incognito"
@@ -169,26 +243,12 @@
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnNewTab"
-                android:layout_width="0dp"
-                android:layout_height="42dp"
-                android:layout_weight="1"
-                android:layout_marginHorizontal="4dp"
-                android:text="New Tab"
-                android:textSize="12sp"
-                android:textAllCaps="false"
-                app:icon="@drawable/ic_add"
-                app:iconSize="16dp"
-                app:iconGravity="textStart"
-                app:cornerRadius="12dp" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCloseAll"
                 android:layout_width="0dp"
                 android:layout_height="42dp"
                 android:layout_weight="1"
                 android:layout_marginHorizontal="4dp"
-                android:text="Close All"
+                android:text="@string/close_all"
                 android:textSize="12sp"
                 android:textAllCaps="false"
                 app:icon="@drawable/ic_close"

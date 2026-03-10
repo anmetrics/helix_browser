@@ -72,13 +72,13 @@ class HistoryActivity : BaseActivity() {
 
     private fun showClearHistoryDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Xoá lịch sử")
-            .setMessage("Bạn có chắc muốn xoá toàn bộ lịch sử duyệt web?")
-            .setPositiveButton("Xoá") { _, _ ->
+            .setTitle(R.string.clear_history_dialog_title)
+            .setMessage(R.string.clear_history_dialog_message)
+            .setPositiveButton(R.string.clear_history_confirm) { _, _ ->
                 viewModel.clearAll()
-                Toast.makeText(this, "Đã xoá lịch sử", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.history_cleared), Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("Huỷ", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 }

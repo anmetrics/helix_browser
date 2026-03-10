@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">Cari atau ketik URL</string>
+    <string name="new_tab">Tab Baru</string>
+    <string name="incognito_tab">Tab Penyamaran</string>
+    <string name="bookmarks">Bookmark</string>
+    <string name="history">Riwayat</string>
+    <string name="downloads">Unduhan</string>
+    <string name="settings">Setelan</string>
+    <string name="share">Bagikan</string>
+    <string name="find_in_page">Cari di halaman</string>
+    <string name="desktop_site">Situs desktop</string>
+    <string name="mobile_site">Situs seluler</string>
+    <string name="add_bookmark">Tambah bookmark</string>
+    <string name="remove_bookmark">Hapus bookmark</string>
+    <string name="clear_history">Hapus riwayat</string>
+    <string name="downloading">Mengunduh</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">Blokir pelacak</string>
+    <string name="block_third_party_cookies">Blokir cookie pihak ketiga</string>
+    <string name="do_not_track">Jangan lacak</string>
+    <string name="https_upgrade">Upgrade HTTPS</string>
+    <string name="anti_fingerprinting">Anti-fingerprinting</string>
+    <string name="block_popups">Blokir popup</string>
+    <string name="clear_all_data">Hapus semua data penjelajahan</string>
+    <string name="privacy_settings">Privasi</string>
+    <string name="trackers_blocked">Pelacak diblokir</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">Grup tab</string>
+    <string name="pin_tab">Sematkan tab</string>
+    <string name="mute_tab">Senyap tab</string>
+    <string name="restore_tabs">Pulihkan tab</string>
+    <string name="suspend_tabs">Tangguhkan tab tidak aktif</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">Selesai</string>
+    <string name="download_in_progress">Mengunduh… %d%%</string>
+    <string name="download_failed">Gagal</string>
+    <string name="download_paused">Dijeda</string>
+    <string name="download_pending">Tertunda</string>
+
+    <!-- Language settings -->
+    <string name="language">Bahasa</string>
+    <string name="select_language">Pilih Bahasa</string>
+    <string name="system_default">Default sistem</string>
+</resources>

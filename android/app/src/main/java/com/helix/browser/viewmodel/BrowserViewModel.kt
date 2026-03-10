@@ -19,14 +19,14 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
     // Browser state
     val currentUrl = MutableLiveData<String>("")
-    val currentTitle = MutableLiveData<String>("New Tab")
+    val currentTitle = MutableLiveData<String>("")
     val loadingProgress = MutableLiveData<Int>(0)
     val isLoading = MutableLiveData<Boolean>(false)
     val isSecure = MutableLiveData<Boolean>(false)
     val isBookmarked = MutableLiveData<Boolean>(false)
     val canGoBack = MutableLiveData<Boolean>(false)
     val canGoForward = MutableLiveData<Boolean>(false)
-    val isDesktopMode = MutableLiveData<Boolean>(false)
+    val isDesktopMode = MutableLiveData<Boolean>()
     val isIncognito = MutableLiveData<Boolean>(false)
 
     // Find in page

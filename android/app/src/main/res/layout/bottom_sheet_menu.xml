@@ -37,7 +37,7 @@
             android:background="?attr/selectableItemBackgroundBorderless">
             <ImageView android:src="@drawable/ic_add" style="@style/MenuIconStyle"
                 android:layout_width="28dp" android:layout_height="28dp" />
-            <TextView android:text="Tab mới" android:textColor="@color/text_secondary"
+            <TextView android:text="@string/new_tab" android:textColor="@color/text_secondary"
                 android:textSize="10sp" android:layout_marginTop="4dp"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" />
         </LinearLayout>
@@ -54,7 +54,7 @@
             android:background="?attr/selectableItemBackgroundBorderless">
             <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIconStyle"
                 android:layout_width="28dp" android:layout_height="28dp" />
-            <TextView android:text="Ẩn danh" android:textColor="@color/text_secondary"
+            <TextView android:text="@string/incognito_tab" android:textColor="@color/text_secondary"
                 android:textSize="10sp" android:layout_marginTop="4dp"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" />
         </LinearLayout>
@@ -71,7 +71,7 @@
             android:background="?attr/selectableItemBackgroundBorderless">
             <ImageView android:src="@drawable/ic_share" style="@style/MenuIconStyle"
                 android:layout_width="28dp" android:layout_height="28dp" />
-            <TextView android:text="Chia sẻ" android:textColor="@color/text_secondary"
+            <TextView android:text="@string/share" android:textColor="@color/text_secondary"
                 android:textSize="10sp" android:layout_marginTop="4dp"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" />
         </LinearLayout>
@@ -88,7 +88,7 @@
             android:background="?attr/selectableItemBackgroundBorderless">
             <ImageView android:src="@drawable/ic_search" style="@style/MenuIconStyle"
                 android:layout_width="28dp" android:layout_height="28dp" />
-            <TextView android:text="Tìm" android:textColor="@color/text_secondary"
+            <TextView android:text="@string/find" android:textColor="@color/text_secondary"
                 android:textSize="10sp" android:layout_marginTop="4dp"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" />
         </LinearLayout>
@@ -100,28 +100,28 @@
     <LinearLayout android:id="@+id/menu_bookmark"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_bookmark" style="@style/MenuIconStyle" />
-        <TextView android:text="Đánh dấu" style="@style/MenuTextStyle" />
+        <TextView android:text="@string/add_bookmark" style="@style/MenuTextStyle" />
     </LinearLayout>
 
     <!-- Bookmarks list -->
     <LinearLayout android:id="@+id/menu_bookmarks"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_bookmark_filled" style="@style/MenuIconStyle" />
-        <TextView android:text="Trang đánh dấu" style="@style/MenuTextStyle" />
+        <TextView android:text="@string/bookmarks" style="@style/MenuTextStyle" />
     </LinearLayout>
 
     <!-- History -->
     <LinearLayout android:id="@+id/menu_history"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_history" style="@style/MenuIconStyle" />
-        <TextView android:text="Lịch sử" style="@style/MenuTextStyle" />
+        <TextView android:text="@string/history" style="@style/MenuTextStyle" />
     </LinearLayout>
 
     <!-- Downloads -->
     <LinearLayout android:id="@+id/menu_downloads"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_download" style="@style/MenuIconStyle" />
-        <TextView android:text="Tải xuống" style="@style/MenuTextStyle" />
+        <TextView android:text="@string/downloads" style="@style/MenuTextStyle" />
     </LinearLayout>
 
     <View style="@style/MenuDivider" />
@@ -130,7 +130,7 @@
     <LinearLayout android:id="@+id/menu_save_history_container"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_history" style="@style/MenuIconStyle" />
-        <TextView android:text="Lưu lịch sử" style="@style/MenuTextStyle"
+        <TextView android:text="@string/save_history" style="@style/MenuTextStyle"
             android:layout_weight="1" />
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switch_save_history"
@@ -143,7 +143,7 @@
     <LinearLayout android:id="@+id/menu_desktop_site"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_desktop" style="@style/MenuIconStyle" />
-        <TextView android:text="Trang desktop" style="@style/MenuTextStyle"
+        <TextView android:text="@string/desktop_site" style="@style/MenuTextStyle"
             android:layout_weight="1" />
         <ImageView android:id="@+id/ic_check_desktop"
             android:src="@drawable/ic_check"
@@ -158,6 +158,6 @@
     <LinearLayout android:id="@+id/menu_settings"
         style="@style/MenuItemStyle">
         <ImageView android:src="@drawable/ic_settings" style="@style/MenuIconStyle" />
-        <TextView android:text="Cài đặt" style="@style/MenuTextStyle" />
+        <TextView android:text="@string/settings" style="@style/MenuTextStyle" />
     </LinearLayout>
 </LinearLayout>

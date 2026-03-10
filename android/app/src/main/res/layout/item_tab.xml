@@ -5,13 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="12dp"
-    android:layout_marginVertical="4dp"
+    android:layout_margin="4dp"
     app:cardCornerRadius="16dp"
     app:cardBackgroundColor="@color/card_background"
-    app:cardElevation="6dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="@color/divider_color"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp"
     android:clickable="true"
     android:focusable="true">
 
@@ -20,14 +18,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header bar (like Chrome: favicon + title + close) -->
+        <!-- Header bar: favicon + title + close -->
         <LinearLayout
             android:id="@+id/tabHeaderBar"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="40dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="4dp"
             android:background="@color/card_background">
 
             <!-- Favicon -->
@@ -54,10 +53,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/text_primary"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:fontFamily="sans-serif-medium"
@@ -68,11 +67,11 @@
                 android:id="@+id/btnCloseTab"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:padding="5dp"
+                android:padding="6dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_close"
-                android:alpha="0.5"
-                android:contentDescription="Close tab" />
+                app:tint="@color/text_secondary"
+                android:contentDescription="@string/desc_close" />
         </LinearLayout>
 
         <!-- Active tab indicator (thin line under header) -->
@@ -86,7 +85,7 @@
         <!-- Thumbnail / Preview -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="180dp">
+            android:layout_height="200dp">
 
             <ImageView
                 android:id="@+id/tabThumbnail"
@@ -102,30 +101,47 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|end"
-                android:layout_margin="8dp"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp"
+                android:layout_margin="6dp"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
                 android:background="@drawable/bg_incognito_badge"
-                android:text="Private"
+                android:text="@string/private_tab_label"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="8sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
 
-            <!-- URL overlay at bottom -->
-            <TextView
-                android:id="@+id/tabUrl"
+            <!-- URL overlay at bottom with security icon -->
+            <LinearLayout
+                android:id="@+id/urlBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:background="#80000000"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"
-                android:textColor="#99FFFFFF"
-                android:textSize="10sp"
-                android:singleLine="true"
-                android:ellipsize="end"
-                tools:text="google.com" />
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp">
+
+                <ImageView
+                    android:id="@+id/securityIcon"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_lock"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/tabUrl"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="9sp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    tools:text="google.com" />
+            </LinearLayout>
         </FrameLayout>
 
     </LinearLayout>

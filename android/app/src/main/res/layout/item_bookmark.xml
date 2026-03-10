@@ -14,7 +14,7 @@
         android:layout_height="36dp"
         android:padding="6dp"
         android:src="@drawable/ic_bookmark_filled"
-        android:contentDescription="Favicon" />
+        android:contentDescription="@string/desc_favicon" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -49,5 +49,5 @@
         android:padding="4dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_delete"
-        android:contentDescription="Delete" />
+        android:contentDescription="@string/desc_delete" />
 </LinearLayout>

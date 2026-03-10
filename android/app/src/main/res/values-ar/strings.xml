@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">بحث أو إدخال عنوان URL</string>
+    <string name="new_tab">علامة تبويب جديدة</string>
+    <string name="incognito_tab">علامة تبويب خفية</string>
+    <string name="bookmarks">الإشارات المرجعية</string>
+    <string name="history">السجل</string>
+    <string name="downloads">التنزيلات</string>
+    <string name="settings">الإعدادات</string>
+    <string name="share">مشاركة</string>
+    <string name="find_in_page">بحث في الصفحة</string>
+    <string name="desktop_site">موقع سطح المكتب</string>
+    <string name="mobile_site">موقع الهاتف</string>
+    <string name="add_bookmark">إضافة إشارة مرجعية</string>
+    <string name="remove_bookmark">إزالة الإشارة المرجعية</string>
+    <string name="clear_history">مسح السجل</string>
+    <string name="downloading">جاري التنزيل</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">حظر أدوات التتبع</string>
+    <string name="block_third_party_cookies">حظر ملفات تعريف الارتباط للجهات الخارجية</string>
+    <string name="do_not_track">عدم التتبع</string>
+    <string name="https_upgrade">ترقية HTTPS</string>
+    <string name="anti_fingerprinting">مكافحة بصمات المتصفح</string>
+    <string name="block_popups">حظر النوافذ المنبثقة</string>
+    <string name="clear_all_data">مسح جميع بيانات التصفح</string>
+    <string name="privacy_settings">الخصوصية</string>
+    <string name="trackers_blocked">أدوات تتبع محظورة</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">مجموعات علامات التبويب</string>
+    <string name="pin_tab">تثبيت علامة التبويب</string>
+    <string name="mute_tab">كتم صوت علامة التبويب</string>
+    <string name="restore_tabs">استعادة علامات التبويب</string>
+    <string name="suspend_tabs">تعليق علامات التبويب غير النشطة</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">مكتمل</string>
+    <string name="download_in_progress">جاري التنزيل… %d%%</string>
+    <string name="download_failed">فشل</string>
+    <string name="download_paused">متوقف مؤقتاً</string>
+    <string name="download_pending">قيد الانتظار</string>
+
+    <!-- Language settings -->
+    <string name="language">اللغة</string>
+    <string name="select_language">اختر اللغة</string>
+    <string name="system_default">افتراضي النظام</string>
+</resources>

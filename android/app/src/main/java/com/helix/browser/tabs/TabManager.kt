@@ -279,10 +279,12 @@ class TabManager {
             _tabs.clear()
             for (i in 0 until tabsArray.length()) {
                 val obj = tabsArray.getJSONObject(i)
+                val url = obj.getString("url")
+                val title = obj.getString("title")
                 val tab = BrowserTab(
                     id = obj.getString("id"),
-                    title = obj.getString("title"),
-                    url = obj.getString("url"),
+                    title = if (url.isEmpty() || url == "about:blank") "" else title,
+                    url = url,
                     isPinned = obj.optBoolean("isPinned", false),
                     groupId = obj.optString("groupId", null).takeIf { it != "null" },
                     groupName = obj.optString("groupName", null).takeIf { it != "null" },

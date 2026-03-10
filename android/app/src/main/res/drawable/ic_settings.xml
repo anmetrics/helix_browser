@@ -2,9 +2,37 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="960"
-    android:viewportHeight="960"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
     android:tint="@color/text_primary">
-    <path android:fillColor="@android:color/white"
-        android:pathData="M433,880q-20,0 -35,-13t-18,-33l-14,-98q-15,-7 -30.5,-16.5T308,698l-93,39q-19,8 -38,0.5T148,714L73,582q-10,-17 -6,-37t21,-31l80,-60q-1,-8 -1.5,-16t-0.5,-16q0,-8 0.5,-15.5T168,392l-80,-60q-17,-11 -21,-31t6,-37l75,-132q10,-17 29,-24.5t38,0.5l93,39q12,-12 27.5,-21.5T366,109l14,-98q3,-20 18,-33t35,-13h150q20,0 35,13t18,33l14,98q15,7 30.5,16.5T708,146l93,-39q19,-8 38,-0.5t29,24.5l75,132q10,17 6,37t-21,31l-80,60q1,8 1.5,15.5T850,422q0,8 -0.5,16t-1.5,16l80,60q17,11 21,31t-6,37l-75,132q-10,17 -29,24.5T800,739l-93,-39q-12,12 -27.5,21.5T649,743l-14,98q-3,20 -18,33t-35,13H433ZM508,616q56,0 94,-38t38,-94q0,-56 -38,-94t-94,-38q-56,0 -94,38t-38,94q0,56 38,94t94,38Z"/>
+    <!-- Horizontal slider lines -->
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M4,21v-7M4,10V3" />
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M12,21v-9M12,8V3" />
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M20,21v-5M20,12V3" />
+    <!-- Slider knobs -->
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M1,14h6M9,8h6M17,12h6" />
 </vector>

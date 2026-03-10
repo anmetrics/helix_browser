@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+    <item>
+        <selector>
+            <!-- Active state -->
+            <item android:state_selected="true">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/address_bar_background" />
+                    <corners android:topLeftRadius="12dp" android:topRightRadius="12dp" />
+                </shape>
+            </item>
+            
+            <!-- Inactive state -->
+            <item>
+                <shape android:shape="rectangle">
+                    <!-- Slightly darkened/translucent to fade back -->
+                    <solid android:color="#0A000000" />
+                    <corners android:topLeftRadius="12dp" android:topRightRadius="12dp" />
+                    <!-- Faint bottom stroke to create separation from the active surface level -->
+                    <stroke android:width="1dp" android:color="#1A000000" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+</ripple>

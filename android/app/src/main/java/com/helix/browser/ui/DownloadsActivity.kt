@@ -50,7 +50,7 @@ class DownloadsActivity : BaseActivity() {
                 val uri = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))
                 val total = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
                 val downloaded = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                items.add(DownloadItem(id, title ?: "Download", status, uri, total, downloaded))
+                items.add(DownloadItem(id, title ?: getString(R.string.downloads), status, uri, total, downloaded))
             } while (cursor.moveToNext())
         }
         cursor.close()

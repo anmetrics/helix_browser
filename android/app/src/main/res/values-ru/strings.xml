@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">Поиск или ввод URL</string>
+    <string name="new_tab">Новая вкладка</string>
+    <string name="incognito_tab">Вкладка инкогнито</string>
+    <string name="bookmarks">Закладки</string>
+    <string name="history">История</string>
+    <string name="downloads">Загрузки</string>
+    <string name="settings">Настройки</string>
+    <string name="share">Поделиться</string>
+    <string name="find_in_page">Найти на странице</string>
+    <string name="desktop_site">Версия для ПК</string>
+    <string name="mobile_site">Мобильная версия</string>
+    <string name="add_bookmark">Добавить закладку</string>
+    <string name="remove_bookmark">Удалить закладку</string>
+    <string name="clear_history">Очистить историю</string>
+    <string name="downloading">Загрузка</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">Блокировать трекеры</string>
+    <string name="block_third_party_cookies">Блокировать сторонние файлы cookie</string>
+    <string name="do_not_track">Не отслеживать</string>
+    <string name="https_upgrade">Обновление до HTTPS</string>
+    <string name="anti_fingerprinting">Защита от цифровых отпечатков</string>
+    <string name="block_popups">Блокировать всплывающие окна</string>
+    <string name="clear_all_data">Очистить все данные браузера</string>
+    <string name="privacy_settings">Конфиденциальность</string>
+    <string name="trackers_blocked">Заблокировано трекеров</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">Группы вкладок</string>
+    <string name="pin_tab">Закрепить вкладку</string>
+    <string name="mute_tab">Выключить звук вкладки</string>
+    <string name="restore_tabs">Восстановить вкладки</string>
+    <string name="suspend_tabs">Приостановить неактивные вкладки</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">Завершено</string>
+    <string name="download_in_progress">Загрузка… %d%%</string>
+    <string name="download_failed">Ошибка</string>
+    <string name="download_paused">Приостановлено</string>
+    <string name="download_pending">Ожидание</string>
+
+    <!-- Language settings -->
+    <string name="language">Язык</string>
+    <string name="select_language">Выберите язык</string>
+    <string name="system_default">Системный по умолчанию</string>
+</resources>

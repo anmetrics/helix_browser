@@ -47,5 +47,5 @@
         android:padding="4dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_delete"
-        android:contentDescription="Delete" />
+        android:contentDescription="@string/desc_delete" />
 </LinearLayout>

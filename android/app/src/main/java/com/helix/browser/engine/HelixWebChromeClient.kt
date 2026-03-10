@@ -21,7 +21,8 @@ class HelixWebChromeClient(
     private val onEnterFullscreen: ((customView: View, callback: CustomViewCallback) -> Unit)? = null,
     private val onExitFullscreen: (() -> Unit)? = null,
     private val onGeolocationPermission: ((origin: String, callback: GeolocationPermissions.Callback) -> Unit)? = null,
-    private val onCreateWindow: ((view: WebView) -> Boolean)? = null
+    private val onCreateWindow: ((view: WebView) -> Boolean)? = null,
+    private val isAdBlockEnabled: () -> Boolean = { false }
 ) : WebChromeClient() {
 
     override fun onProgressChanged(view: WebView, newProgress: Int) {
@@ -85,6 +86,36 @@ class HelixWebChromeClient(
         isUserGesture: Boolean,
         resultMsg: Message
     ): Boolean {
+        // Block ad-triggered popup tabs
+        if (isAdBlockEnabled()) {
+            // Non-user-gesture popups are almost always ads
+            if (!isUserGesture) {
+                return false
+            }
+
+            // Intercept the URL and check if it's an ad before allowing the new window
+            val tempWebView = WebView(view.context).apply {
+                webViewClient = object : android.webkit.WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView,
+                        request: android.webkit.WebResourceRequest
+                    ): Boolean {
+                        val url = request.url.toString()
+                        if (AdBlockEngine.isPopupAd(url) || AdBlockEngine.isAd(url)) {
+                            // Block the ad URL — don't open new tab
+                            view.destroy()
+                            return true
+                        }
+                        return false
+                    }
+                }
+            }
+            val transport = resultMsg.obj as? WebView.WebViewTransport
+            transport?.webView = tempWebView
+            resultMsg.sendToTarget()
+            return onCreateWindow?.invoke(view) ?: false
+        }
+
         val newWebView = view.context?.let {
             WebView(it).apply {
                 webViewClient = android.webkit.WebViewClient()

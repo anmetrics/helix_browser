@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">検索またはURLを入力</string>
+    <string name="new_tab">新しいタブ</string>
+    <string name="incognito_tab">シークレットタブ</string>
+    <string name="bookmarks">ブックマーク</string>
+    <string name="history">履歴</string>
+    <string name="downloads">ダウンロード</string>
+    <string name="settings">設定</string>
+    <string name="share">共有</string>
+    <string name="find_in_page">ページ内検索</string>
+    <string name="desktop_site">PC版サイト</string>
+    <string name="mobile_site">モバイル版サイト</string>
+    <string name="add_bookmark">ブックマークを追加</string>
+    <string name="remove_bookmark">ブックマークを削除</string>
+    <string name="clear_history">履歴を消去</string>
+    <string name="downloading">ダウンロード中</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">トラッカーをブロック</string>
+    <string name="block_third_party_cookies">サードパーティのクッキーをブロック</string>
+    <string name="do_not_track">Do Not Track</string>
+    <string name="https_upgrade">HTTPSアップグレード</string>
+    <string name="anti_fingerprinting">アンチフィンガープリンティング</string>
+    <string name="block_popups">ポップアップをブロック</string>
+    <string name="clear_all_data">すべての閲覧データを消去</string>
+    <string name="privacy_settings">プライバシー</string>
+    <string name="trackers_blocked">ブロックされたトラッカー</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">タブグループ</string>
+    <string name="pin_tab">タブを固定</string>
+    <string name="mute_tab">タブをミュート</string>
+    <string name="restore_tabs">タブを復元</string>
+    <string name="suspend_tabs">非アクティブなタブを停止</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">完了</string>
+    <string name="download_in_progress">ダウンロード中… %d%%</string>
+    <string name="download_failed">失敗</string>
+    <string name="download_paused">一時停止</string>
+    <string name="download_pending">保留中</string>
+
+    <!-- Language settings -->
+    <string name="language">言語</string>
+    <string name="select_language">言語を選択</string>
+    <string name="system_default">システムデフォルト</string>
+</resources>

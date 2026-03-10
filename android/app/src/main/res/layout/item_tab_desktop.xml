@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="48dp"
+    android:minWidth="140dp"
+    android:maxWidth="240dp"
+    android:layout_marginEnd="1dp"
+    android:background="@drawable/bg_tab_desktop_selector"
+    android:paddingStart="16dp"
+    android:paddingEnd="4dp">
+
+    <ImageView
+        android:id="@+id/ivTabFavicon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/desc_favicon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/ic_desktop" />
+
+    <TextView
+        android:id="@+id/tvTabTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="4dp"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="1"
+        android:textColor="@color/text_tab_desktop_selector"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnTabClose"
+        app:layout_constraintStart_toEndOf="@+id/ivTabFavicon"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Helix Browser" />
+
+    <ImageButton
+        android:id="@+id/btnTabClose"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/desc_close"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_close"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/text_tab_desktop_selector" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

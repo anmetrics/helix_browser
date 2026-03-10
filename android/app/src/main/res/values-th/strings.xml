@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Helix Browser</string>
+    <string name="search_hint">ค้นหาหรือพิมพ์ URL</string>
+    <string name="new_tab">แท็บใหม่</string>
+    <string name="incognito_tab">แท็บไม่ระบุตัวตน</string>
+    <string name="bookmarks">บุ๊กมาร์ก</string>
+    <string name="history">ประวัติ</string>
+    <string name="downloads">ดาวน์โหลด</string>
+    <string name="settings">การตั้งค่า</string>
+    <string name="share">แชร์</string>
+    <string name="find_in_page">ค้นหาในหน้า</string>
+    <string name="desktop_site">ไซต์เวอร์ชันเดสก์ท็อป</string>
+    <string name="mobile_site">ไซต์เวอร์ชันมือถือ</string>
+    <string name="add_bookmark">เพิ่มบุ๊กมาร์ก</string>
+    <string name="remove_bookmark">ลบบุ๊กมาร์ก</string>
+    <string name="clear_history">ล้างประวัติ</string>
+    <string name="downloading">กำลังดาวน์โหลด</string>
+
+    <!-- Privacy settings -->
+    <string name="block_trackers">บล็อกตัวติดตาม</string>
+    <string name="block_third_party_cookies">บล็อกคุกกี้บุคคลที่สาม</string>
+    <string name="do_not_track">ไม่ติดตาม</string>
+    <string name="https_upgrade">อัปเกรดเป็น HTTPS</string>
+    <string name="anti_fingerprinting">ป้องกันการระบุตัวตน</string>
+    <string name="block_popups">บล็อกป๊อปอัพ</string>
+    <string name="clear_all_data">ล้างข้อมูลการท่องเว็บทั้งหมด</string>
+    <string name="privacy_settings">ความเป็นส่วนตัว</string>
+    <string name="trackers_blocked">ตัวติดตามที่ถูกบล็อก</string>
+
+    <!-- Tab management -->
+    <string name="tab_groups">กลุ่มแท็บ</string>
+    <string name="pin_tab">ปักหมุดแท็บ</string>
+    <string name="mute_tab">ปิดเสียงแท็บ</string>
+    <string name="restore_tabs">คืนค่าแท็บ</string>
+    <string name="suspend_tabs">ระงับแท็บที่ไม่ได้ใช้งาน</string>
+
+    <!-- Download statuses -->
+    <string name="download_complete">เสร็จสมบูรณ์</string>
+    <string name="download_in_progress">กำลังดาวน์โหลด… %d%%</string>
+    <string name="download_failed">ล้มเหลว</string>
+    <string name="download_paused">หยุดชั่วคราว</string>
+    <string name="download_pending">รอดำเนินการ</string>
+
+    <!-- Language settings -->
+    <string name="language">ภาษา</string>
+    <string name="select_language">เลือกภาษา</string>
+    <string name="system_default">ค่าเริ่มต้นของระบบ</string>
+</resources>
