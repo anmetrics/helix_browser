@@ -18,31 +18,33 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Tabs"
             app:titleTextColor="@color/text_primary"
             app:navigationIcon="@drawable/ic_close"
             app:navigationIconTint="@color/text_primary"
-            android:background="@color/toolbar_background" />
+            android:background="@color/toolbar_background">
 
-        <TextView
-            android:id="@+id/tabCountText"
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
-            android:gravity="center"
-            android:text="0 tab"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:fontFamily="sans-serif-medium"
-            android:background="@color/toolbar_background" />
+            <!-- Tab count centered -->
+            <TextView
+                android:id="@+id/tabCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="0 tabs"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
+        </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tabsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
-        android:paddingBottom="200dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="180dp"
         android:clipToPadding="false"
+        android:scrollbars="none"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <!-- Bottom section: premium banner + action buttons -->
@@ -75,7 +77,6 @@
                 android:background="@drawable/bg_premium_banner"
                 android:paddingHorizontal="16dp">
 
-                <!-- Glow icon -->
                 <TextView
                     android:layout_width="36dp"
                     android:layout_height="36dp"
@@ -111,7 +112,6 @@
                         android:layout_marginTop="1dp" />
                 </LinearLayout>
 
-                <!-- Subscribe button with gradient -->
                 <TextView
                     android:id="@+id/btnSubscribe"
                     android:layout_width="wrap_content"

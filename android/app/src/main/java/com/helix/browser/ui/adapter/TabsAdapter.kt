@@ -1,8 +1,11 @@
 package com.helix.browser.ui.adapter
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +20,8 @@ class TabsAdapter(
     private val activeTabId: String? = null
 ) : ListAdapter<BrowserTab, TabsAdapter.TabViewHolder>(DIFF_CALLBACK) {
 
+    private var lastAnimatedPosition = -1
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TabViewHolder {
         val binding = ItemTabBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TabViewHolder(binding)
@@ -24,6 +29,35 @@ class TabsAdapter(
 
     override fun onBindViewHolder(holder: TabViewHolder, position: Int) {
         holder.bind(getItem(position))
+        animateItem(holder.itemView, position)
+    }
+
+    private fun animateItem(view: View, position: Int) {
+        if (position <= lastAnimatedPosition) return
+        lastAnimatedPosition = position
+
+        view.alpha = 0f
+        view.translationY = 60f
+        view.scaleX = 0.95f
+        view.scaleY = 0.95f
+
+        val delay = (position * 50).toLong()
+
+        val fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f).setDuration(300)
+        val slideUp = ObjectAnimator.ofFloat(view, "translationY", 60f, 0f).setDuration(350)
+        val scaleX = ObjectAnimator.ofFloat(view, "scaleX", 0.95f, 1f).setDuration(350)
+        val scaleY = ObjectAnimator.ofFloat(view, "scaleY", 0.95f, 1f).setDuration(350)
+
+        AnimatorSet().apply {
+            playTogether(fadeIn, slideUp, scaleX, scaleY)
+            startDelay = delay
+            interpolator = DecelerateInterpolator(1.5f)
+            start()
+        }
+    }
+
+    fun resetAnimations() {
+        lastAnimatedPosition = -1
     }
 
     inner class TabViewHolder(private val binding: ItemTabBinding) :

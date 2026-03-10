@@ -2,5 +2,5 @@
 <layoutAnimation
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:animation="@anim/tab_card_enter"
-    android:delay="8%"
+    android:delay="6%"
     android:animationOrder="normal" />
