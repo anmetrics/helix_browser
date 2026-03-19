@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Brand colors -->
-    <color name="accent_purple">#7C7CFF</color>
-    <color name="accent_purple_dark">#5A5AE0</color>
-    <color name="accent_pink">#FF7CC8</color>
+    <!-- Brand — Threads/Chrome inspired monochrome with blue accent -->
+    <color name="accent_purple">#0095F6</color>
+    <color name="accent_purple_dark">#0077CC</color>
+    <color name="accent_pink">#FF3040</color>
 
-    <!-- Backgrounds -->
-    <color name="background">#0F0C29</color>
-    <color name="toolbar_background">#1A1835</color>
-    <color name="card_background">#1E1B4B</color>
-    <color name="sheet_background">#1A1835</color>
-    <color name="address_bar_background">#2A2550</color>
-    <color name="tab_switcher_background">#12102A</color>
-    <color name="splash_background">#0F0C29</color>
-    <color name="incognito_background">#1A0030</color>
+    <!-- Backgrounds — pure black + dark grays like Threads -->
+    <color name="background">#000000</color>
+    <color name="toolbar_background">#000000</color>
+    <color name="card_background">#181818</color>
+    <color name="sheet_background">#181818</color>
+    <color name="address_bar_background">#262626</color>
+    <color name="tab_switcher_background">#000000</color>
+    <color name="splash_background">#000000</color>
+    <color name="incognito_background">#0D0D0D</color>
 
-    <!-- Text -->
-    <color name="text_primary">#EEEEFF</color>
-    <color name="text_secondary">#9090C0</color>
-    <color name="hint_color">#5A57A0</color>
+    <!-- Text — high contrast white/gray -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#999999</color>
+    <color name="hint_color">#666666</color>
 
     <!-- Misc -->
-    <color name="divider_color">#2A2550</color>
+    <color name="divider_color">#262626</color>
     <color name="white">#FFFFFF</color>
-    <color name="green_secure">#4CAF50</color>
-    <color name="warning_red">#F44336</color>
+    <color name="green_secure">#34C759</color>
+    <color name="warning_red">#FF3B30</color>
 </resources>

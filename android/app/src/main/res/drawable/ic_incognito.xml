@@ -5,44 +5,10 @@
     android:viewportWidth="24"
     android:viewportHeight="24"
     android:tint="@color/text_primary">
-    <!-- Hat brim -->
     <path
-        android:strokeColor="@android:color/white"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="@android:color/transparent"
-        android:pathData="M2,11h20" />
-    <!-- Hat top -->
+        android:fillColor="@android:color/white"
+        android:pathData="M12,4.5C7,4.5 2.73,7.61 1,12c1.73,4.39 6,7.5 11,7.5s9.27,-3.11 11,-7.5c-1.73,-4.39 -6,-7.5 -11,-7.5zM12,17c-2.76,0 -5,-2.24 -5,-5s2.24,-5 5,-5 5,2.24 5,5 -2.24,5 -5,5zM12,9c-1.66,0 -3,1.34 -3,3s1.34,3 3,3 3,-1.34 3,-3 -1.34,-3 -3,-3z" />
     <path
-        android:strokeColor="@android:color/white"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="@android:color/transparent"
-        android:pathData="M7,11V8a5,5 0,0 1,10 0v3" />
-    <!-- Left eye/glasses -->
-    <path
-        android:strokeColor="@android:color/white"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="@android:color/transparent"
-        android:pathData="M7.5,17a2.5,2.5 0,1 0,0 -5a2.5,2.5 0,0 0,0 5z" />
-    <!-- Right eye/glasses -->
-    <path
-        android:strokeColor="@android:color/white"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="@android:color/transparent"
-        android:pathData="M16.5,17a2.5,2.5 0,1 0,0 -5a2.5,2.5 0,0 0,0 5z" />
-    <!-- Bridge -->
-    <path
-        android:strokeColor="@android:color/white"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="@android:color/transparent"
-        android:pathData="M10,14h4" />
+        android:fillColor="@android:color/white"
+        android:pathData="M2.71,3.16c-0.39,0.39 -0.39,1.02 0,1.41l16.97,16.97c0.39,0.39 1.02,0.39 1.41,0 0.39,-0.39 0.39,-1.02 0,-1.41L4.12,3.16c-0.39,-0.39 -1.02,-0.39 -1.41,0z" />
 </vector>

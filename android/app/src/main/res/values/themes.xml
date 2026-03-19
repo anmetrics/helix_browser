@@ -1,22 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme -->
+    <!-- Base application theme — Threads-inspired dark -->
     <style name="Theme.HelixBrowser" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- CRITICAL: Disable Material 3 Dark Theme elevation colors.
-             This ensures that elements with elevation (like toolbar and bottom nav)
-             stay exactly their hex color (#1A1835) instead of being dynamically lightened. -->
         <item name="elevationOverlayEnabled">false</item>
 
         <item name="colorPrimary">@color/accent_purple</item>
         <item name="colorPrimaryVariant">@color/accent_purple_dark</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorSecondary">@color/accent_pink</item>
+        <item name="colorSecondary">@color/accent_purple</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="android:statusBarColor">@color/toolbar_background</item>
-        <item name="android:navigationBarColor">@color/toolbar_background</item>
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/address_bar_background</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+
+        <!-- Material 3 shape — rounded like Chrome -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Helix.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Helix.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Helix.Large</item>
+    </style>
+
+    <!-- Shape appearances -->
+    <style name="ShapeAppearance.Helix.Small" parent="ShapeAppearance.Material3.Corner.Small">
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Helix.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Helix.Large" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerSize">24dp</item>
     </style>
 
     <!-- Splash Screen Theme -->
@@ -26,7 +44,7 @@
         <item name="postSplashScreenTheme">@style/Theme.HelixBrowser</item>
     </style>
 
-    <!-- Bottom Sheet -->
+    <!-- Bottom Sheet — Threads style -->
     <style name="Theme.HelixBrowser.BottomSheet" parent="Theme.Material3.DayNight.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
         <item name="android:windowIsFloating">false</item>
@@ -38,8 +56,8 @@
     </style>
 
     <style name="ShapeAppearance.HelixBrowser.BottomSheet" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
-        <item name="cornerSizeTopLeft">20dp</item>
-        <item name="cornerSizeTopRight">20dp</item>
+        <item name="cornerSizeTopLeft">24dp</item>
+        <item name="cornerSizeTopRight">24dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
         <item name="cornerSizeBottomRight">0dp</item>
     </style>
@@ -66,12 +84,13 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:layout_marginStart">16dp</item>
     </style>
 
     <style name="MenuDivider">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_height">0.5dp</item>
         <item name="android:background">@color/divider_color</item>
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>

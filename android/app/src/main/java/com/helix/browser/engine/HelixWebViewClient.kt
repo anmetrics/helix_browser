@@ -177,15 +177,15 @@ class HelixWebViewClient(
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
-                    body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee;
+                    body { font-family: -apple-system, sans-serif; background: #000; color: #fff;
                            display: flex; align-items: center; justify-content: center;
                            min-height: 100vh; margin: 0; flex-direction: column; text-align: center; padding: 24px; }
                     .icon { font-size: 64px; margin-bottom: 16px; }
-                    h1 { font-size: 24px; font-weight: 700; color: #e0e0ff; margin-bottom: 8px; }
-                    p { color: #aaa; font-size: 14px; margin: 4px 0; max-width: 320px; }
-                    .url { color: #7c7cff; word-break: break-all; margin-top: 12px; font-size: 13px; }
+                    h1 { font-size: 22px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+                    p { color: #999; font-size: 14px; margin: 4px 0; max-width: 320px; }
+                    .url { color: #0095F6; word-break: break-all; margin-top: 12px; font-size: 13px; }
                     button { margin-top: 24px; padding: 12px 32px; border-radius: 24px; border: none;
-                             background: #7c7cff; color: white; font-size: 16px; cursor: pointer; }
+                             background: #0095F6; color: white; font-size: 16px; font-weight: 600; cursor: pointer; }
                 </style>
             </head>
             <body>
@@ -206,15 +206,15 @@ class HelixWebViewClient(
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
-                    body { font-family: 'Segoe UI', sans-serif; background: #1a0000; color: #eee;
+                    body { font-family: -apple-system, sans-serif; background: #000; color: #fff;
                            display: flex; align-items: center; justify-content: center;
                            min-height: 100vh; margin: 0; flex-direction: column; text-align: center; padding: 24px; }
                     .icon { font-size: 64px; margin-bottom: 16px; }
-                    h1 { font-size: 24px; font-weight: 700; color: #ff8080; margin-bottom: 8px; }
-                    p { color: #aaa; font-size: 14px; max-width: 320px; }
-                    .url { color: #ff4444; word-break: break-all; margin-top: 12px; font-size: 13px; }
+                    h1 { font-size: 22px; font-weight: 600; color: #FF3B30; margin-bottom: 8px; }
+                    p { color: #999; font-size: 14px; max-width: 320px; }
+                    .url { color: #FF3B30; word-break: break-all; margin-top: 12px; font-size: 13px; }
                     button { margin-top: 24px; padding: 12px 32px; border-radius: 24px; border: none;
-                             background: #ff4444; color: white; font-size: 16px; cursor: pointer; }
+                             background: #FF3B30; color: white; font-size: 16px; font-weight: 600; cursor: pointer; }
                 </style>
             </head>
             <body>

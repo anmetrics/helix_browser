@@ -490,26 +490,27 @@ class MainActivity : BaseActivity() {
 
     private fun buildNewTabHtml(): String = """
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>${getString(R.string.new_tab)}</title>
-<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;-webkit-user-select:none;}
-.logo{font-size:48px;font-weight:700;margin-bottom:8px;background:linear-gradient(135deg,#7c7cff,#ff7cc8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.tagline{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:32px;}
-.search-box{width:90%;max-width:360px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:28px;padding:14px 20px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(10px);margin-bottom:32px;}
-.search-box span{color:rgba(255,255,255,0.4);font-size:15px;}
-.shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:90%;max-width:360px;}
-.shortcut{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:16px;background:rgba(255,255,255,0.06);text-decoration:none;color:white;font-size:11px;border:1px solid rgba(255,255,255,0.08);transition:background 0.2s;}
-.shortcut:active{background:rgba(124,124,255,0.2);}.shortcut-icon{font-size:24px;}</style></head>
-<body><div class="logo">⬡ Helix</div><div class="tagline">${getString(R.string.fast_secure_private)}</div><div class="search-box"><span>🔍</span><span>${getString(R.string.search_or_type_url)}</span></div>
+body{font-family:'Inter',-apple-system,sans-serif;background:#000;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;-webkit-user-select:none;}
+.logo{font-size:42px;font-weight:700;margin-bottom:6px;color:#fff;letter-spacing:-1px;}
+.logo span{color:#0095F6;}
+.tagline{font-size:13px;color:#666;margin-bottom:36px;font-weight:400;}
+.search-box{width:90%;max-width:360px;background:#262626;border-radius:24px;padding:14px 20px;display:flex;align-items:center;gap:12px;margin-bottom:36px;}
+.search-box span{color:#666;font-size:14px;}
+.shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:90%;max-width:360px;}
+.shortcut{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border-radius:16px;background:#181818;text-decoration:none;color:#fff;font-size:11px;font-weight:500;transition:background 0.15s;}
+.shortcut:active{background:#333;}.shortcut-icon{width:40px;height:40px;border-radius:12px;background:#262626;display:flex;align-items:center;justify-content:center;font-size:20px;}</style></head>
+<body><div class="logo"><span>H</span>elix</div><div class="tagline">${getString(R.string.fast_secure_private)}</div><div class="search-box"><span>🔍</span><span>${getString(R.string.search_or_type_url)}</span></div>
 <div class="shortcuts">
-<a class="shortcut" href="https://google.com"><span class="shortcut-icon">🔍</span>Google</a>
-<a class="shortcut" href="https://youtube.com"><span class="shortcut-icon">▶️</span>YouTube</a>
-<a class="shortcut" href="https://github.com"><span class="shortcut-icon">🐙</span>GitHub</a>
-<a class="shortcut" href="https://facebook.com"><span class="shortcut-icon">📘</span>Facebook</a>
-<a class="shortcut" href="https://twitter.com"><span class="shortcut-icon">🐦</span>Twitter</a>
-<a class="shortcut" href="https://reddit.com"><span class="shortcut-icon">🤖</span>Reddit</a>
-<a class="shortcut" href="https://wikipedia.org"><span class="shortcut-icon">📖</span>Wikipedia</a>
-<a class="shortcut" href="https://netflix.com"><span class="shortcut-icon">🎬</span>Netflix</a>
+<a class="shortcut" href="https://google.com"><div class="shortcut-icon">G</div>Google</a>
+<a class="shortcut" href="https://youtube.com"><div class="shortcut-icon">▶</div>YouTube</a>
+<a class="shortcut" href="https://github.com"><div class="shortcut-icon">⌥</div>GitHub</a>
+<a class="shortcut" href="https://facebook.com"><div class="shortcut-icon">f</div>Facebook</a>
+<a class="shortcut" href="https://twitter.com"><div class="shortcut-icon">𝕏</div>Twitter</a>
+<a class="shortcut" href="https://reddit.com"><div class="shortcut-icon">r/</div>Reddit</a>
+<a class="shortcut" href="https://wikipedia.org"><div class="shortcut-icon">W</div>Wikipedia</a>
+<a class="shortcut" href="https://netflix.com"><div class="shortcut-icon">N</div>Netflix</a>
 </div></body></html>""".trimIndent()
 
     private fun showMoreOptionsMenu() {
