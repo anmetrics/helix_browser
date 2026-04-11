@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.helix.browser.databinding.ActivityDownloadsBinding
 import com.helix.browser.ui.adapter.DownloadsAdapter
+import com.helix.browser.R
 
 class DownloadsActivity : BaseActivity() {
 

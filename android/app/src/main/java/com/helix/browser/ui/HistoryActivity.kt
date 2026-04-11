@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.helix.browser.databinding.ActivityHistoryBinding
 import com.helix.browser.ui.adapter.HistoryAdapter
 import com.helix.browser.viewmodel.HistoryViewModel
+import com.helix.browser.R
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

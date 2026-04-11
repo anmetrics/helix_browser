@@ -85,7 +85,7 @@ class HelixWebViewClient(
             val errorCode = error.errorCode
             val description = error.description?.toString() ?: "Unknown error"
             onPageError(request.url.toString(), errorCode, description)
-            val errorHtml = buildErrorPage(request.url.toString(), description)
+            val errorHtml = buildErrorPage(view.context, request.url.toString(), description)
             view.loadDataWithBaseURL(null, errorHtml, "text/html", "UTF-8", null)
         }
     }
@@ -132,7 +132,7 @@ class HelixWebViewClient(
         } catch (e: Exception) {
             // If dialog can't be shown (e.g., activity destroyed), cancel
             handler.cancel()
-            val errorHtml = buildSslErrorPage(error.url, error.primaryError)
+            val errorHtml = buildSslErrorPage(context, error.url, error.primaryError)
             view.loadDataWithBaseURL(null, errorHtml, "text/html", "UTF-8", null)
         }
     }
@@ -170,7 +170,7 @@ class HelixWebViewClient(
         }
     }
 
-    private fun buildErrorPage(url: String, description: String): String {
+    private fun buildErrorPage(context: android.content.Context, url: String, description: String): String {
         return """
             <!DOCTYPE html>
             <html>
@@ -199,7 +199,7 @@ class HelixWebViewClient(
         """.trimIndent()
     }
 
-    private fun buildSslErrorPage(url: String, errorCode: Int): String {
+    private fun buildSslErrorPage(context: android.content.Context, url: String, errorCode: Int): String {
         return """
             <!DOCTYPE html>
             <html>

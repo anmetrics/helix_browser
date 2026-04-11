@@ -148,14 +148,14 @@ class LanguageActivity : BaseActivity() {
             }
         }
 
-        class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        inner class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val container: View = view.findViewById(R.id.itemContainer)
             val name: TextView = view.findViewById(R.id.langName)
             val subName: TextView = view.findViewById(R.id.langSubName)
             val check: ImageView = view.findViewById(R.id.langCheck)
         }
 
-        class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        inner class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val title: TextView = view.findViewById(R.id.headerTitle)
         }
 
