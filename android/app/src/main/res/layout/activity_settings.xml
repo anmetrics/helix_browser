@@ -8,24 +8,531 @@
     android:fitsSystemWindows="true"
     android:background="@color/background">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Top bar with close button -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        android:background="@color/background"
-        app:elevation="0dp">
+        android:layout_height="56dp"
+        android:paddingHorizontal="4dp"
+        android:gravity="center_vertical">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/settings"
+            android:textColor="@color/text_primary"
+            android:textSize="17sp"
+            android:fontFamily="sans-serif-medium" />
+
+        <ImageButton
+            android:id="@+id/btnClose"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            app:tint="@color/text_secondary"
+            android:contentDescription="@string/desc_close" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/settings"
-            app:navigationIcon="@drawable/ic_arrow_back"
-            android:background="@color/background" />
-    </com.google.android.material.appbar.AppBarLayout>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="40dp">
 
-    <FrameLayout
-        android:id="@+id/settings_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+            <!-- ═══ Browser Identity ═══ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="8dp"
+                android:paddingBottom="24dp">
+
+                <!-- Logo avatar -->
+                <FrameLayout
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/bg_settings_avatar"
+                        android:padding="18dp"
+                        android:src="@drawable/ic_helix_logo"
+                        android:scaleType="fitCenter" />
+
+                    <!-- Version badge -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:translationY="4dp"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="2dp"
+                        android:background="@drawable/bg_version_badge"
+                        android:text="@string/version_summary"
+                        android:textColor="@color/accent_purple_light"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textColor="@color/text_primary"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/fast_secure_private"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider_color"
+                android:layout_marginHorizontal="20dp" />
+
+            <!-- ═══ General ═══ -->
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="General" />
+
+            <!-- Search Engine -->
+            <LinearLayout
+                android:id="@+id/settSearchEngine"
+                style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/info_blue" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/search_engine_pref" />
+                    <TextView
+                        android:id="@+id/tvSearchEngine"
+                        style="@style/SettingsSubtitleStyle"
+                        android:text="Google" />
+                </LinearLayout>
+                <ImageView style="@style/SettingsChevron" />
+            </LinearLayout>
+
+            <!-- Homepage -->
+            <LinearLayout
+                android:id="@+id/settHomepage"
+                style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/accent_purple" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/homepage_pref" />
+                    <TextView
+                        android:id="@+id/tvHomepage"
+                        style="@style/SettingsSubtitleStyle"
+                        android:text="@string/homepage_summary" />
+                </LinearLayout>
+                <ImageView style="@style/SettingsChevron" />
+            </LinearLayout>
+
+            <!-- Language -->
+            <LinearLayout
+                android:id="@+id/settLanguage"
+                style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_settings"
+                    app:tint="@color/accent_purple_light" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/language" />
+                    <TextView
+                        android:id="@+id/tvLanguage"
+                        style="@style/SettingsSubtitleStyle"
+                        android:text="@string/system_default" />
+                </LinearLayout>
+                <ImageView style="@style/SettingsChevron" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider_color"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="4dp" />
+
+            <!-- ═══ Content ═══ -->
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="Content" />
+
+            <!-- JavaScript -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_settings"
+                    app:tint="@color/warning_orange" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/javascript_pref" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/javascript_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchJavascript"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Desktop mode -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_desktop"
+                    app:tint="@color/text_secondary" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/desktop_site" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/desktop_site_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchDesktopMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider_color"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="4dp" />
+
+            <!-- ═══ Privacy & Security ═══ -->
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="@string/privacy_settings" />
+
+            <!-- Block Ads -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/green_secure" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/block_ads_title" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/block_ads_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchBlockAds"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Block Trackers -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/green_secure" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/block_trackers" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/block_trackers_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchBlockTrackers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Block third-party cookies -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/warning_orange" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/block_third_party_cookies" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/block_third_party_cookies_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchBlockCookies"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Do Not Track -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/info_blue" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/do_not_track" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/do_not_track_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchDoNotTrack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- HTTPS Upgrade -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_lock"
+                    app:tint="@color/green_secure" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/https_upgrade" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/https_upgrade_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchHttpsUpgrade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Anti-fingerprinting -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/accent_purple" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/anti_fingerprinting" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/anti_fingerprinting_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchAntiFingerprinting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Block Popups -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/warning_red" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/block_popups" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/block_popups_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchBlockPopups"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Trackers blocked info -->
+            <LinearLayout style="@style/SettingsItemStyle"
+                android:clickable="false"
+                android:focusable="false">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/green_secure" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/trackers_blocked" />
+                    <TextView
+                        android:id="@+id/tvTrackersBlocked"
+                        style="@style/SettingsSubtitleStyle"
+                        android:text="" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider_color"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="4dp" />
+
+            <!-- ═══ Tabs ═══ -->
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="@string/tabs_category" />
+
+            <!-- Restore tabs -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_tabs"
+                    app:tint="@color/info_blue" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/restore_tabs" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/restore_tabs_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchRestoreTabs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Suspend tabs -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_tabs"
+                    app:tint="@color/text_secondary" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/suspend_tabs" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/suspend_tabs_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchSuspendTabs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider_color"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="4dp" />
+
+            <!-- ═══ Data ═══ -->
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="Data" />
+
+            <!-- Clear cache -->
+            <LinearLayout
+                android:id="@+id/settClearCache"
+                style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_delete"
+                    app:tint="@color/text_secondary" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/clear_cache" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/clear_cache_summary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Clear cookies -->
+            <LinearLayout
+                android:id="@+id/settClearCookies"
+                style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_delete"
+                    app:tint="@color/text_secondary" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/clear_cookies" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/clear_cookies_summary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Clear history -->
+            <LinearLayout
+                android:id="@+id/settClearHistory"
+                style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_history"
+                    app:tint="@color/text_secondary" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/clear_history" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/clear_history_summary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Clear all data -->
+            <LinearLayout
+                android:id="@+id/settClearAll"
+                style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_delete"
+                    app:tint="@color/warning_red" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/clear_all_data"
+                        android:textColor="@color/warning_red" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/clear_all_data_summary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider_color"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="4dp" />
+
+            <!-- ═══ About ═══ -->
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="@string/info_category" />
+
+            <!-- Version -->
+            <LinearLayout style="@style/SettingsItemStyle"
+                android:clickable="false"
+                android:focusable="false">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_settings"
+                    app:tint="@color/text_tertiary" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/version_pref" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/version_summary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Engine -->
+            <LinearLayout style="@style/SettingsItemStyle"
+                android:clickable="false"
+                android:focusable="false">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_settings"
+                    app:tint="@color/text_tertiary" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/engine_pref" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/engine_summary" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

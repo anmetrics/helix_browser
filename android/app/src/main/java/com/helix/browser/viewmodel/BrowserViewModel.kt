@@ -78,4 +78,23 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         this.canGoBack.value = canGoBack
         this.canGoForward.value = canGoForward
     }
+
+    // URL autocomplete suggestions
+    val suggestions = MutableLiveData<List<Pair<String, String>>>() // title, url
+
+    fun fetchSuggestions(query: String) {
+        if (query.length < 2) {
+            suggestions.value = emptyList()
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val historyItems = historyRepo.getSuggestions(query)
+                val results = historyItems.map { Pair(it.title, it.url) }.distinctBy { it.second }
+                suggestions.value = results
+            } catch (_: Exception) {
+                suggestions.value = emptyList()
+            }
+        }
+    }
 }

@@ -29,6 +29,9 @@ class TabManager {
     private val _tabGroups = mutableListOf<TabGroup>()
     val tabGroups: List<TabGroup> get() = _tabGroups.toList()
 
+    private val _recentlyClosed = mutableListOf<BrowserTab>()
+    val recentlyClosed: List<BrowserTab> get() = _recentlyClosed.toList()
+
     companion object {
         private const val PREFS_NAME = "helix_tabs"
         private const val KEY_TABS = "saved_tabs"
@@ -55,6 +58,11 @@ class TabManager {
         val tab = _tabs[index]
         // Don't allow closing pinned tabs without explicit unpin
         if (tab.isPinned) return
+        // Save to recently closed (keep max 10)
+        if (tab.url.isNotEmpty() && !tab.isIncognito) {
+            _recentlyClosed.add(0, tab.copy(thumbnail = null, favicon = null))
+            if (_recentlyClosed.size > 10) _recentlyClosed.removeAt(_recentlyClosed.size - 1)
+        }
         // Remove from any group
         _tabGroups.forEach { it.tabIds.remove(tabId) }
         _tabGroups.removeAll { it.tabIds.isEmpty() }

@@ -115,6 +115,16 @@
                                 android:src="@drawable/ic_refresh"
                                 android:contentDescription="@string/desc_refresh" />
 
+                            <ImageButton
+                                android:id="@+id/btnVoiceSearch"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:padding="6dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_mic"
+                                android:contentDescription="Voice search"
+                                android:visibility="gone" />
+
                             <TextView
                                 android:id="@+id/btnCancelSearch"
                                 android:layout_width="wrap_content"
@@ -244,14 +254,35 @@
             </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <FrameLayout
-            android:id="@+id/webViewContainer"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/background"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <FrameLayout
+                android:id="@+id/webViewContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background" />
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- URL Suggestions Overlay -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/suggestionsRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/background"
+        android:visibility="gone"
+        android:clipToPadding="false"
+        android:paddingTop="4dp"
+        app:layout_constraintTop_toTopOf="@id/coordinatorLayout"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- BOTTOM NAVIGATION -->
     <LinearLayout

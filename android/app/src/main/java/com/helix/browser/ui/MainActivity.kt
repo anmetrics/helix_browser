@@ -1,5 +1,6 @@
 package com.helix.browser.ui
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.app.DownloadManager
 import android.content.Context
@@ -48,7 +49,10 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
 import android.print.PrintManager
+import android.text.Editable
+import android.text.TextWatcher
 import android.webkit.WebView.HitTestResult
+import com.helix.browser.ui.adapter.SuggestionsAdapter
 
 class MainActivity : BaseActivity() {
 
@@ -57,6 +61,7 @@ class MainActivity : BaseActivity() {
     private lateinit var tabManager: com.helix.browser.tabs.TabManager
 
     private var desktopTabAdapter: DesktopTabAdapter? = null
+    private var suggestionsAdapter: SuggestionsAdapter? = null
     private var isTablet = false
 
     private val webViewPool = LinkedHashMap<String, HelixWebView>()
@@ -73,6 +78,18 @@ class MainActivity : BaseActivity() {
     ) { uris ->
         fileChooserCallback?.onReceiveValue(uris.toTypedArray())
         fileChooserCallback = null
+    }
+
+    private val voiceSearchLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val matches = result.data?.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS)
+            matches?.firstOrNull()?.let { query ->
+                val url = UrlUtils.formatUrl(query)
+                loadUrl(url)
+            }
+        }
     }
 
     private val permissionLauncher = registerForActivityResult(
@@ -119,6 +136,9 @@ class MainActivity : BaseActivity() {
         setupBottomNavigation()
         setupDesktopTabBar()
         setupObservers()
+        setupSwipeRefresh()
+        setupGestures()
+        setupSuggestions()
         
         // Initialize desktop mode state based on device type if not already set
         if (viewModel.isDesktopMode.value == null) {
@@ -181,10 +201,17 @@ class MainActivity : BaseActivity() {
                     setText(viewModel.currentUrl.value)
                     selectAll()
                     binding.btnCancelSearch.isVisible = true
+                    binding.btnVoiceSearch.isVisible = false
+                    binding.btnBookmark.isVisible = false
+                    binding.btnRefresh.isVisible = false
                     showKeyboard(this)
                 } else {
                     updateAddressBarDisplay()
                     binding.btnCancelSearch.isVisible = false
+                    binding.btnVoiceSearch.isVisible = false
+                    binding.btnBookmark.isVisible = true
+                    binding.btnRefresh.isVisible = true
+                    binding.suggestionsRecyclerView.isVisible = false
                 }
             }
             setOnClickListener {
@@ -207,6 +234,9 @@ class MainActivity : BaseActivity() {
             binding.addressBar.clearFocus()
             hideKeyboard()
         }
+        binding.iconSecure.setOnClickListener {
+            showPageInfoSheet()
+        }
         binding.btnRefresh.setOnClickListener {
             if (viewModel.isLoading.value == true) {
                 currentWebView?.stopLoading()
@@ -214,13 +244,25 @@ class MainActivity : BaseActivity() {
                 currentWebView?.reload()
             }
         }
+        // Voice search
+        binding.btnVoiceSearch.setOnClickListener {
+            val intent = Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, getString(R.string.search_hint))
+            }
+            try {
+                voiceSearchLauncher.launch(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Voice search not available", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun setupBottomNavigation() {
-        binding.btnBack.setOnClickListener { currentWebView?.goBack() }
-        binding.btnForward.setOnClickListener { currentWebView?.goForward() }
+        binding.btnBack.setOnClickListener { animateClick(it); currentWebView?.goBack() }
+        binding.btnForward.setOnClickListener { animateClick(it); currentWebView?.goForward() }
         binding.btnHome.setOnClickListener {
-            loadUrl(Prefs.getHomepage(this))
+            animateClick(it); loadUrl(Prefs.getHomepage(this))
         }
 
         if (isTablet) {
@@ -300,9 +342,16 @@ class MainActivity : BaseActivity() {
         viewModel.isLoading.observe(this) { loading ->
             binding.progressBar.isVisible = loading
             binding.btnRefresh.setImageResource(if (loading) R.drawable.ic_close else R.drawable.ic_refresh)
+            if (!loading) {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
         }
         viewModel.loadingProgress.observe(this) { progress ->
-            binding.progressBar.progress = progress
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                binding.progressBar.setProgress(progress, true)
+            } else {
+                binding.progressBar.progress = progress
+            }
         }
         viewModel.currentTitle.observe(this) { title ->
             tabManager.updateCurrentTab(title = title)
@@ -566,6 +615,20 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
             
             dialog.dismiss()
         }
+        // Text zoom
+        val tvZoomLevel = view.findViewById<android.widget.TextView>(R.id.tvZoomLevel)
+        val currentZoom = currentWebView?.settings?.textZoom ?: 100
+        tvZoomLevel.text = "${currentZoom}%"
+        view.findViewById<View>(R.id.btnZoomIn).setOnClickListener {
+            val newZoom = ((currentWebView?.settings?.textZoom ?: 100) + 10).coerceAtMost(200)
+            currentWebView?.settings?.textZoom = newZoom
+            tvZoomLevel.text = "${newZoom}%"
+        }
+        view.findViewById<View>(R.id.btnZoomOut).setOnClickListener {
+            val newZoom = ((currentWebView?.settings?.textZoom ?: 100) - 10).coerceAtLeast(50)
+            currentWebView?.settings?.textZoom = newZoom
+            tvZoomLevel.text = "${newZoom}%"
+        }
         view.findViewById<View>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_print).setOnClickListener { printCurrentPage(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_add_to_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
@@ -678,6 +741,30 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         dialog.show()
     }
 
+    private fun showPageInfoSheet() {
+        val url = viewModel.currentUrl.value ?: return
+        val isHttps = url.startsWith("https://")
+        val domain = try { java.net.URI(url).host ?: url } catch (_: Exception) { url }
+
+        val title = if (isHttps) getString(R.string.security_secure_title) else getString(R.string.security_not_secure_title)
+        val message = if (isHttps) getString(R.string.security_secure_message) else getString(R.string.security_not_secure_message)
+        val iconColor = if (isHttps) R.color.green_secure else R.color.warning_red
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setIcon(ContextCompat.getDrawable(this, if (isHttps) R.drawable.ic_lock else R.drawable.ic_lock_open)?.apply {
+                setTint(ContextCompat.getColor(this@MainActivity, iconColor))
+            })
+            .setTitle(title)
+            .setMessage("$domain\n\n$message")
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.copy_link) { _, _ ->
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("url", url))
+                Toast.makeText(this, getString(R.string.link_copied), Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
     private fun shareCurrentPage() {
         val url = viewModel.currentUrl.value ?: return
         val intent = Intent(Intent.ACTION_SEND).apply {
@@ -720,7 +807,21 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
     private fun updateTabCountBadge() {
         val count = tabManager.tabCount
-        binding.tabCountBadge.text = if (count > 99) "99+" else count.toString()
+        val newText = if (count > 99) "99+" else count.toString()
+        if (binding.tabCountBadge.text.toString() != newText) {
+            binding.tabCountBadge.text = newText
+            // Animate the badge
+            binding.tabCountBadge.animate()
+                .scaleX(1.3f).scaleY(1.3f)
+                .setDuration(100)
+                .withEndAction {
+                    binding.tabCountBadge.animate()
+                        .scaleX(1f).scaleY(1f)
+                        .setDuration(150)
+                        .setInterpolator(android.view.animation.OvershootInterpolator(2f))
+                        .start()
+                }.start()
+        }
     }
 
     private fun hideFindInPage() {
@@ -793,6 +894,97 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         webViewPool.clear()
         tabManager.closeAllIncognito()
         super.onDestroy()
+    }
+
+    private fun setupSuggestions() {
+        suggestionsAdapter = SuggestionsAdapter(
+            onSuggestionClick = { url ->
+                loadUrl(url)
+                binding.addressBar.clearFocus()
+                hideKeyboard()
+                binding.suggestionsRecyclerView.isVisible = false
+            },
+            onInsertClick = { url ->
+                binding.addressBar.setText(url)
+                binding.addressBar.setSelection(url.length)
+            }
+        )
+        binding.suggestionsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = suggestionsAdapter
+        }
+
+        binding.addressBar.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (binding.addressBar.isFocused) {
+                    val query = s?.toString()?.trim() ?: ""
+                    viewModel.fetchSuggestions(query)
+                }
+            }
+        })
+
+        viewModel.suggestions.observe(this) { suggestions ->
+            if (binding.addressBar.isFocused && suggestions.isNotEmpty()) {
+                suggestionsAdapter?.submitList(suggestions)
+                binding.suggestionsRecyclerView.isVisible = true
+            } else {
+                binding.suggestionsRecyclerView.isVisible = false
+            }
+        }
+    }
+
+    private fun setupSwipeRefresh() {
+        binding.swipeRefreshLayout.apply {
+            setColorSchemeColors(getColor(R.color.accent_purple))
+            setProgressBackgroundColorSchemeColor(getColor(R.color.surface_container))
+            setOnRefreshListener {
+                currentWebView?.reload()
+            }
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupGestures() {
+        // Swipe on address bar to switch tabs
+        var startX = 0f
+        binding.addressBar.setOnTouchListener { v, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    startX = event.x
+                    false // Allow normal touch handling
+                }
+                android.view.MotionEvent.ACTION_UP -> {
+                    val deltaX = event.x - startX
+                    if (kotlin.math.abs(deltaX) > 120 && !v.isFocused) {
+                        if (deltaX > 0 && tabManager.currentIndex > 0) {
+                            // Swipe right -> previous tab
+                            val prevTab = tabManager.tabs[tabManager.currentIndex - 1]
+                            switchToTab(prevTab)
+                            performHapticFeedback()
+                        } else if (deltaX < 0 && tabManager.currentIndex < tabManager.tabCount - 1) {
+                            // Swipe left -> next tab
+                            val nextTab = tabManager.tabs[tabManager.currentIndex + 1]
+                            switchToTab(nextTab)
+                            performHapticFeedback()
+                        }
+                        true
+                    } else false
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun performHapticFeedback() {
+        binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+    }
+
+    private fun animateClick(view: View) {
+        view.animate().scaleX(0.85f).scaleY(0.85f).setDuration(80).withEndAction {
+            view.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+        }.start()
     }
 
     companion object { const val REQUEST_TAB_SWITCHER = 1001 }

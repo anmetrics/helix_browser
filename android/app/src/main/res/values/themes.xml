@@ -156,4 +156,78 @@
     <style name="Theme.Helix.Preference" parent="PreferenceThemeOverlay.v14.Material">
         <item name="android:tint">@color/text_secondary</item>
     </style>
+
+    <!-- ═══ Settings Screen Styles (ClickUp-inspired) ═══ -->
+    <style name="SettingsSectionHeader">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingHorizontal">20dp</item>
+        <item name="android:paddingTop">20dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textColor">@color/accent_purple_light</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">0.05</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="SettingsItemStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">60dp</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingHorizontal">20dp</item>
+        <item name="android:paddingVertical">10dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="SettingsIconStyle">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:background">@drawable/bg_settings_icon</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
+    <style name="SettingsTextContainer">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:layout_marginStart">14dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+    </style>
+
+    <style name="SettingsTitleStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="SettingsSubtitleStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="SettingsChevron">
+        <item name="android:layout_width">20dp</item>
+        <item name="android:layout_height">20dp</item>
+        <item name="android:src">@drawable/ic_arrow_forward</item>
+        <item name="android:tint">@color/text_tertiary</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
 </resources>

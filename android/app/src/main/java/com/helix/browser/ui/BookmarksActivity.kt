@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.helix.browser.R
 import com.helix.browser.databinding.ActivityBookmarksBinding
 import com.helix.browser.ui.adapter.BookmarksAdapter
 import com.helix.browser.viewmodel.BookmarkViewModel
@@ -24,6 +25,7 @@ class BookmarksActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityBookmarksBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out)
 
         binding.toolbar.setNavigationOnClickListener { finish() }
 
@@ -61,5 +63,10 @@ class BookmarksActivity : BaseActivity() {
             }
             override fun afterTextChanged(s: Editable?) {}
         })
+    }
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.fade_in, R.anim.slide_out_left)
     }
 }

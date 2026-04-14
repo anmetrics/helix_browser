@@ -26,4 +26,7 @@ interface HistoryDao {
 
     @Query("SELECT * FROM history WHERE title LIKE '%' || :query || '%' OR url LIKE '%' || :query || '%' ORDER BY timestamp DESC LIMIT 100")
     fun search(query: String): Flow<List<HistoryItem>>
+
+    @Query("SELECT * FROM history WHERE url LIKE '%' || :query || '%' OR title LIKE '%' || :query || '%' GROUP BY url ORDER BY timestamp DESC LIMIT 5")
+    suspend fun getSuggestions(query: String): List<HistoryItem>
 }

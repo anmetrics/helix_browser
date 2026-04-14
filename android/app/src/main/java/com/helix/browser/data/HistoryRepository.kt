@@ -23,4 +23,6 @@ class HistoryRepository(private val dao: HistoryDao) {
         val timestamp = System.currentTimeMillis() - (days * 24 * 60 * 60 * 1000L)
         dao.deleteOlderThan(timestamp)
     }
+
+    suspend fun getSuggestions(query: String): List<HistoryItem> = dao.getSuggestions(query)
 }

@@ -87,6 +87,15 @@ class HelixWebView @JvmOverloads constructor(
         reload()
     }
 
+    fun setNightMode(enabled: Boolean) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            settings.isAlgorithmicDarkeningAllowed = enabled
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            @Suppress("DEPRECATION")
+            settings.forceDark = if (enabled) android.webkit.WebSettings.FORCE_DARK_ON else android.webkit.WebSettings.FORCE_DARK_OFF
+        }
+    }
+
     fun setIncognitoMode(enabled: Boolean) {
         if (enabled) {
             settings.cacheMode = WebSettings.LOAD_NO_CACHE

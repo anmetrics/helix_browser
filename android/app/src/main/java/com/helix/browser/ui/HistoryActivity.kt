@@ -7,8 +7,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.helix.browser.databinding.ActivityHistoryBinding
@@ -28,6 +28,7 @@ class HistoryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out)
 
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.toolbar.setOnMenuItemClickListener { item ->
@@ -71,8 +72,13 @@ class HistoryActivity : BaseActivity() {
         })
     }
 
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.fade_in, R.anim.slide_out_left)
+    }
+
     private fun showClearHistoryDialog() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.clear_history_dialog_title)
             .setMessage(R.string.clear_history_dialog_message)
             .setPositiveButton(R.string.clear_history_confirm) { _, _ ->

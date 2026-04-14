@@ -13,10 +13,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.helix.browser.HelixApp
 import com.helix.browser.R
 import com.helix.browser.billing.BillingManager
 import com.helix.browser.databinding.ActivityTabSwitcherBinding
+import com.helix.browser.tabs.BrowserTab
 import com.helix.browser.ui.adapter.TabsAdapter
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -27,6 +29,7 @@ class TabSwitcherActivity : BaseActivity() {
     private lateinit var binding: ActivityTabSwitcherBinding
     private lateinit var adapter: TabsAdapter
     private lateinit var billingManager: BillingManager
+    private val recentlyClosed = mutableListOf<Pair<Int, BrowserTab>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +56,7 @@ class TabSwitcherActivity : BaseActivity() {
                 } else {
                     adapter.submitList(tabManager.tabs.toMutableList())
                     updateTabCount(tabManager.tabCount)
+                    showUndoSnackbar(tab)
                 }
             },
             activeTabId = tabManager.currentTab?.id
@@ -84,6 +88,7 @@ class TabSwitcherActivity : BaseActivity() {
                 } else {
                     adapter.submitList(tabManager.tabs.toMutableList())
                     updateTabCount(tabManager.tabCount)
+                    showUndoSnackbar(tab)
                 }
             }
 
@@ -184,14 +189,15 @@ class TabSwitcherActivity : BaseActivity() {
         // --- Banner Ad / Premium ---
         setupBannerAd()
 
-        // Entrance animation for the whole recycler
+        // Entrance animation for the whole content
         binding.tabsRecyclerView.alpha = 0f
-        binding.tabsRecyclerView.translationY = 40f
+        binding.tabsRecyclerView.translationY = 60f
         binding.tabsRecyclerView.animate()
             .alpha(1f)
             .translationY(0f)
-            .setDuration(300)
-            .setInterpolator(DecelerateInterpolator())
+            .setDuration(400)
+            .setStartDelay(100)
+            .setInterpolator(android.view.animation.OvershootInterpolator(0.8f))
             .start()
     }
 
@@ -202,6 +208,23 @@ class TabSwitcherActivity : BaseActivity() {
     override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.fade_in, R.anim.slide_down)
+    }
+
+    private fun showUndoSnackbar(tab: BrowserTab) {
+        Snackbar.make(binding.tabsRecyclerView, "Tab closed", Snackbar.LENGTH_LONG)
+            .setAction("Undo") {
+                // Re-add the tab
+                val tabManager = (application as HelixApp).tabManager
+                // We can't fully restore but we can create a new tab with same URL
+                val newTab = tabManager.addTab(tab.isIncognito, tab.url)
+                newTab.title = tab.title
+                adapter.submitList(tabManager.tabs.toMutableList())
+                updateTabCount(tabManager.tabCount)
+            }
+            .setActionTextColor(resources.getColor(R.color.accent_purple, theme))
+            .setBackgroundTint(resources.getColor(R.color.surface_container_high, theme))
+            .setTextColor(resources.getColor(R.color.text_primary, theme))
+            .show()
     }
 
     private fun setupBannerAd() {
