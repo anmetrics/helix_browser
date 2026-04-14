@@ -9,7 +9,7 @@
     android:background="@color/background"
     tools:context=".ui.MainActivity">
 
-    <!-- ── TOP & CONTENT COORDINATOR ── -->
+    <!-- TOP & CONTENT COORDINATOR -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="0dp"
@@ -35,7 +35,7 @@
                 app:layout_scrollFlags="scroll|exitUntilCollapsed|enterAlways"
                 app:elevation="0dp">
 
-                <!-- ── TOP TOOLBAR (Slides behind) ── -->
+                <!-- TOP TOOLBAR (Slides behind) -->
                 <LinearLayout
                     android:id="@+id/toolbarContainer"
                     android:layout_width="match_parent"
@@ -44,7 +44,7 @@
                     android:background="@color/toolbar_background"
                     app:layout_collapseMode="parallax">
 
-                    <!-- Padding space corresponding to status bar -->
+                    <!-- Status bar padding -->
                     <View
                         android:id="@+id/statusBarPadding"
                         android:layout_width="match_parent"
@@ -54,104 +54,127 @@
                     <include layout="@layout/desktop_tab_bar" />
 
                     <!-- Address bar row -->
-                    <LinearLayout
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingHorizontal="8dp">
+                        android:layout_height="56dp"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp">
 
-                        <ImageView
-                            android:id="@+id/iconSecure"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:padding="5dp"
-                            android:src="@drawable/ic_lock"
-                            android:visibility="gone"
-                            android:contentDescription="@string/desc_secure" />
-
-                        <EditText
-                            android:id="@+id/addressBar"
-                            android:layout_width="0dp"
-                            android:layout_height="40dp"
-                            android:layout_weight="1"
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
                             android:background="@drawable/bg_address_bar"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="0dp"
-                            android:hint="@string/search_hint"
-                            android:textColor="@color/text_primary"
-                            android:textColorHint="@color/hint_color"
-                            android:textSize="14sp"
-                            android:singleLine="true"
-                            android:imeOptions="actionGo"
-                            android:inputType="textUri"
-                            android:selectAllOnFocus="true"
-                            android:focusable="true"
-                            android:focusableInTouchMode="true"
-                            android:fontFamily="sans-serif" />
+                            android:paddingHorizontal="4dp">
 
-                        <ImageButton
-                            android:id="@+id/btnBookmark"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:padding="6dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_bookmark"
-                            android:contentDescription="@string/desc_bookmark" />
+                            <ImageView
+                                android:id="@+id/iconSecure"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:padding="6dp"
+                                android:src="@drawable/ic_lock"
+                                android:visibility="gone"
+                                android:contentDescription="@string/desc_secure" />
 
-                        <ImageButton
-                            android:id="@+id/btnRefresh"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:padding="6dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_refresh"
-                            android:contentDescription="@string/desc_refresh" />
+                            <EditText
+                                android:id="@+id/addressBar"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="@null"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="0dp"
+                                android:hint="@string/search_hint"
+                                android:textColor="@color/text_primary"
+                                android:textColorHint="@color/hint_color"
+                                android:textSize="14sp"
+                                android:singleLine="true"
+                                android:imeOptions="actionGo"
+                                android:inputType="textUri"
+                                android:selectAllOnFocus="true"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:fontFamily="sans-serif" />
 
-                        <TextView
-                            android:id="@+id/btnCancelSearch"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/cancel"
-                            android:textColor="@color/accent_purple"
-                            android:textSize="14sp"
-                            android:paddingHorizontal="8dp"
-                            android:visibility="gone" />
-                    </LinearLayout>
+                            <ImageButton
+                                android:id="@+id/btnBookmark"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:padding="6dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_bookmark"
+                                android:contentDescription="@string/desc_bookmark" />
+
+                            <ImageButton
+                                android:id="@+id/btnRefresh"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:padding="6dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_refresh"
+                                android:contentDescription="@string/desc_refresh" />
+
+                            <TextView
+                                android:id="@+id/btnCancelSearch"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/cancel"
+                                android:textColor="@color/accent_purple"
+                                android:textSize="14sp"
+                                android:fontFamily="sans-serif-medium"
+                                android:paddingHorizontal="8dp"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </FrameLayout>
 
                     <!-- Loading progress -->
                     <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progressBar"
                         android:layout_width="match_parent"
-                        android:layout_height="3dp"
+                        android:layout_height="wrap_content"
                         android:max="100"
                         android:progress="0"
                         android:visibility="gone"
                         app:indicatorColor="@color/accent_purple"
                         app:trackColor="@android:color/transparent"
-                        app:trackThickness="3dp" />
+                        app:trackThickness="2dp" />
 
                     <!-- Incognito indicator -->
-                    <TextView
+                    <LinearLayout
                         android:id="@+id/incognitoIndicator"
                         android:layout_width="match_parent"
-                        android:layout_height="24dp"
-                        android:background="@color/incognito_background"
+                        android:layout_height="28dp"
+                        android:background="@color/incognito_surface"
                         android:gravity="center"
-                        android:text="@string/incognito_mode"
-                        android:textColor="#ffffff"
-                        android:textSize="11sp"
-                        android:visibility="gone" />
-                    
-                    <!-- FIND IN PAGE BAR (part of the sliding unit) -->
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_incognito"
+                            android:layout_marginEnd="6dp"
+                            app:tint="@color/incognito_accent" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/incognito_mode"
+                            android:textColor="@color/incognito_accent"
+                            android:textSize="11sp"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+
+                    <!-- FIND IN PAGE BAR -->
                     <LinearLayout
                         android:id="@+id/findInPageBar"
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
+                        android:layout_height="56dp"
                         android:orientation="horizontal"
-                        android:background="@color/toolbar_background"
+                        android:background="@color/background_elevated"
                         android:gravity="center_vertical"
-                        android:paddingHorizontal="8dp"
+                        android:paddingHorizontal="12dp"
                         android:visibility="gone">
 
                         <EditText
@@ -160,10 +183,11 @@
                             android:layout_height="40dp"
                             android:layout_weight="1"
                             android:background="@drawable/bg_address_bar"
-                            android:paddingHorizontal="12dp"
+                            android:paddingHorizontal="14dp"
                             android:hint="@string/find_in_page"
                             android:textSize="14sp"
                             android:textColor="@color/text_primary"
+                            android:textColorHint="@color/hint_color"
                             android:imeOptions="actionSearch"
                             android:inputType="text"
                             android:focusable="true"
@@ -171,31 +195,34 @@
 
                         <ImageButton
                             android:id="@+id/btnFindPrev"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:padding="8dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_arrow_up"
                             android:contentDescription="@string/desc_prev" />
 
                         <ImageButton
                             android:id="@+id/btnFindNext"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:padding="8dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_arrow_down"
                             android:contentDescription="@string/desc_next" />
 
                         <ImageButton
                             android:id="@+id/btnCloseFindInPage"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:padding="8dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_close"
                             android:contentDescription="@string/desc_close" />
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- ── PINNED STATUS BAR AREA ── -->
+                <!-- PINNED STATUS BAR AREA -->
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
@@ -226,19 +253,18 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- ── BOTTOM NAVIGATION ── -->
+    <!-- BOTTOM NAVIGATION -->
     <LinearLayout
         android:id="@+id/bottomNavContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/toolbar_background"
-        android:elevation="8dp"
+        android:background="@color/background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Top separator with subtle gradient accent -->
+        <!-- Top separator -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -247,10 +273,10 @@
         <LinearLayout
             android:id="@+id/bottomNav"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="48dp"
             android:orientation="horizontal"
             android:gravity="center"
-            android:paddingHorizontal="4dp">
+            android:paddingHorizontal="8dp">
 
             <FrameLayout
                 android:layout_width="0dp"
@@ -263,8 +289,8 @@
                     android:layout_gravity="center"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_arrow_back"
-                    android:alpha="0.4"
-                    android:padding="10dp"
+                    android:alpha="0.35"
+                    android:padding="11dp"
                     android:contentDescription="@string/desc_back" />
             </FrameLayout>
 
@@ -279,12 +305,11 @@
                     android:layout_gravity="center"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_arrow_forward"
-                    android:alpha="0.4"
-                    android:padding="10dp"
+                    android:alpha="0.35"
+                    android:padding="11dp"
                     android:contentDescription="@string/desc_forward" />
             </FrameLayout>
 
-            <!-- Home button - center, slightly larger -->
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -296,11 +321,11 @@
                     android:layout_gravity="center"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_home"
-                    android:padding="9dp"
+                    android:padding="10dp"
                     android:contentDescription="@string/desc_home" />
             </FrameLayout>
 
-            <!-- Tab counter with pill background -->
+            <!-- Tab counter -->
             <FrameLayout
                 android:id="@+id/btnTabs"
                 android:layout_width="0dp"
@@ -310,11 +335,11 @@
 
                 <TextView
                     android:id="@+id/tabCountBadge"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:text="1"
-                    android:textColor="@color/accent_purple"
+                    android:textColor="@color/text_primary"
                     android:textSize="11sp"
                     android:gravity="center"
                     android:textStyle="bold"
@@ -333,7 +358,7 @@
                     android:layout_gravity="center"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_more_vert"
-                    android:padding="10dp"
+                    android:padding="11dp"
                     android:contentDescription="@string/desc_more" />
             </FrameLayout>
         </LinearLayout>

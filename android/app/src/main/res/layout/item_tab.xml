@@ -25,7 +25,7 @@
             android:layout_height="40dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="10dp"
+            android:paddingStart="12dp"
             android:paddingEnd="4dp"
             android:background="@color/card_background">
 
@@ -44,6 +44,7 @@
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:src="@drawable/ic_incognito"
+                app:tint="@color/incognito_accent"
                 android:visibility="gone"
                 tools:ignore="ContentDescription" />
 
@@ -67,32 +68,32 @@
                 android:id="@+id/btnCloseTab"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:padding="6dp"
+                android:padding="7dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_close"
-                app:tint="@color/text_secondary"
+                app:tint="@color/text_tertiary"
                 android:contentDescription="@string/desc_close" />
         </LinearLayout>
 
-        <!-- Active tab indicator (thin line under header) -->
+        <!-- Active tab indicator -->
         <View
             android:id="@+id/activeIndicator"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:background="@drawable/bg_bottom_nav_indicator"
+            android:background="@color/accent_purple"
             android:visibility="gone" />
 
         <!-- Thumbnail / Preview -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="180dp">
 
             <ImageView
                 android:id="@+id/tabThumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:background="@color/card_background"
+                android:background="@color/surface_container"
                 tools:ignore="ContentDescription" />
 
             <!-- Incognito badge overlay -->
@@ -101,17 +102,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|end"
-                android:layout_margin="6dp"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
+                android:layout_margin="8dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
                 android:background="@drawable/bg_incognito_badge"
                 android:text="@string/private_tab_label"
-                android:textColor="#FFFFFF"
-                android:textSize="8sp"
+                android:textColor="@color/incognito_accent"
+                android:textSize="9sp"
                 android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
                 android:visibility="gone" />
 
-            <!-- URL overlay at bottom with security icon -->
+            <!-- URL overlay at bottom -->
             <LinearLayout
                 android:id="@+id/urlBar"
                 android:layout_width="match_parent"
@@ -119,9 +121,9 @@
                 android:layout_gravity="bottom"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:background="#80000000"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp">
+                android:background="#99000000"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp">
 
                 <ImageView
                     android:id="@+id/securityIcon"
@@ -136,10 +138,11 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="#99FFFFFF"
-                    android:textSize="9sp"
+                    android:textColor="#AAFFFFFF"
+                    android:textSize="10sp"
                     android:singleLine="true"
                     android:ellipsize="end"
+                    android:fontFamily="sans-serif"
                     tools:text="google.com" />
             </LinearLayout>
         </FrameLayout>

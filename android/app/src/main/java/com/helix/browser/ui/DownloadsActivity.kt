@@ -55,7 +55,9 @@ class DownloadsActivity : BaseActivity() {
             } while (cursor.moveToNext())
         }
         cursor.close()
-        adapter.submitList(items.reversed())
+        val reversed = items.reversed()
+        adapter.submitList(reversed)
+        binding.emptyView.visibility = if (reversed.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     private fun openDownloadedFile(downloadId: Long) {

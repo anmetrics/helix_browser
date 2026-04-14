@@ -30,18 +30,26 @@ class DownloadsAdapter(
             val context = binding.root.context
             val statusText = when (item.status) {
                 DownloadManager.STATUS_SUCCESSFUL ->
-                    "✅ ${context.getString(R.string.download_complete)}"
+                    context.getString(R.string.download_complete)
                 DownloadManager.STATUS_RUNNING -> {
                     val pct = if (item.totalBytes > 0) (item.downloadedBytes * 100 / item.totalBytes).toInt() else 0
-                    "⬇️ ${context.getString(R.string.download_in_progress, pct)}"
+                    context.getString(R.string.download_in_progress, pct)
                 }
                 DownloadManager.STATUS_FAILED ->
-                    "❌ ${context.getString(R.string.download_failed)}"
+                    context.getString(R.string.download_failed)
                 DownloadManager.STATUS_PAUSED ->
-                    "⏸️ ${context.getString(R.string.download_paused)}"
+                    context.getString(R.string.download_paused)
                 else ->
-                    "⏳ ${context.getString(R.string.download_pending)}"
+                    context.getString(R.string.download_pending)
             }
+            // Status color
+            val statusColor = when (item.status) {
+                DownloadManager.STATUS_SUCCESSFUL -> context.getColor(R.color.green_secure)
+                DownloadManager.STATUS_FAILED -> context.getColor(R.color.warning_red)
+                DownloadManager.STATUS_RUNNING -> context.getColor(R.color.info_blue)
+                else -> context.getColor(R.color.text_secondary)
+            }
+            binding.status.setTextColor(statusColor)
             binding.status.text = statusText
             if (item.totalBytes > 0) {
                 binding.size.text = formatSize(item.totalBytes)

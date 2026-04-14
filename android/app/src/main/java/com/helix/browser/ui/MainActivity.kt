@@ -44,6 +44,11 @@ import com.helix.browser.ui.adapter.DesktopTabAdapter
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.ImageButton
 import androidx.recyclerview.widget.LinearLayoutManager
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.Icon
+import android.print.PrintManager
+import android.webkit.WebView.HitTestResult
 
 class MainActivity : BaseActivity() {
 
@@ -357,7 +362,7 @@ class MainActivity : BaseActivity() {
 
         viewModel.isIncognito.value = tab.isIncognito
         binding.incognitoIndicator.isVisible = tab.isIncognito
-        binding.root.setBackgroundResource(if (tab.isIncognito) R.color.incognito_background else android.R.color.transparent)
+        binding.root.setBackgroundColor(getColor(if (tab.isIncognito) R.color.incognito_background else R.color.background))
     }
 
     private fun attachWebViewForTab(tab: BrowserTab) {
@@ -462,6 +467,7 @@ class MainActivity : BaseActivity() {
             isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) }
         )
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ -> downloadFile(url, userAgent, contentDisposition, mimeType) }
+        setupWebViewContextMenu(webView)
         if (tab.isIncognito) webView.setIncognitoMode(true)
         if (tab.url.isNotEmpty()) webView.loadUrl(tab.url)
         else webView.loadDataWithBaseURL("about:blank", buildNewTabHtml(), "text/html", "UTF-8", null)
@@ -490,28 +496,43 @@ class MainActivity : BaseActivity() {
 
     private fun buildNewTabHtml(): String = """
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>${getString(R.string.new_tab)}</title>
-<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',-apple-system,sans-serif;background:#000;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;-webkit-user-select:none;}
-.logo{font-size:42px;font-weight:700;margin-bottom:6px;color:#fff;letter-spacing:-1px;}
-.logo span{color:#0095F6;}
-.tagline{font-size:13px;color:#666;margin-bottom:36px;font-weight:400;}
-.search-box{width:90%;max-width:360px;background:#262626;border-radius:24px;padding:14px 20px;display:flex;align-items:center;gap:12px;margin-bottom:36px;}
-.search-box span{color:#666;font-size:14px;}
-.shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:90%;max-width:360px;}
-.shortcut{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border-radius:16px;background:#181818;text-decoration:none;color:#fff;font-size:11px;font-weight:500;transition:background 0.15s;}
-.shortcut:active{background:#333;}.shortcut-icon{width:40px;height:40px;border-radius:12px;background:#262626;display:flex;align-items:center;justify-content:center;font-size:20px;}</style></head>
-<body><div class="logo"><span>H</span>elix</div><div class="tagline">${getString(R.string.fast_secure_private)}</div><div class="search-box"><span>🔍</span><span>${getString(R.string.search_or_type_url)}</span></div>
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0F0F0F;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:15vh;color:#F0F0F0;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+.logo{font-size:44px;font-weight:700;margin-bottom:4px;color:#F0F0F0;letter-spacing:-1.5px;}
+.logo span{background:linear-gradient(135deg,#7B68EE,#49CCF9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.tagline{font-size:13px;color:#636366;margin-bottom:40px;font-weight:400;letter-spacing:0.5px;}
+.search-box{width:88%;max-width:380px;background:#2A2A2A;border-radius:24px;padding:14px 20px;display:flex;align-items:center;gap:12px;margin-bottom:40px;transition:background 0.2s,box-shadow 0.2s;}
+.search-box:active{background:#333;box-shadow:0 0 0 2px #7B68EE40;}
+.search-box svg{width:18px;height:18px;fill:#636366;flex-shrink:0;}
+.search-box span{color:#636366;font-size:14px;font-weight:400;}
+.shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:88%;max-width:380px;}
+.shortcut{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:16px;background:#1A1A1A;text-decoration:none;color:#F0F0F0;font-size:11px;font-weight:500;transition:all 0.15s ease;border:1px solid transparent;}
+.shortcut:active{background:#2A2A2A;transform:scale(0.96);border-color:#333;}
+.shortcut-icon{width:44px;height:44px;border-radius:14px;background:#1E1E1E;border:1px solid #2A2A2A;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;transition:all 0.15s;}
+.shortcut:active .shortcut-icon{border-color:#7B68EE40;}
+.s-google{color:#4285F4;}.s-yt{color:#FF0000;}.s-gh{color:#F0F0F0;}.s-fb{color:#1877F2;}
+.s-x{color:#F0F0F0;}.s-reddit{color:#FF4500;}.s-wiki{color:#F0F0F0;}.s-netflix{color:#E50914;}
+</style></head>
+<body>
+<div class="logo"><span>H</span>elix</div>
+<div class="tagline">${getString(R.string.fast_secure_private)}</div>
+<div class="search-box" onclick="window.location.href='about:blank'">
+<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+<span>${getString(R.string.search_or_type_url)}</span>
+</div>
 <div class="shortcuts">
-<a class="shortcut" href="https://google.com"><div class="shortcut-icon">G</div>Google</a>
-<a class="shortcut" href="https://youtube.com"><div class="shortcut-icon">▶</div>YouTube</a>
-<a class="shortcut" href="https://github.com"><div class="shortcut-icon">⌥</div>GitHub</a>
-<a class="shortcut" href="https://facebook.com"><div class="shortcut-icon">f</div>Facebook</a>
-<a class="shortcut" href="https://twitter.com"><div class="shortcut-icon">𝕏</div>Twitter</a>
-<a class="shortcut" href="https://reddit.com"><div class="shortcut-icon">r/</div>Reddit</a>
-<a class="shortcut" href="https://wikipedia.org"><div class="shortcut-icon">W</div>Wikipedia</a>
-<a class="shortcut" href="https://netflix.com"><div class="shortcut-icon">N</div>Netflix</a>
-</div></body></html>""".trimIndent()
+<a class="shortcut" href="https://google.com"><div class="shortcut-icon s-google">G</div>Google</a>
+<a class="shortcut" href="https://youtube.com"><div class="shortcut-icon s-yt">&#9654;</div>YouTube</a>
+<a class="shortcut" href="https://github.com"><div class="shortcut-icon s-gh">&#10023;</div>GitHub</a>
+<a class="shortcut" href="https://facebook.com"><div class="shortcut-icon s-fb">f</div>Facebook</a>
+<a class="shortcut" href="https://twitter.com"><div class="shortcut-icon s-x">&#120143;</div>X</a>
+<a class="shortcut" href="https://reddit.com"><div class="shortcut-icon s-reddit">r/</div>Reddit</a>
+<a class="shortcut" href="https://wikipedia.org"><div class="shortcut-icon s-wiki">W</div>Wikipedia</a>
+<a class="shortcut" href="https://netflix.com"><div class="shortcut-icon s-netflix">N</div>Netflix</a>
+</div>
+</body></html>""".trimIndent()
 
     private fun showMoreOptionsMenu() {
         val dialog = BottomSheetDialog(this, R.style.Theme_HelixBrowser_BottomSheet)
@@ -528,7 +549,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#000;min-height:100
         view.findViewById<View>(R.id.menu_history).setOnClickListener { startActivity(Intent(this, HistoryActivity::class.java)); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_downloads).setOnClickListener { startActivity(Intent(this, DownloadsActivity::class.java)); dialog.dismiss() }
 
-        val historySwitch = view.findViewById<androidx.appcompat.widget.SwitchCompat>(R.id.switch_save_history)
+        val historySwitch = view.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_save_history)
         historySwitch.isChecked = Prefs.isSaveHistoryEnabled(this)
         historySwitch.setOnCheckedChangeListener { _, isChecked ->
             Prefs.setSaveHistoryEnabled(this, isChecked)
@@ -546,7 +567,114 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#000;min-height:100
             dialog.dismiss()
         }
         view.findViewById<View>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
+        view.findViewById<View>(R.id.menu_print).setOnClickListener { printCurrentPage(); dialog.dismiss() }
+        view.findViewById<View>(R.id.menu_add_to_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_settings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)); dialog.dismiss() }
+        dialog.show()
+    }
+
+    private fun printCurrentPage() {
+        val webView = currentWebView ?: return
+        val printManager = getSystemService(Context.PRINT_SERVICE) as PrintManager
+        val printAdapter = webView.createPrintDocumentAdapter(viewModel.currentTitle.value ?: "Page")
+        printManager.print(viewModel.currentTitle.value ?: "Helix Browser", printAdapter, null)
+    }
+
+    private fun addToHomeScreen() {
+        val url = viewModel.currentUrl.value ?: return
+        val title = viewModel.currentTitle.value ?: url
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val shortcutManager = getSystemService(ShortcutManager::class.java) ?: return
+            if (shortcutManager.isRequestPinShortcutSupported) {
+                val intent = Intent(this, MainActivity::class.java).apply {
+                    action = Intent.ACTION_VIEW
+                    data = Uri.parse(url)
+                }
+                val shortcut = ShortcutInfo.Builder(this, url)
+                    .setShortLabel(title)
+                    .setLongLabel(title)
+                    .setIcon(Icon.createWithResource(this, R.drawable.ic_helix_logo))
+                    .setIntent(intent)
+                    .build()
+                shortcutManager.requestPinShortcut(shortcut, null)
+            }
+        }
+    }
+
+    private fun setupWebViewContextMenu(webView: HelixWebView) {
+        webView.setOnLongClickListener {
+            val result = webView.hitTestResult
+            when (result.type) {
+                HitTestResult.SRC_ANCHOR_TYPE, HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                    showLinkContextMenu(result.extra ?: return@setOnLongClickListener false)
+                    true
+                }
+                HitTestResult.IMAGE_TYPE -> {
+                    showImageContextMenu(result.extra ?: return@setOnLongClickListener false)
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun showLinkContextMenu(url: String) {
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(url)
+            .setItems(arrayOf(
+                getString(R.string.open_in_new_tab),
+                getString(R.string.open_in_incognito),
+                getString(R.string.copy_link),
+                getString(R.string.share_link)
+            )) { _, which ->
+                when (which) {
+                    0 -> createNewTab(url)
+                    1 -> createNewTab(url, isIncognito = true)
+                    2 -> {
+                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("url", url))
+                        Toast.makeText(this, getString(R.string.link_copied), Toast.LENGTH_SHORT).show()
+                    }
+                    3 -> {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, url)
+                        }
+                        startActivity(Intent.createChooser(intent, getString(R.string.share_via)))
+                    }
+                }
+            }
+            .create()
+        dialog.show()
+    }
+
+    private fun showImageContextMenu(imageUrl: String) {
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.save_image))
+            .setItems(arrayOf(
+                getString(R.string.save_image),
+                getString(R.string.open_in_new_tab),
+                getString(R.string.copy_link),
+                getString(R.string.share_link)
+            )) { _, which ->
+                when (which) {
+                    0 -> downloadFile(imageUrl, "", "", "image/*")
+                    1 -> createNewTab(imageUrl)
+                    2 -> {
+                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("url", imageUrl))
+                        Toast.makeText(this, getString(R.string.link_copied), Toast.LENGTH_SHORT).show()
+                    }
+                    3 -> {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, imageUrl)
+                        }
+                        startActivity(Intent.createChooser(intent, getString(R.string.share_via)))
+                    }
+                }
+            }
+            .create()
         dialog.show()
     }
 

@@ -14,21 +14,21 @@
         android:background="@color/tab_switcher_background"
         app:elevation="0dp">
 
-        <!-- Top bar: + button | tab count badge | grid icon | more -->
+        <!-- Top bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="8dp">
+            android:paddingHorizontal="12dp">
 
-            <!-- New tab button (circular +) -->
+            <!-- New tab button -->
             <ImageButton
                 android:id="@+id/btnNewTab"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:padding="10dp"
-                android:background="@drawable/bg_tab_count_badge"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_add"
                 app:tint="@color/text_primary"
                 android:contentDescription="@string/new_tab" />
@@ -42,13 +42,13 @@
             <TextView
                 android:id="@+id/tabCountText"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:minWidth="32dp"
+                android:layout_height="28dp"
+                android:minWidth="28dp"
                 android:gravity="center"
-                android:paddingHorizontal="8dp"
+                android:paddingHorizontal="10dp"
                 android:text="7"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:fontFamily="sans-serif-medium"
                 android:background="@drawable/bg_tab_count_badge" />
@@ -56,13 +56,13 @@
             <!-- Grid view toggle -->
             <ImageButton
                 android:id="@+id/btnGridToggle"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="8dp"
-                android:padding="10dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="12dp"
+                android:padding="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_grid_view"
-                app:tint="@color/text_primary"
+                app:tint="@color/text_secondary"
                 android:contentDescription="Grid view" />
 
             <View
@@ -73,12 +73,12 @@
             <!-- More options -->
             <ImageButton
                 android:id="@+id/btnMore"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:padding="10dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_more_vert"
-                app:tint="@color/text_primary"
+                app:tint="@color/text_secondary"
                 android:contentDescription="More options" />
         </LinearLayout>
 
@@ -95,7 +95,7 @@
                 android:layout_height="44dp"
                 android:background="@drawable/bg_search_bar"
                 android:drawableStart="@drawable/ic_search"
-                android:drawablePadding="8dp"
+                android:drawablePadding="10dp"
                 android:drawableTint="@color/hint_color"
                 android:paddingHorizontal="16dp"
                 android:hint="@string/search_tabs_hint"
@@ -116,21 +116,21 @@
         android:layout_height="match_parent"
         android:paddingTop="4dp"
         android:paddingBottom="180dp"
-        android:paddingHorizontal="6dp"
+        android:paddingHorizontal="8dp"
         android:clipToPadding="false"
         android:scrollbars="none"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Bottom section: premium banner + action buttons -->
+    <!-- Bottom section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:background="@color/toolbar_background"
-        android:elevation="12dp">
+        android:background="@color/background"
+        android:elevation="16dp">
 
-        <!-- ===== Premium Banner ===== -->
+        <!-- Premium Banner -->
         <LinearLayout
             android:id="@+id/bannerAdContainer"
             android:layout_width="match_parent"
@@ -155,9 +155,9 @@
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:gravity="center"
-                    android:text="✦"
-                    android:textSize="20sp"
-                    android:textColor="#FFD700"
+                    android:text="&#x2726;"
+                    android:textSize="18sp"
+                    android:textColor="@color/premium_gold"
                     android:background="@drawable/bg_premium_icon" />
 
                 <LinearLayout
@@ -183,7 +183,7 @@
                         android:text="@string/premium_banner_subtitle"
                         android:textColor="@color/text_secondary"
                         android:textSize="11sp"
-                        android:layout_marginTop="1dp" />
+                        android:layout_marginTop="2dp" />
                 </LinearLayout>
 
                 <TextView
@@ -210,51 +210,52 @@
                     android:src="@drawable/ic_close"
                     android:padding="6dp"
                     android:alpha="0.35"
+                    app:tint="@color/text_secondary"
                     android:contentDescription="@string/dismiss" />
             </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/divider_color" />
         </LinearLayout>
 
-        <!-- ===== Action Buttons ===== -->
+        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:paddingHorizontal="8dp">
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="10dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnIncognito"
                 android:layout_width="0dp"
-                android:layout_height="42dp"
+                android:layout_height="44dp"
                 android:layout_weight="1"
                 android:layout_marginHorizontal="4dp"
                 android:text="@string/private_tab_label"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:textAllCaps="false"
                 app:icon="@drawable/ic_incognito"
-                app:iconSize="16dp"
+                app:iconSize="18dp"
                 app:iconGravity="textStart"
-                app:cornerRadius="12dp"
+                app:iconPadding="6dp"
+                app:cornerRadius="14dp"
+                app:strokeColor="@color/divider_color_strong"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCloseAll"
                 android:layout_width="0dp"
-                android:layout_height="42dp"
+                android:layout_height="44dp"
                 android:layout_weight="1"
                 android:layout_marginHorizontal="4dp"
                 android:text="@string/close_all"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:textAllCaps="false"
                 app:icon="@drawable/ic_close"
-                app:iconSize="16dp"
+                app:iconSize="18dp"
                 app:iconGravity="textStart"
-                app:cornerRadius="12dp"
+                app:iconPadding="6dp"
+                app:cornerRadius="14dp"
+                app:strokeColor="@color/divider_color_strong"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
         </LinearLayout>
 

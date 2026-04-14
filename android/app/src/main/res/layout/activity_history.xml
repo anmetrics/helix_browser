@@ -10,7 +10,10 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
+        android:fitsSystemWindows="true"
+        android:background="@color/background"
+        app:elevation="0dp">
+
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -18,30 +21,37 @@
             app:title="@string/history"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:menu="@menu/menu_history"
-            android:background="@color/toolbar_background" />
+            android:background="@color/background" />
+
+        <!-- Search bar -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="12dp">
+
+            <EditText
+                android:id="@+id/searchInput"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_search_bar"
+                android:paddingHorizontal="16dp"
+                android:hint="@string/history_hint"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/hint_color"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="10dp"
+                android:drawableTint="@color/hint_color" />
+        </FrameLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <EditText
-            android:id="@+id/searchInput"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_margin="12dp"
-            android:background="@drawable/bg_address_bar"
-            android:paddingHorizontal="16dp"
-            android:hint="@string/history_hint"
-            android:textSize="14sp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/hint_color"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:drawableStart="@drawable/ic_search"
-            android:drawablePadding="8dp" />
 
         <TextView
             android:id="@+id/emptyView"
@@ -49,8 +59,9 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="@string/no_history"
-            android:textColor="@color/text_secondary"
-            android:textSize="16sp"
+            android:textColor="@color/text_tertiary"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif"
             android:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -59,5 +70,5 @@
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:paddingBottom="16dp" />
-    </LinearLayout>
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

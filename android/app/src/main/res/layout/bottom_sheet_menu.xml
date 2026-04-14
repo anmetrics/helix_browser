@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -12,8 +13,8 @@
         android:layout_width="40dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/bg_sheet_handle" />
 
     <!-- Quick actions row -->
@@ -23,74 +24,54 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:paddingHorizontal="16dp"
-        android:paddingBottom="12dp">
+        android:paddingBottom="16dp">
 
         <!-- New Tab -->
         <LinearLayout
             android:id="@+id/menu_new_tab"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless">
-            <ImageView android:src="@drawable/ic_add" style="@style/MenuIconStyle"
-                android:layout_width="28dp" android:layout_height="28dp" />
-            <TextView android:text="@string/new_tab" android:textColor="@color/text_secondary"
-                android:textSize="10sp" android:layout_marginTop="4dp"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            style="@style/QuickActionStyle">
+            <ImageView
+                android:src="@drawable/ic_add"
+                style="@style/QuickActionIconStyle" />
+            <TextView
+                android:text="@string/new_tab"
+                style="@style/QuickActionTextStyle" />
         </LinearLayout>
 
         <!-- Incognito -->
         <LinearLayout
             android:id="@+id/menu_incognito_tab"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless">
-            <ImageView android:src="@drawable/ic_incognito" style="@style/MenuIconStyle"
-                android:layout_width="28dp" android:layout_height="28dp" />
-            <TextView android:text="@string/incognito_tab" android:textColor="@color/text_secondary"
-                android:textSize="10sp" android:layout_marginTop="4dp"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            style="@style/QuickActionStyle">
+            <ImageView
+                android:src="@drawable/ic_incognito"
+                style="@style/QuickActionIconStyle" />
+            <TextView
+                android:text="@string/incognito_tab"
+                style="@style/QuickActionTextStyle" />
         </LinearLayout>
 
         <!-- Share -->
         <LinearLayout
             android:id="@+id/menu_share"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless">
-            <ImageView android:src="@drawable/ic_share" style="@style/MenuIconStyle"
-                android:layout_width="28dp" android:layout_height="28dp" />
-            <TextView android:text="@string/share" android:textColor="@color/text_secondary"
-                android:textSize="10sp" android:layout_marginTop="4dp"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            style="@style/QuickActionStyle">
+            <ImageView
+                android:src="@drawable/ic_share"
+                style="@style/QuickActionIconStyle" />
+            <TextView
+                android:text="@string/share"
+                style="@style/QuickActionTextStyle" />
         </LinearLayout>
 
         <!-- Find -->
         <LinearLayout
             android:id="@+id/menu_find_in_page"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless">
-            <ImageView android:src="@drawable/ic_search" style="@style/MenuIconStyle"
-                android:layout_width="28dp" android:layout_height="28dp" />
-            <TextView android:text="@string/find" android:textColor="@color/text_secondary"
-                android:textSize="10sp" android:layout_marginTop="4dp"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            style="@style/QuickActionStyle">
+            <ImageView
+                android:src="@drawable/ic_search"
+                style="@style/QuickActionIconStyle" />
+            <TextView
+                android:text="@string/find"
+                style="@style/QuickActionTextStyle" />
         </LinearLayout>
     </LinearLayout>
 
@@ -132,7 +113,7 @@
         <ImageView android:src="@drawable/ic_history" style="@style/MenuIconStyle" />
         <TextView android:text="@string/save_history" style="@style/MenuTextStyle"
             android:layout_weight="1" />
-        <androidx.appcompat.widget.SwitchCompat
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switch_save_history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -147,9 +128,26 @@
             android:layout_weight="1" />
         <ImageView android:id="@+id/ic_check_desktop"
             android:src="@drawable/ic_check"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:tint="@color/accent_purple"
             android:visibility="gone" />
+    </LinearLayout>
+
+    <View style="@style/MenuDivider" />
+
+    <!-- Print -->
+    <LinearLayout android:id="@+id/menu_print"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_print" style="@style/MenuIconStyle" />
+        <TextView android:text="@string/print_page" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <!-- Add to Home Screen -->
+    <LinearLayout android:id="@+id/menu_add_to_home"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_add_to_home" style="@style/MenuIconStyle" />
+        <TextView android:text="@string/add_to_home" style="@style/MenuTextStyle" />
     </LinearLayout>
 
     <View style="@style/MenuDivider" />
