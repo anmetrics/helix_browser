@@ -154,4 +154,20 @@
     <string name="save_image">Save image</string>
     <string name="share_link">Share link</string>
     <string name="reader_mode">Reader mode</string>
+    <string name="reopen_closed_tab">Reopen closed tab</string>
+    <string name="not_secure">Not secure</string>
+    <string name="page_info_connection">Connection</string>
+    <string name="page_info_secure_subtitle">Information you send to this site is private</string>
+    <string name="page_info_not_secure_subtitle">Your connection to this site is not private. Attackers might be able to see information you give to this site.</string>
+    <string name="page_info_internal_subtitle">This is a Helix internal page</string>
+    <string name="page_info_permissions">Permissions</string>
+    <string name="page_info_no_permissions">No special permissions granted</string>
+    <string name="page_info_cookies">Cookies and site data</string>
+    <string name="page_info_certificate">Certificate is valid</string>
+    <string name="page_info_certificate_invalid">Certificate is not trusted</string>
+    <string name="learn_more">Learn more</string>
+    <string name="proceed_anyway">Proceed</string>
+    <string name="connection_secure">Secure connection</string>
+    <string name="connection_not_secure">Not secure</string>
+    <string name="connection_internal">Internal page</string>
 </resources>

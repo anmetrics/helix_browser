@@ -14,23 +14,23 @@
         android:background="@color/tab_switcher_background"
         app:elevation="0dp">
 
-        <!-- Top bar -->
+        <!-- Top bar - Chrome style -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="64dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="12dp">
+            android:paddingHorizontal="14dp">
 
-            <!-- New tab button -->
+            <!-- New tab button - Purple rounded square (like Chrome) -->
             <ImageButton
                 android:id="@+id/btnNewTab"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:padding="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="11dp"
+                android:background="@drawable/bg_new_tab_button"
                 android:src="@drawable/ic_add"
-                app:tint="@color/text_primary"
+                app:tint="@color/accent_purple"
                 android:contentDescription="@string/new_tab" />
 
             <View
@@ -38,32 +38,57 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <!-- Tab count badge -->
-            <TextView
-                android:id="@+id/tabCountText"
+            <!-- Center: Segmented toggle (regular tabs / grid view) -->
+            <LinearLayout
+                android:id="@+id/viewModeSegment"
                 android:layout_width="wrap_content"
-                android:layout_height="28dp"
-                android:minWidth="28dp"
-                android:gravity="center"
-                android:paddingHorizontal="10dp"
-                android:text="7"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-medium"
-                android:background="@drawable/bg_tab_count_badge" />
+                android:layout_height="44dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_segment_container"
+                android:paddingHorizontal="4dp">
 
-            <!-- Grid view toggle -->
-            <ImageButton
-                android:id="@+id/btnGridToggle"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="12dp"
-                android:padding="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_grid_view"
-                app:tint="@color/text_secondary"
-                android:contentDescription="Grid view" />
+                <!-- Regular tabs view (with count) -->
+                <FrameLayout
+                    android:id="@+id/segmentTabs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:minWidth="44dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_segment_active"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <TextView
+                        android:id="@+id/tabCountText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium" />
+                </FrameLayout>
+
+                <!-- Grid view toggle -->
+                <FrameLayout
+                    android:id="@+id/segmentGrid"
+                    android:layout_width="44dp"
+                    android:layout_height="36dp"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:id="@+id/btnGridToggle"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_grid_view"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="Grid view" />
+                </FrameLayout>
+            </LinearLayout>
 
             <View
                 android:layout_width="0dp"
@@ -73,16 +98,16 @@
             <!-- More options -->
             <ImageButton
                 android:id="@+id/btnMore"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:padding="8dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="10dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_more_vert"
-                app:tint="@color/text_secondary"
+                app:tint="@color/text_primary"
                 android:contentDescription="More options" />
         </LinearLayout>
 
-        <!-- Search bar -->
+        <!-- Search bar - Chrome style pill -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -92,14 +117,12 @@
             <EditText
                 android:id="@+id/searchTabs"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:background="@drawable/bg_search_bar"
-                android:drawableStart="@drawable/ic_search"
-                android:drawablePadding="10dp"
-                android:drawableTint="@color/hint_color"
-                android:paddingHorizontal="16dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
                 android:hint="@string/search_tabs_hint"
-                android:textColorHint="@color/hint_color"
+                android:textColorHint="@color/text_tertiary"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:inputType="text"
@@ -116,10 +139,38 @@
         android:layout_height="match_parent"
         android:paddingTop="4dp"
         android:paddingBottom="180dp"
-        android:paddingHorizontal="8dp"
+        android:paddingHorizontal="10dp"
         android:clipToPadding="false"
         android:scrollbars="none"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:padding="20dp"
+            android:src="@drawable/ic_tabs"
+            android:background="@drawable/bg_quick_action_icon"
+            app:tint="@color/text_tertiary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="No tabs found"
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
 
     <!-- Bottom section -->
     <LinearLayout

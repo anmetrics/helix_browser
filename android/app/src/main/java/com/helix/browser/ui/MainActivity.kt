@@ -204,6 +204,7 @@ class MainActivity : BaseActivity() {
                     binding.btnVoiceSearch.isVisible = false
                     binding.btnBookmark.isVisible = false
                     binding.btnRefresh.isVisible = false
+                    updateSiteIdentityIcon()
                     showKeyboard(this)
                 } else {
                     updateAddressBarDisplay()
@@ -234,9 +235,15 @@ class MainActivity : BaseActivity() {
             binding.addressBar.clearFocus()
             hideKeyboard()
         }
-        binding.iconSecure.setOnClickListener {
-            showPageInfoSheet()
+        binding.siteIdentityContainer.setOnClickListener {
+            if (binding.addressBar.isFocused) {
+                // Already in search mode; just keep it focused
+                showKeyboard(binding.addressBar)
+            } else {
+                showPageInfoSheet()
+            }
         }
+        binding.notSecureChip.setOnClickListener { showPageInfoSheet() }
         binding.btnRefresh.setOnClickListener {
             if (viewModel.isLoading.value == true) {
                 currentWebView?.stopLoading()
@@ -486,11 +493,12 @@ class MainActivity : BaseActivity() {
                     desktopTabAdapter?.notifyItemChanged(tabManager.currentIndex)
                 }
             },
-            onFaviconReceived = { favicon -> 
-                tab.favicon = favicon 
+            onFaviconReceived = { favicon ->
+                tab.favicon = favicon
                 if (tabManager.currentTab?.id == tab.id) runOnUiThread {
                     // Force refresh tab adapter for favicon update
                     desktopTabAdapter?.notifyItemChanged(tabManager.currentIndex)
+                    updateSiteIdentityIcon()
                 }
             },
             onShowFileChooser = { callback, _ ->
@@ -596,6 +604,15 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         }
         view.findViewById<View>(R.id.menu_bookmarks).setOnClickListener { startActivity(Intent(this, BookmarksActivity::class.java)); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_history).setOnClickListener { startActivity(Intent(this, HistoryActivity::class.java)); dialog.dismiss() }
+        view.findViewById<View>(R.id.menu_reopen_tab).setOnClickListener {
+            val recent = tabManager.recentlyClosed.firstOrNull()
+            if (recent != null) {
+                createNewTab(recent.url, recent.isIncognito)
+            } else {
+                Toast.makeText(this, "No recently closed tabs", Toast.LENGTH_SHORT).show()
+            }
+            dialog.dismiss()
+        }
         view.findViewById<View>(R.id.menu_downloads).setOnClickListener { startActivity(Intent(this, DownloadsActivity::class.java)); dialog.dismiss() }
 
         val historySwitch = view.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_save_history)
@@ -633,6 +650,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         view.findViewById<View>(R.id.menu_print).setOnClickListener { printCurrentPage(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_add_to_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_settings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)); dialog.dismiss() }
+        view.findViewById<View>(R.id.menu_reopen_tab).isVisible = tabManager.recentlyClosed.isNotEmpty()
         dialog.show()
     }
 
@@ -744,25 +762,98 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     private fun showPageInfoSheet() {
         val url = viewModel.currentUrl.value ?: return
         val isHttps = url.startsWith("https://")
+        val isHttp = url.startsWith("http://")
+        val isInternal = !isHttps && !isHttp
         val domain = try { java.net.URI(url).host ?: url } catch (_: Exception) { url }
 
-        val title = if (isHttps) getString(R.string.security_secure_title) else getString(R.string.security_not_secure_title)
-        val message = if (isHttps) getString(R.string.security_secure_message) else getString(R.string.security_not_secure_message)
-        val iconColor = if (isHttps) R.color.green_secure else R.color.warning_red
+        val dialog = BottomSheetDialog(this, R.style.Theme_HelixBrowser_BottomSheet)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_page_info, null)
+        dialog.setContentView(view)
 
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-            .setIcon(ContextCompat.getDrawable(this, if (isHttps) R.drawable.ic_lock else R.drawable.ic_lock_open)?.apply {
-                setTint(ContextCompat.getColor(this@MainActivity, iconColor))
-            })
-            .setTitle(title)
-            .setMessage("$domain\n\n$message")
-            .setPositiveButton(android.R.string.ok, null)
-            .setNeutralButton(R.string.copy_link) { _, _ ->
-                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("url", url))
-                Toast.makeText(this, getString(R.string.link_copied), Toast.LENGTH_SHORT).show()
+        val pageInfoIcon = view.findViewById<android.widget.ImageView>(R.id.pageInfoIcon)
+        val pageInfoIconBg = view.findViewById<View>(R.id.pageInfoIconBackground)
+        val pageInfoTitle = view.findViewById<android.widget.TextView>(R.id.pageInfoTitle)
+        val pageInfoDomain = view.findViewById<android.widget.TextView>(R.id.pageInfoDomain)
+        val pageInfoSubtitle = view.findViewById<android.widget.TextView>(R.id.pageInfoSubtitle)
+        val pageInfoConnectionDetail = view.findViewById<android.widget.TextView>(R.id.pageInfoConnectionDetail)
+        val pageInfoCookiesDetail = view.findViewById<android.widget.TextView>(R.id.pageInfoCookiesDetail)
+
+        when {
+            isHttps -> {
+                pageInfoIcon.setImageResource(R.drawable.ic_lock)
+                pageInfoIcon.setColorFilter(getColor(R.color.green_secure))
+                pageInfoIconBg.setBackgroundResource(R.drawable.bg_page_info_icon_secure)
+                pageInfoTitle.text = getString(R.string.connection_secure)
+                pageInfoTitle.setTextColor(getColor(R.color.text_primary))
+                pageInfoSubtitle.text = getString(R.string.page_info_secure_subtitle)
+                pageInfoConnectionDetail.text = getString(R.string.page_info_certificate)
             }
-            .show()
+            isHttp -> {
+                pageInfoIcon.setImageResource(R.drawable.ic_lock_open)
+                pageInfoIcon.setColorFilter(getColor(R.color.warning_orange))
+                pageInfoIconBg.setBackgroundResource(R.drawable.bg_page_info_icon_warning)
+                pageInfoTitle.text = getString(R.string.connection_not_secure)
+                pageInfoTitle.setTextColor(getColor(R.color.warning_orange))
+                pageInfoSubtitle.text = getString(R.string.page_info_not_secure_subtitle)
+                pageInfoConnectionDetail.text = getString(R.string.not_secure)
+            }
+            else -> {
+                pageInfoIcon.setImageResource(R.drawable.ic_helix_logo)
+                pageInfoIcon.setColorFilter(getColor(R.color.accent_purple))
+                pageInfoIconBg.setBackgroundResource(R.drawable.bg_page_info_icon_neutral)
+                pageInfoTitle.text = getString(R.string.connection_internal)
+                pageInfoTitle.setTextColor(getColor(R.color.text_primary))
+                pageInfoSubtitle.text = getString(R.string.page_info_internal_subtitle)
+                pageInfoConnectionDetail.text = getString(R.string.connection_internal)
+            }
+        }
+
+        pageInfoDomain.text = domain
+
+        // Cookies count (best-effort)
+        val cookieCount = try {
+            android.webkit.CookieManager.getInstance().getCookie(url)?.split(";")?.size ?: 0
+        } catch (_: Exception) { 0 }
+        pageInfoCookiesDetail.text = if (cookieCount > 0) "$cookieCount cookies in use" else "No cookies"
+
+        view.findViewById<View>(R.id.pageInfoConnectionRow).setOnClickListener {
+            // Connection details — show toast for now or dedicated screen
+            Toast.makeText(this, pageInfoConnectionDetail.text, Toast.LENGTH_SHORT).show()
+        }
+        view.findViewById<View>(R.id.pageInfoPermissionsRow).setOnClickListener {
+            // Open app settings for site permissions
+            try {
+                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                }
+                startActivity(intent)
+            } catch (_: Exception) {}
+            dialog.dismiss()
+        }
+        view.findViewById<View>(R.id.pageInfoCookiesRow).setOnClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.clear_cookies)
+                .setMessage("Clear cookies for $domain?")
+                .setPositiveButton(R.string.clear_history_confirm) { _, _ ->
+                    android.webkit.CookieManager.getInstance().setCookie(url, "")
+                    Toast.makeText(this, getString(R.string.cookies_cleared), Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+            dialog.dismiss()
+        }
+        view.findViewById<View>(R.id.btnPageInfoCopy).setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("url", url))
+            Toast.makeText(this, getString(R.string.link_copied), Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+        view.findViewById<View>(R.id.btnPageInfoShare).setOnClickListener {
+            shareCurrentPage()
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun shareCurrentPage() {
@@ -798,7 +889,59 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         if (!binding.addressBar.isFocused) {
             binding.addressBar.setText(if (url.isEmpty() || url == "about:blank") "" else UrlUtils.getDisplayUrl(url))
         }
-        binding.iconSecure.isVisible = url.startsWith("https://")
+        updateSiteIdentityIcon()
+    }
+
+    /**
+     * Smart left-side icon for the address bar (Chrome-style).
+     * - Focused / empty / new tab → search icon
+     * - HTTPS with favicon → favicon + small green lock badge
+     * - HTTPS no favicon → green lock icon
+     * - HTTP → orange unlock icon + "Not secure" chip
+     * - Internal pages → search icon
+     */
+    private fun updateSiteIdentityIcon() {
+        val url = viewModel.currentUrl.value ?: ""
+        val isFocused = binding.addressBar.isFocused
+        val isEmpty = url.isEmpty() || url == "about:blank"
+        val isHttps = url.startsWith("https://")
+        val isHttp = url.startsWith("http://")
+        val favicon = tabManager.currentTab?.favicon
+
+        // Reset all
+        binding.iconSearch.isVisible = false
+        binding.iconSecure.isVisible = false
+        binding.iconFavicon.isVisible = false
+        binding.faviconLockBadge.isVisible = false
+        binding.notSecureChip.isVisible = false
+
+        when {
+            isFocused || isEmpty -> {
+                binding.iconSearch.isVisible = true
+                binding.iconSearch.setColorFilter(getColor(R.color.text_secondary))
+            }
+            isHttp -> {
+                // Chrome-style: "Not secure" warning prominent
+                binding.iconSecure.isVisible = true
+                binding.iconSecure.setImageResource(R.drawable.ic_lock_open)
+                binding.iconSecure.setColorFilter(getColor(R.color.warning_orange))
+                binding.notSecureChip.isVisible = true
+            }
+            favicon != null && isHttps -> {
+                binding.iconFavicon.isVisible = true
+                binding.iconFavicon.setImageBitmap(favicon)
+                binding.faviconLockBadge.isVisible = true
+            }
+            isHttps -> {
+                binding.iconSecure.isVisible = true
+                binding.iconSecure.setImageResource(R.drawable.ic_lock)
+                binding.iconSecure.setColorFilter(getColor(R.color.green_secure))
+            }
+            else -> {
+                binding.iconSearch.isVisible = true
+                binding.iconSearch.setColorFilter(getColor(R.color.text_secondary))
+            }
+        }
     }
 
     private fun updateNavButtons() {

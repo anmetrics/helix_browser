@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/sheet_background"
+    android:paddingBottom="24dp">
+
+    <!-- Handle bar -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_sheet_handle" />
+
+    <!-- Big icon + title section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="20dp">
+
+        <FrameLayout
+            android:layout_width="56dp"
+            android:layout_height="56dp">
+
+            <View
+                android:id="@+id/pageInfoIconBackground"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_page_info_icon_secure" />
+
+            <ImageView
+                android:id="@+id/pageInfoIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_lock"
+                app:tint="@color/green_secure" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="14dp">
+
+            <TextView
+                android:id="@+id/pageInfoTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/connection_secure"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/pageInfoDomain"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                tools:ignore="UnknownIdInLayout" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Subtitle / explainer -->
+    <TextView
+        android:id="@+id/pageInfoSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="14dp"
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:lineSpacingExtra="3dp"
+        android:text="@string/page_info_secure_subtitle" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="20dp"
+        android:background="@color/divider_color" />
+
+    <!-- Connection row -->
+    <LinearLayout
+        android:id="@+id/pageInfoConnectionRow"
+        style="@style/MenuItemStyle">
+        <ImageView
+            android:src="@drawable/ic_security"
+            style="@style/MenuIconStyle" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+            <TextView
+                android:text="@string/page_info_connection"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/pageInfoConnectionDetail"
+                android:textColor="@color/text_tertiary"
+                android:textSize="12sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp" />
+        </LinearLayout>
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_arrow_forward"
+            app:tint="@color/text_tertiary" />
+    </LinearLayout>
+
+    <!-- Permissions row -->
+    <LinearLayout
+        android:id="@+id/pageInfoPermissionsRow"
+        style="@style/MenuItemStyle">
+        <ImageView
+            android:src="@drawable/ic_settings"
+            style="@style/MenuIconStyle" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+            <TextView
+                android:text="@string/page_info_permissions"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:text="@string/page_info_no_permissions"
+                android:textColor="@color/text_tertiary"
+                android:textSize="12sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp" />
+        </LinearLayout>
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_arrow_forward"
+            app:tint="@color/text_tertiary" />
+    </LinearLayout>
+
+    <!-- Cookies row -->
+    <LinearLayout
+        android:id="@+id/pageInfoCookiesRow"
+        style="@style/MenuItemStyle">
+        <ImageView
+            android:src="@drawable/ic_history"
+            style="@style/MenuIconStyle" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+            <TextView
+                android:text="@string/page_info_cookies"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/pageInfoCookiesDetail"
+                android:textColor="@color/text_tertiary"
+                android:textSize="12sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp" />
+        </LinearLayout>
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_arrow_forward"
+            app:tint="@color/text_tertiary" />
+    </LinearLayout>
+
+    <View style="@style/MenuDivider"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Quick actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="6dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPageInfoCopy"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="@string/copy_link"
+            android:textSize="13sp"
+            android:textAllCaps="false"
+            app:icon="@drawable/ic_share"
+            app:iconSize="16dp"
+            app:iconGravity="textStart"
+            app:iconPadding="6dp"
+            app:cornerRadius="14dp"
+            app:strokeColor="@color/divider_color_strong"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPageInfoShare"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:text="@string/share"
+            android:textSize="13sp"
+            android:textAllCaps="false"
+            app:icon="@drawable/ic_share"
+            app:iconSize="16dp"
+            app:iconGravity="textStart"
+            app:iconPadding="6dp"
+            app:cornerRadius="14dp"
+            app:strokeColor="@color/divider_color_strong"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+    </LinearLayout>
+</LinearLayout>

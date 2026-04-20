@@ -66,16 +66,74 @@
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
                             android:background="@drawable/bg_address_bar"
-                            android:paddingHorizontal="4dp">
+                            android:paddingHorizontal="6dp">
 
-                            <ImageView
-                                android:id="@+id/iconSecure"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:padding="6dp"
-                                android:src="@drawable/ic_lock"
-                                android:visibility="gone"
-                                android:contentDescription="@string/desc_secure" />
+                            <!-- Site identity badge: shows favicon / lock / search based on state -->
+                            <FrameLayout
+                                android:id="@+id/siteIdentityContainer"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:contentDescription="@string/desc_secure">
+
+                                <!-- Default: search icon (when focused/empty) -->
+                                <ImageView
+                                    android:id="@+id/iconSearch"
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_search"
+                                    app:tint="@color/text_secondary" />
+
+                                <!-- Security icon (HTTPS lock or HTTP unlock) -->
+                                <ImageView
+                                    android:id="@+id/iconSecure"
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_lock"
+                                    android:visibility="gone" />
+
+                                <!-- Favicon of the current site -->
+                                <ImageView
+                                    android:id="@+id/iconFavicon"
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_gravity="center"
+                                    android:scaleType="centerCrop"
+                                    android:visibility="gone"
+                                    android:contentDescription="@string/desc_favicon" />
+
+                                <!-- Tiny lock badge over favicon when HTTPS -->
+                                <ImageView
+                                    android:id="@+id/faviconLockBadge"
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:layout_gravity="bottom|end"
+                                    android:layout_marginEnd="6dp"
+                                    android:layout_marginBottom="6dp"
+                                    android:src="@drawable/ic_lock"
+                                    android:background="@drawable/bg_favicon_lock"
+                                    android:padding="1dp"
+                                    app:tint="@color/green_secure"
+                                    android:visibility="gone" />
+                            </FrameLayout>
+
+                            <!-- "Not secure" warning chip (Chrome-style) -->
+                            <TextView
+                                android:id="@+id/notSecureChip"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/not_secure"
+                                android:textColor="@color/warning_orange"
+                                android:textSize="12sp"
+                                android:fontFamily="sans-serif-medium"
+                                android:paddingStart="2dp"
+                                android:paddingEnd="6dp"
+                                android:singleLine="true"
+                                android:visibility="gone" />
 
                             <EditText
                                 android:id="@+id/addressBar"
@@ -83,7 +141,7 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
                                 android:background="@null"
-                                android:paddingHorizontal="12dp"
+                                android:paddingHorizontal="10dp"
                                 android:paddingVertical="0dp"
                                 android:hint="@string/search_hint"
                                 android:textColor="@color/text_primary"
@@ -123,7 +181,7 @@
                                 android:background="?attr/selectableItemBackgroundBorderless"
                                 android:src="@drawable/ic_mic"
                                 android:contentDescription="Voice search"
-                                android:visibility="gone" />
+                                android:visibility="visible" />
 
                             <TextView
                                 android:id="@+id/btnCancelSearch"
@@ -366,8 +424,9 @@
 
                 <TextView
                     android:id="@+id/tabCountBadge"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:minWidth="26dp"
                     android:layout_gravity="center"
                     android:text="1"
                     android:textColor="@color/text_primary"
