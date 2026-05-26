@@ -9,6 +9,9 @@ interface BookmarkDao {
     @Query("SELECT * FROM bookmarks ORDER BY timestamp DESC")
     fun getAllBookmarks(): Flow<List<Bookmark>>
 
+    @Query("SELECT * FROM bookmarks ORDER BY timestamp DESC")
+    suspend fun getAllBookmarksSnapshot(): List<Bookmark>
+
     @Query("SELECT * FROM bookmarks WHERE url = :url LIMIT 1")
     suspend fun getBookmarkByUrl(url: String): Bookmark?
 

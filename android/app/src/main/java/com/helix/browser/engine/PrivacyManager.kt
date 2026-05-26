@@ -187,6 +187,56 @@ object PrivacyManager {
                 };
             } catch(e) {}
 
+            // Spoof hardware fingerprint surfaces. Real values leak unique
+            // signal across browsers; rounding to common buckets makes the
+            // device blend with the population.
+            try {
+                Object.defineProperty(navigator, 'hardwareConcurrency', { get: function(){ return 4; } });
+            } catch(e) {}
+            try {
+                Object.defineProperty(navigator, 'deviceMemory', { get: function(){ return 4; } });
+            } catch(e) {}
+            // Round screen metrics to nearest 50px to defeat resolution fingerprinting
+            // while preserving usable viewport size.
+            try {
+                var rd = function(v){ return Math.round(v / 50) * 50; };
+                Object.defineProperty(screen, 'width',  { get: function(){ return rd(screen.availWidth); } });
+                Object.defineProperty(screen, 'height', { get: function(){ return rd(screen.availHeight); } });
+                Object.defineProperty(screen, 'colorDepth', { get: function(){ return 24; } });
+                Object.defineProperty(screen, 'pixelDepth', { get: function(){ return 24; } });
+            } catch(e) {}
+            // Battery API is widely abused for cross-site fingerprinting; return
+            // a stable, full-battery promise so callers don't observe drift.
+            try {
+                if (navigator.getBattery) {
+                    navigator.getBattery = function(){
+                        return Promise.resolve({
+                            charging: true, chargingTime: 0, dischargingTime: Infinity, level: 1.0,
+                            addEventListener: function(){}, removeEventListener: function(){}
+                        });
+                    };
+                }
+            } catch(e) {}
+            // WebRTC leaks local IPs through ICE candidates even on VPN. Strip
+            // candidate strings before they reach the page.
+            try {
+                if (window.RTCPeerConnection) {
+                    var OrigRTC = window.RTCPeerConnection;
+                    window.RTCPeerConnection = function(){
+                        var pc = new OrigRTC(arguments[0], arguments[1]);
+                        var origAdd = pc.addIceCandidate;
+                        pc.addIceCandidate = function(c){
+                            if (c && c.candidate && /(\d{1,3}\.){3}\d{1,3}/.test(c.candidate)) {
+                                return Promise.resolve();
+                            }
+                            return origAdd.apply(pc, arguments);
+                        };
+                        return pc;
+                    };
+                    window.RTCPeerConnection.prototype = OrigRTC.prototype;
+                }
+            } catch(e) {}
+
             // Block AudioContext fingerprinting
             if (window.AudioContext || window.webkitAudioContext) {
                 const OriginalAudioContext = window.AudioContext || window.webkitAudioContext;
@@ -520,9 +570,11 @@ object PrivacyManager {
             scripts.append(getTrackerBlockingScript())
             scripts.append("\n")
         }
-        // YouTube ad blocking + cosmetic filtering (always included when ad block is on)
+        // YouTube ad blocking + cosmetic filtering. Reads the same "block_ads"
+        // key the Settings switch writes (the prior "ad_block" key was a typo
+        // that silently disabled cosmetic filtering for everyone).
         val adBlockEnabled = PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean("ad_block", true)
+            .getBoolean("block_ads", true)
         if (adBlockEnabled) {
             scripts.append(getYoutubeAdBlockScript())
             scripts.append("\n")

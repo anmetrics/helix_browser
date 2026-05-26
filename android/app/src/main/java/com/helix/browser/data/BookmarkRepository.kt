@@ -4,6 +4,8 @@ import kotlinx.coroutines.flow.Flow
 
 class BookmarkRepository(private val dao: BookmarkDao) {
 
+    fun dao(): BookmarkDao = dao
+
     fun getAllBookmarks(): Flow<List<Bookmark>> = dao.getAllBookmarks()
 
     fun search(query: String): Flow<List<Bookmark>> = dao.search(query)

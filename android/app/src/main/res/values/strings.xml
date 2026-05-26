@@ -212,4 +212,17 @@
     <string name="custom_search_engine_title">Custom search engine</string>
     <string name="custom_search_engine_hint">Enter a search URL with %%s where the query goes. Example: https://example.com/search?q=%%s</string>
     <string name="custom_search_engine_invalid">URL must start with http:// or https://</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">Save page (offline)</string>
+    <string name="save_page_no_url">Open a page first</string>
+    <string name="save_page_done">Saved as %1$s</string>
+    <string name="save_page_failed">Failed to save page</string>
+    <string name="no_recently_closed">No recently closed tabs</string>
+    <string name="bookmarks_import">Import bookmarks…</string>
+    <string name="bookmarks_export">Export bookmarks…</string>
+    <string name="bookmarks_exported">Exported %1$d bookmarks</string>
+    <string name="bookmarks_export_failed">Export failed</string>
+    <string name="bookmarks_imported">Imported %1$d bookmarks</string>
+    <string name="bookmarks_import_failed">Import failed</string>
 </resources>

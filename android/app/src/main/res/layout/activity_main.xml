@@ -261,6 +261,16 @@
                             android:focusable="true"
                             android:focusableInTouchMode="true" />
 
+                        <TextView
+                            android:id="@+id/tvFindCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="8dp"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp"
+                            android:minWidth="48dp"
+                            android:gravity="center" />
+
                         <ImageButton
                             android:id="@+id/btnFindPrev"
                             android:layout_width="40dp"

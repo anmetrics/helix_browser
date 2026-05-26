@@ -196,6 +196,13 @@
         <TextView android:text="@string/picture_in_picture" style="@style/MenuTextStyle" />
     </LinearLayout>
 
+    <!-- Save page (offline / MHTML) -->
+    <LinearLayout android:id="@+id/menu_save_page"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_download" style="@style/MenuIconStyle" />
+        <TextView android:text="@string/save_page" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
     <!-- Print -->
     <LinearLayout android:id="@+id/menu_print"
         style="@style/MenuItemStyle">

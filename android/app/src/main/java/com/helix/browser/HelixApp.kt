@@ -18,6 +18,8 @@ class HelixApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        // Install crash handler FIRST so any later init failure is captured.
+        HelixCrashHandler.install(this)
         // Init billing early so subscription status is ready
         billingManager
     }

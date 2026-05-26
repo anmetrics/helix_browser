@@ -53,6 +53,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.webkit.WebView.HitTestResult
 import com.helix.browser.ui.adapter.SuggestionsAdapter
+import java.io.File
 
 class MainActivity : BaseActivity() {
 
@@ -101,6 +102,12 @@ class MainActivity : BaseActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Opt into edge-to-edge so the system bars no longer eat layout space
+        // automatically. Required for the OnApplyWindowInsetsListener below
+        // to receive real status/nav bar insets and pad statusBarPadding
+        // accordingly — otherwise the address bar slides under the notch.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -214,7 +221,10 @@ class MainActivity : BaseActivity() {
                     setText(viewModel.currentUrl.value)
                     selectAll()
                     binding.btnCancelSearch.isVisible = true
-                    binding.btnVoiceSearch.isVisible = false
+                    // Show mic when address bar is focused (Chrome behavior).
+                    // It hides as the user types in the TextWatcher below.
+                    binding.btnVoiceSearch.isVisible = text.isNullOrEmpty() &&
+                        android.speech.SpeechRecognizer.isRecognitionAvailable(this@MainActivity)
                     binding.btnBookmark.isVisible = false
                     binding.btnRefresh.isVisible = false
                     updateSiteIdentityIcon()
@@ -417,6 +427,20 @@ class MainActivity : BaseActivity() {
             currentWebView?.findAllAsync(v.text.toString())
             true
         }
+        // Live find: re-query as the user types so the counter updates in real time.
+        binding.findInPageInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val q = s?.toString().orEmpty()
+                if (q.isEmpty()) {
+                    currentWebView?.clearMatches()
+                    binding.tvFindCount.text = ""
+                } else {
+                    currentWebView?.findAllAsync(q)
+                }
+            }
+        })
     }
 
     fun createNewTab(url: String = "", isIncognito: Boolean = false) {
@@ -559,6 +583,16 @@ class MainActivity : BaseActivity() {
             isBlockPopupsEnabled = { PrivacyManager.isBlockPopupsEnabled(this) }
         )
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ -> downloadFile(url, userAgent, contentDisposition, mimeType) }
+        webView.setFindListener { active, total, doneCounting ->
+            // FindListener fires off the UI thread; only update if this WebView
+            // is the visible one (otherwise we'd overwrite the count for the
+            // foreground tab).
+            if (!doneCounting) return@setFindListener
+            if (tabManager.currentTab?.id == tabId) runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                binding.tvFindCount.text = if (total > 0) "${active + 1}/$total" else "0/0"
+            }
+        }
         setupWebViewContextMenu(webView)
         if (tab.isIncognito) webView.setIncognitoMode(true)
         if (tab.url.isNotEmpty()) webView.loadUrl(tab.url)
@@ -640,13 +674,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         view.findViewById<View>(R.id.menu_bookmarks).setOnClickListener { startActivity(Intent(this, BookmarksActivity::class.java)); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_history).setOnClickListener { startActivity(Intent(this, HistoryActivity::class.java)); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_reopen_tab).setOnClickListener {
-            val recent = tabManager.recentlyClosed.firstOrNull()
-            if (recent != null) {
-                createNewTab(recent.url, recent.isIncognito)
-            } else {
-                Toast.makeText(this, "No recently closed tabs", Toast.LENGTH_SHORT).show()
-            }
             dialog.dismiss()
+            showRecentlyClosedTabs()
         }
         view.findViewById<View>(R.id.menu_downloads).setOnClickListener { startActivity(Intent(this, DownloadsActivity::class.java)); dialog.dismiss() }
 
@@ -682,6 +711,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
             tvZoomLevel.text = "${newZoom}%"
         }
         view.findViewById<View>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
+        view.findViewById<View>(R.id.menu_save_page).setOnClickListener { savePageAsArchive(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_print).setOnClickListener { printCurrentPage(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_add_to_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
         // Reader mode toggle (label swaps to "Exit reader" when active).
@@ -707,6 +737,55 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         val printManager = getSystemService(Context.PRINT_SERVICE) as PrintManager
         val printAdapter = webView.createPrintDocumentAdapter(viewModel.currentTitle.value ?: "Page")
         printManager.print(viewModel.currentTitle.value ?: "Helix Browser", printAdapter, null)
+    }
+
+    private fun showRecentlyClosedTabs() {
+        val closed = tabManager.recentlyClosed
+        if (closed.isEmpty()) {
+            Toast.makeText(this, R.string.no_recently_closed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val items = closed.map { tab ->
+            val title = tab.title.ifBlank { tab.url }
+            // Two-line item: title on top, host on bottom (truncated).
+            "$title\n${UrlUtils.getDisplayUrl(tab.url)}"
+        }.toTypedArray()
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.reopen_closed_tab)
+            .setItems(items) { d, which ->
+                val tab = closed.getOrNull(which) ?: return@setItems
+                createNewTab(tab.url, tab.isIncognito)
+                d.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun savePageAsArchive() {
+        val wv = currentWebView ?: return
+        val url = viewModel.currentUrl.value
+        if (url.isNullOrBlank() || url == "about:blank") {
+            Toast.makeText(this, R.string.save_page_no_url, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // WebView.saveWebArchive writes a single self-contained .mht file to
+        // app-owned external storage. We then publish it through DownloadManager
+        // so it shows up in the Downloads UI and can be opened by any MHTML
+        // viewer (Chrome, Edge, Helix itself).
+        val dir = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "archives").apply { mkdirs() }
+        val safeName = (viewModel.currentTitle.value ?: "page")
+            .take(60).replace(Regex("[^A-Za-z0-9_\\- ]"), "_")
+        val file = File(dir, "$safeName-${System.currentTimeMillis()}.mht")
+        wv.saveWebArchive(file.absolutePath, /* autoname = */ false) { saved ->
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                if (saved != null) {
+                    Toast.makeText(this, getString(R.string.save_page_done, file.name), Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, R.string.save_page_failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun toggleReaderMode() {
@@ -1414,6 +1493,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
                 if (binding.addressBar.isFocused) {
                     val query = s?.toString()?.trim() ?: ""
                     viewModel.fetchSuggestions(query)
+                    // Mic visible only while the field is empty — matches
+                    // Chrome's behavior of swapping mic for the clear-X.
+                    binding.btnVoiceSearch.isVisible = query.isEmpty() &&
+                        android.speech.SpeechRecognizer.isRecognitionAvailable(this@MainActivity)
                 }
             }
         })
