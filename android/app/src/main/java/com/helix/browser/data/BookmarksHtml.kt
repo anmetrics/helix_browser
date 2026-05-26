@@ -1,11 +1,7 @@
 package com.helix.browser.data
 
-import android.text.Html
 import java.io.InputStream
 import java.io.OutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /**
  * Reads and writes the Netscape bookmark file format used by every major
@@ -29,7 +25,6 @@ object BookmarksHtml {
             w.write("<TITLE>Bookmarks</TITLE>\n")
             w.write("<H1>Bookmarks</H1>\n")
             w.write("<DL><p>\n")
-            val df = SimpleDateFormat("yyyyMMdd", Locale.US)
             for (b in bookmarks) {
                 val addDate = (b.timestamp / 1000).toString()
                 val title = escapeHtml(b.title.ifBlank { b.url })
@@ -37,9 +32,6 @@ object BookmarksHtml {
                 w.write("    <DT><A HREF=\"$url\" ADD_DATE=\"$addDate\">$title</A>\n")
             }
             w.write("</DL><p>\n")
-            // Touch df so SimpleDateFormat is treated as used in case we later
-            // add LAST_MODIFIED — keeps the import side symmetrical.
-            df.format(Date(0))
         }
     }
 
@@ -58,14 +50,49 @@ object BookmarksHtml {
     }
 
     private fun escapeHtml(s: String): String = s
+        // Strip line breaks so each bookmark stays on a single <DT> line.
+        .replace('\n', ' ')
+        .replace('\r', ' ')
         .replace("&", "&amp;")
         .replace("\"", "&quot;")
         .replace("<", "&lt;")
         .replace(">", "&gt;")
 
     private fun unescapeHtml(s: String): String {
-        // Cover the four entities we emit plus &nbsp; that other browsers add.
-        @Suppress("DEPRECATION")
-        return Html.fromHtml(s).toString()
+        // Targeted entity decoding only. We intentionally do NOT use
+        // Html.fromHtml here because it parses <b>, <font>, etc. and would
+        // execute embedded markup; bookmark titles must be plain text.
+        if ('&' !in s) return s
+        val sb = StringBuilder(s.length)
+        var i = 0
+        while (i < s.length) {
+            val c = s[i]
+            if (c == '&') {
+                val end = s.indexOf(';', i + 1)
+                if (end > 0 && end - i <= 10) {
+                    val ent = s.substring(i + 1, end)
+                    val replacement = when {
+                        ent == "amp" -> "&"
+                        ent == "quot" -> "\""
+                        ent == "apos" -> "'"
+                        ent == "lt" -> "<"
+                        ent == "gt" -> ">"
+                        ent == "nbsp" -> " "
+                        ent.startsWith("#x") || ent.startsWith("#X") ->
+                            ent.substring(2).toIntOrNull(16)?.takeIf { it in 0x20..0xFFFF }
+                                ?.let { Character.toString(it.toChar()) }
+                        ent.startsWith("#") ->
+                            ent.substring(1).toIntOrNull()?.takeIf { it in 0x20..0xFFFF }
+                                ?.let { Character.toString(it.toChar()) }
+                        else -> null
+                    }
+                    if (replacement != null) {
+                        sb.append(replacement); i = end + 1; continue
+                    }
+                }
+            }
+            sb.append(c); i++
+        }
+        return sb.toString()
     }
 }

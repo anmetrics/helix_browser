@@ -28,7 +28,7 @@ class HistoryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out)
+        overridePendingTransitionCompat(R.anim.slide_in_right, R.anim.fade_out)
 
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.toolbar.setOnMenuItemClickListener { item ->
@@ -74,7 +74,7 @@ class HistoryActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.fade_in, R.anim.slide_out_left)
+        overrideCloseTransitionCompat(R.anim.fade_in, R.anim.slide_out_left)
     }
 
     private fun showClearHistoryDialog() {

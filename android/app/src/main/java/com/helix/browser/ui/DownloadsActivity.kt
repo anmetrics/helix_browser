@@ -23,7 +23,7 @@ class DownloadsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDownloadsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out)
+        overridePendingTransitionCompat(R.anim.slide_in_right, R.anim.fade_out)
 
         binding.toolbar.setNavigationOnClickListener { finish() }
 
@@ -41,7 +41,7 @@ class DownloadsActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.fade_in, R.anim.slide_out_left)
+        overrideCloseTransitionCompat(R.anim.fade_in, R.anim.slide_out_left)
     }
 
     private fun loadDownloads() {

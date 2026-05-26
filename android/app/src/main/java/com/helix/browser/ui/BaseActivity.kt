@@ -28,6 +28,30 @@ open class BaseActivity : AppCompatActivity() {
         super.attachBaseContext(LocaleHelper.onAttach(newBase))
     }
 
+    /**
+     * API-aware replacement for the deprecated overridePendingTransition.
+     * On Android 14+ uses overrideActivityTransition (which respects the new
+     * Predictive Back animation), on older releases falls back to the legacy
+     * call. Centralized here so individual Activities don't need API gates.
+     */
+    @Suppress("DEPRECATION")
+    fun overridePendingTransitionCompat(enterAnim: Int, exitAnim: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, enterAnim, exitAnim)
+        } else {
+            overridePendingTransition(enterAnim, exitAnim)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    fun overrideCloseTransitionCompat(enterAnim: Int, exitAnim: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, enterAnim, exitAnim)
+        } else {
+            overridePendingTransition(enterAnim, exitAnim)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

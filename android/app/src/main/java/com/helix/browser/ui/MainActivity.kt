@@ -317,8 +317,8 @@ class MainActivity : BaseActivity() {
                     }
                 }
                 val intent = Intent(this, TabSwitcherActivity::class.java)
-                startActivityForResult(intent, REQUEST_TAB_SWITCHER)
-                overridePendingTransition(R.anim.slide_up, R.anim.fade_out)
+                tabSwitcherLauncher.launch(intent)
+                overridePendingTransitionCompat(R.anim.slide_up, R.anim.fade_out)
             }
         }
         binding.btnMenu.setOnClickListener { showMoreOptionsMenu() }
@@ -769,10 +769,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
             return
         }
         // WebView.saveWebArchive writes a single self-contained .mht file to
-        // app-owned external storage. We then publish it through DownloadManager
-        // so it shows up in the Downloads UI and can be opened by any MHTML
-        // viewer (Chrome, Edge, Helix itself).
-        val dir = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "archives").apply { mkdirs() }
+        // app-owned scoped storage. Falls back to filesDir if external storage
+        // is unavailable (no SD card mounted on legacy devices) so we never
+        // silently skip the save.
+        val baseDir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: filesDir
+        val dir = File(baseDir, "archives").apply { mkdirs() }
         val safeName = (viewModel.currentTitle.value ?: "page")
             .take(60).replace(Regex("[^A-Za-z0-9_\\- ]"), "_")
         val file = File(dir, "$safeName-${System.currentTimeMillis()}.mht")
@@ -973,14 +974,30 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     }
 
     private var pendingWebPermissionRequest: android.webkit.PermissionRequest? = null
+    private var pendingWebPermissionKey: String? = null
+    private var pendingWebPermissionOrigin: String? = null
     private val osPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { grants ->
         val req = pendingWebPermissionRequest
+        val key = pendingWebPermissionKey
+        val origin = pendingWebPermissionOrigin
         pendingWebPermissionRequest = null
+        pendingWebPermissionKey = null
+        pendingWebPermissionOrigin = null
         if (req == null) return@registerForActivityResult
         val allOsGranted = grants.values.all { it } && grants.isNotEmpty()
-        if (allOsGranted) req.grant(req.resources) else req.deny()
+        if (allOsGranted) {
+            req.grant(req.resources)
+        } else {
+            // User denied the OS permission. Clear the remembered "allow" for
+            // this site so we re-prompt next time rather than silently retrying
+            // a permission they revoked at the OS layer.
+            if (key != null && origin != null) {
+                Prefs.clearSitePermission(this, key, origin)
+            }
+            req.deny()
+        }
     }
 
     private fun handleWebPermissionRequest(request: android.webkit.PermissionRequest) {
@@ -1007,7 +1024,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         }
 
         when (Prefs.getSitePermission(this, permKey, origin)) {
-            "allow" -> { grantWebPermissionIfOsAllows(request, osPerms); return }
+            "allow" -> { grantWebPermissionIfOsAllows(request, osPerms, permKey, origin); return }
             "deny"  -> { request.deny(); return }
         }
 
@@ -1016,7 +1033,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
             .setMessage(getString(messageRes, origin))
             .setPositiveButton(R.string.allow) { _, _ ->
                 Prefs.setSitePermission(this, permKey, origin, "allow")
-                grantWebPermissionIfOsAllows(request, osPerms)
+                grantWebPermissionIfOsAllows(request, osPerms, permKey, origin)
             }
             .setNegativeButton(R.string.deny) { _, _ ->
                 Prefs.setSitePermission(this, permKey, origin, "deny")
@@ -1028,7 +1045,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
     private fun grantWebPermissionIfOsAllows(
         request: android.webkit.PermissionRequest,
-        osPerms: Array<String>
+        osPerms: Array<String>,
+        permKey: String,
+        origin: String
     ) {
         val missing = osPerms.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
@@ -1036,7 +1055,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         if (missing.isEmpty()) {
             request.grant(request.resources)
         } else {
+            // Remember which site we are prompting for so the OS-permission
+            // callback can clean up stale "allow" if the user denies.
             pendingWebPermissionRequest = request
+            pendingWebPermissionKey = permKey
+            pendingWebPermissionOrigin = origin
             osPermissionLauncher.launch(missing.toTypedArray())
         }
     }
@@ -1353,18 +1376,23 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         else window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_TAB_SWITCHER && resultCode == RESULT_OK) {
-            val tabId = data?.getStringExtra("tab_id")
-            val liveTabs = tabManager.tabs.map { it.id }.toSet()
-            webViewPool.keys.toList().forEach { if (it !in liveTabs) webViewPool.remove(it)?.destroy() }
-            if (data?.getBooleanExtra("closed_all", false) == true || data?.getBooleanExtra("new_tab", false) == true) createNewTab(isIncognito = data.getBooleanExtra("incognito", false))
-            else if (tabId != null) {
-                tabManager.switchToTab(tabId)
-                tabManager.currentTab?.let { switchToTab(it) }
-            }
+    private val tabSwitcherLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode != RESULT_OK) return@registerForActivityResult
+        val data = result.data
+        val tabId = data?.getStringExtra("tab_id")
+        val liveTabs = tabManager.tabs.map { it.id }.toSet()
+        // Evict any WebView whose tab was closed while the switcher was open.
+        webViewPool.keys.toList().forEach {
+            if (it !in liveTabs) webViewPool.remove(it)?.let(::safelyDestroyWebView)
+        }
+        if (data?.getBooleanExtra("closed_all", false) == true ||
+            data?.getBooleanExtra("new_tab", false) == true) {
+            createNewTab(isIncognito = data.getBooleanExtra("incognito", false))
+        } else if (tabId != null) {
+            tabManager.switchToTab(tabId)
+            tabManager.currentTab?.let { switchToTab(it) }
         }
     }
 

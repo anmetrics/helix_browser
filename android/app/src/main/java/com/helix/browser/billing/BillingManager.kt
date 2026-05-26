@@ -1,5 +1,6 @@
 package com.helix.browser.billing
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
@@ -16,6 +17,9 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
         private const val PREFS_NAME = "helix_billing"
         private const val KEY_IS_PREMIUM = "is_premium"
 
+        // getInstance() always promotes the argument to applicationContext
+        // below, so the singleton can never hold an Activity reference.
+        @SuppressLint("StaticFieldLeak")
         @Volatile
         private var instance: BillingManager? = null
 

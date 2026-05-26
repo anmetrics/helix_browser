@@ -108,9 +108,17 @@ class HelixWebViewClient(
         }
     }
 
+    @android.annotation.SuppressLint("WebViewClientOnReceivedSslError")
     override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
-        // Show a dialog asking user whether to proceed
         val context = view.context
+        // Strict HTTPS-Only mode refuses any cert override; cancel without
+        // prompting and show the interstitial.
+        if (isHttpsOnlyModeEnabled()) {
+            handler.cancel()
+            view.loadDataWithBaseURL(null, buildSslErrorPage(context, error.url, error.primaryError),
+                "text/html", "UTF-8", null)
+            return
+        }
         val errorMessage = when (error.primaryError) {
             SslError.SSL_UNTRUSTED -> context.getString(com.helix.browser.R.string.ssl_untrusted)
             SslError.SSL_EXPIRED -> context.getString(com.helix.browser.R.string.ssl_expired)

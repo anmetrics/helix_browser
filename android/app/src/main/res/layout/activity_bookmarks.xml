@@ -41,6 +41,7 @@
                 android:textColorHint="@color/hint_color"
                 android:imeOptions="actionSearch"
                 android:inputType="text"
+                android:importantForAutofill="no"
                 android:drawableStart="@drawable/ic_search"
                 android:drawablePadding="10dp"
                 android:drawableTint="@color/hint_color" />

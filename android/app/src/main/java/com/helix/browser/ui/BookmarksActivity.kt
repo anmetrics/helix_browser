@@ -31,7 +31,7 @@ class BookmarksActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityBookmarksBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out)
+        overridePendingTransitionCompat(R.anim.slide_in_right, R.anim.fade_out)
 
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.toolbar.inflateMenu(R.menu.menu_bookmarks)
@@ -81,7 +81,7 @@ class BookmarksActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.fade_in, R.anim.slide_out_left)
+        overrideCloseTransitionCompat(R.anim.fade_in, R.anim.slide_out_left)
     }
 
     // --- HTML bookmark export / import (Netscape format) ---

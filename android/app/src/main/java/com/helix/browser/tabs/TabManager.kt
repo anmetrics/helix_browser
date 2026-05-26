@@ -298,8 +298,11 @@ class TabManager {
                     title = if (url.isEmpty() || url == "about:blank") "" else title,
                     url = url,
                     isPinned = obj.optBoolean("isPinned", false),
-                    groupId = obj.optString("groupId", null).takeIf { it != "null" },
-                    groupName = obj.optString("groupName", null).takeIf { it != "null" },
+                    // optString returns "" (not null) for missing keys; we must
+                    // post-filter rather than rely on the nullable overload —
+                    // passing null as the default emits a NothingType warning.
+                    groupId = obj.optString("groupId").takeIf { it.isNotEmpty() && it != "null" },
+                    groupName = obj.optString("groupName").takeIf { it.isNotEmpty() && it != "null" },
                     lastAccessTime = obj.optLong("lastAccessTime", System.currentTimeMillis()),
                     isMuted = obj.optBoolean("isMuted", false),
                     isSuspended = obj.optBoolean("isSuspended", false)

@@ -3,6 +3,7 @@ package com.helix.browser.ui
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.widget.TextView
@@ -21,7 +22,7 @@ class SettingsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
-        overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out)
+        overridePendingTransitionCompat(R.anim.slide_in_right, R.anim.fade_out)
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -35,7 +36,7 @@ class SettingsActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.fade_in, R.anim.slide_out_left)
+        overrideCloseTransitionCompat(R.anim.fade_in, R.anim.slide_out_left)
     }
 
     private fun setupSwitches() {
@@ -96,7 +97,7 @@ class SettingsActivity : BaseActivity() {
 
         // Language
         findViewById<android.view.View>(R.id.settLanguage).setOnClickListener {
-            startActivityForResult(Intent(this, LanguageActivity::class.java), REQUEST_LANGUAGE)
+            languageLauncher.launch(Intent(this, LanguageActivity::class.java))
         }
 
         // Site permissions
@@ -263,15 +264,9 @@ class SettingsActivity : BaseActivity() {
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_LANGUAGE && resultCode == RESULT_OK) {
-            recreate()
-        }
-    }
-
-    companion object {
-        private const val REQUEST_LANGUAGE = 1002
+    private val languageLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) recreate()
     }
 }

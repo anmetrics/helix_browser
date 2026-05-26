@@ -75,6 +75,17 @@ android {
         abi      { enableSplit = true }
     }
 
+    lint {
+        // Translation coverage is tracked in CI, not enforced at compile time.
+        // Untranslated strings fall back to the default English value at runtime.
+        disable += ['MissingTranslation', 'ExtraTranslation']
+        // Keep build green on benign deprecation warnings the AndroidX team
+        // ships ahead of replacement APIs (e.g. overridePendingTransition has
+        // no API-34 polyfill in androidx.appcompat yet).
+        warningsAsErrors false
+        abortOnError true
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -87,6 +98,13 @@ android {
     buildFeatures {
         viewBinding true
         buildConfig true
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+        }
     }
 }
 
@@ -143,6 +161,10 @@ dependencies {
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
+    // Robolectric lets pure JVM unit tests touch android.net.Uri etc. without
+    // spinning up an emulator. Used by tests under src/test/.
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation 'androidx.test:core:1.5.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }

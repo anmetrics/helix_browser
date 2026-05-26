@@ -225,4 +225,8 @@
     <string name="bookmarks_export_failed">Export failed</string>
     <string name="bookmarks_imported">Imported %1$d bookmarks</string>
     <string name="bookmarks_import_failed">Import failed</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">Voice search</string>
+    <string name="desc_tabs">Open tab switcher</string>
 </resources>

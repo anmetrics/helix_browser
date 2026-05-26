@@ -238,7 +238,7 @@ class TabSwitcherActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.fade_in, R.anim.slide_down)
+        overridePendingTransitionCompat(R.anim.fade_in, R.anim.slide_down)
     }
 
     private fun showUndoSnackbar(tab: BrowserTab) {

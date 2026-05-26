@@ -47,13 +47,13 @@ class DesktopTabAdapter(
 
         init {
             itemView.setOnClickListener {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onTabSelected(getItem(position))
                 }
             }
             btnClose.setOnClickListener {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onTabClosed(getItem(position))
                 }
