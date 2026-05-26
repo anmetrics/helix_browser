@@ -520,7 +520,7 @@ class MainActivity : BaseActivity() {
                 fullscreenCallback = null
                 showSystemUI()
             },
-            onGeolocationPermission = { origin, callback -> callback.invoke(origin, true, false) },
+            onGeolocationPermission = { origin, callback -> requestGeolocationPermission(origin, callback) },
             isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) }
         )
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ -> downloadFile(url, userAgent, contentDisposition, mimeType) }

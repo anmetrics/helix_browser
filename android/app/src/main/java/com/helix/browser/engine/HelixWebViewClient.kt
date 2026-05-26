@@ -3,6 +3,7 @@ package com.helix.browser.engine
 import android.app.AlertDialog
 import android.graphics.Bitmap
 import android.net.http.SslError
+import android.util.Log
 import android.webkit.SslErrorHandler
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -22,6 +23,8 @@ class HelixWebViewClient(
     private val getPrivacyScripts: () -> String = { "" },
     private val onTrackerBlocked: () -> Unit = {}
 ) : WebViewClient() {
+
+    private companion object { const val TAG = "HelixWebViewClient" }
 
     private var _trackersBlockedCount = 0
     val trackersBlockedCount: Int get() = _trackersBlockedCount
@@ -53,27 +56,30 @@ class HelixWebViewClient(
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
-
-        // Inject privacy scripts at page start
-        val scripts = getPrivacyScripts()
-        if (scripts.isNotEmpty()) {
-            view.evaluateJavascript(scripts, null)
-        }
-
+        injectPrivacyScripts(view)
         onPageStarted(url, favicon)
     }
 
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
-
-        // Re-inject privacy/ad-block scripts on page finish
-        // Critical for YouTube SPA navigation where page doesn't fully reload
-        val scripts = getPrivacyScripts()
-        if (scripts.isNotEmpty()) {
-            view.evaluateJavascript(scripts, null)
-        }
-
+        // Re-inject for SPA navigations (e.g. YouTube) where no full reload occurs.
+        injectPrivacyScripts(view)
         onPageFinished(url)
+    }
+
+    private fun injectPrivacyScripts(view: WebView) {
+        val scripts = try { getPrivacyScripts() } catch (e: Exception) {
+            Log.w(TAG, "getPrivacyScripts threw", e); return
+        }
+        if (scripts.isEmpty()) return
+        try {
+            view.evaluateJavascript(scripts) { /* result ignored */ }
+        } catch (e: IllegalStateException) {
+            // WebView destroyed mid-evaluation — safe to ignore.
+            Log.d(TAG, "evaluateJavascript on destroyed WebView: ${e.message}")
+        } catch (e: Throwable) {
+            Log.w(TAG, "evaluateJavascript failed", e)
+        }
     }
 
     override fun onReceivedError(

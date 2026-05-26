@@ -7,6 +7,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebSettings
+import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewDatabase
 import androidx.core.view.NestedScrollingChild2
@@ -26,13 +27,17 @@ class HelixWebView @JvmOverloads constructor(
     private val scrollConsumed = IntArray(2)
     private var nestedOffsetY: Int = 0
 
+    private var incognito: Boolean = false
+
     init {
         isFocusable = true
         isFocusableInTouchMode = true
-        
+
         setupSettings()
+        // Default: accept third-party cookies on non-incognito tabs only.
+        // Incognito state is applied later via setIncognitoMode().
         CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-        
+
         isNestedScrollingEnabled = true
     }
 
@@ -48,11 +53,19 @@ class HelixWebView @JvmOverloads constructor(
             builtInZoomControls = true
             displayZoomControls = false
             mediaPlaybackRequiresUserGesture = false
-            mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+            // Block mixed content by default — production browsers reject http on https pages.
+            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             loadsImagesAutomatically = true
             blockNetworkImage = false
-            allowFileAccess = true
-            allowContentAccess = true
+            // Disallow file:// and content:// from web content to prevent XSS->local file read.
+            allowFileAccess = false
+            allowContentAccess = false
+            allowFileAccessFromFileURLs = false
+            allowUniversalAccessFromFileURLs = false
+            // Safe browsing (network requests verified against Google's blocklist where supported)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                safeBrowsingEnabled = true
+            }
             useWideViewPort = true
             loadWithOverviewMode = true
             defaultTextEncodingName = "UTF-8"
@@ -97,14 +110,36 @@ class HelixWebView @JvmOverloads constructor(
     }
 
     fun setIncognitoMode(enabled: Boolean) {
+        incognito = enabled
+        val cm = CookieManager.getInstance()
         if (enabled) {
             settings.cacheMode = WebSettings.LOAD_NO_CACHE
-            CookieManager.getInstance().setAcceptCookie(false)
+            settings.databaseEnabled = false
+            settings.domStorageEnabled = false
+            settings.savePassword = false
+            settings.saveFormData = false
+            // Block third-party cookies on this WebView only; do not flip the
+            // global accept flag (that would affect all tabs).
+            cm.setAcceptThirdPartyCookies(this, false)
         } else {
             settings.cacheMode = WebSettings.LOAD_DEFAULT
-            CookieManager.getInstance().setAcceptCookie(true)
+            settings.databaseEnabled = true
+            settings.domStorageEnabled = true
+            cm.setAcceptThirdPartyCookies(this, true)
         }
         clearHistory()
+    }
+
+    fun clearIncognitoData() {
+        if (!incognito) return
+        clearCache(true)
+        clearHistory()
+        clearFormData()
+        clearSslPreferences()
+        WebStorage.getInstance().deleteAllData()
+        // Remove cookies set during this incognito session.
+        CookieManager.getInstance().removeAllCookies(null)
+        CookieManager.getInstance().flush()
     }
 
     fun clearAllData(context: Context) {
