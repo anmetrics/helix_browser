@@ -27,11 +27,11 @@ class HelixWebViewClient(
 
     private companion object { const val TAG = "HelixWebViewClient" }
 
-    private var _trackersBlockedCount = 0
-    val trackersBlockedCount: Int get() = _trackersBlockedCount
+    private val _trackersBlockedCount = java.util.concurrent.atomic.AtomicInteger(0)
+    val trackersBlockedCount: Int get() = _trackersBlockedCount.get()
 
     fun resetTrackerCount() {
-        _trackersBlockedCount = 0
+        _trackersBlockedCount.set(0)
     }
 
     override fun shouldInterceptRequest(
@@ -47,7 +47,7 @@ class HelixWebViewClient(
 
         // Block trackers
         if (isTrackerBlockEnabled() && PrivacyManager.isTracker(url)) {
-            _trackersBlockedCount++
+            _trackersBlockedCount.incrementAndGet()
             onTrackerBlocked()
             return WebResourceResponse("text/plain", "UTF-8", null)
         }

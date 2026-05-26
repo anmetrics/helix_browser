@@ -27,14 +27,26 @@ object UrlUtils {
 
     fun buildSearchQuery(query: String, engine: String): String {
         val encoded = Uri.encode(query)
+        // Custom engines use the "custom:" prefix followed by a URL template
+        // containing %s where the query should be inserted. Example:
+        //   custom:https://www.ecosia.org/search?q=%s
+        if (engine.startsWith(CUSTOM_PREFIX)) {
+            val template = engine.removePrefix(CUSTOM_PREFIX)
+            return if ("%s" in template) template.replace("%s", encoded)
+                   else "$template$encoded"
+        }
         return when (engine.lowercase()) {
             "bing" -> "https://www.bing.com/search?q=$encoded"
             "duckduckgo" -> "https://duckduckgo.com/?q=$encoded"
             "yahoo" -> "https://search.yahoo.com/search?p=$encoded"
             "brave" -> "https://search.brave.com/search?q=$encoded"
+            "yandex" -> "https://yandex.com/search/?text=$encoded"
+            "ecosia" -> "https://www.ecosia.org/search?q=$encoded"
             else -> "https://www.google.com/search?q=$encoded"
         }
     }
+
+    const val CUSTOM_PREFIX = "custom:"
 
     fun getDisplayUrl(url: String): String {
         return try {

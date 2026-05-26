@@ -23,7 +23,8 @@ class HelixWebChromeClient(
     private val onGeolocationPermission: ((origin: String, callback: GeolocationPermissions.Callback) -> Unit)? = null,
     private val onWebPermissionRequest: ((PermissionRequest) -> Unit)? = null,
     private val onCreateWindow: ((view: WebView) -> Boolean)? = null,
-    private val isAdBlockEnabled: () -> Boolean = { false }
+    private val isAdBlockEnabled: () -> Boolean = { false },
+    private val isBlockPopupsEnabled: () -> Boolean = { false }
 ) : WebChromeClient() {
 
     override fun onProgressChanged(view: WebView, newProgress: Int) {
@@ -89,6 +90,13 @@ class HelixWebChromeClient(
         isUserGesture: Boolean,
         resultMsg: Message
     ): Boolean {
+        // Pop-up blocker: reject any window creation that wasn't a direct
+        // result of a user gesture (click/tap). This matches Chrome's
+        // default behavior — `window.open()` from a setTimeout or page
+        // script is silently dropped, while a click-driven new tab is allowed.
+        if (isBlockPopupsEnabled() && !isUserGesture) {
+            return false
+        }
         // Block ad-triggered popup tabs
         if (isAdBlockEnabled()) {
             // Non-user-gesture popups are almost always ads

@@ -47,11 +47,16 @@ class SettingsActivity : BaseActivity() {
         bindSwitch(R.id.switchBlockAds, "block_ads", true)
         // Block trackers
         bindSwitch(R.id.switchBlockTrackers, "block_trackers", true)
-        // Block third-party cookies
+        // Block third-party cookies. First-party cookies remain accepted
+        // either way; this switch controls only the cross-site policy applied
+        // per WebView in PrivacyManager.applyThirdPartyCookiePolicy().
         val cookieSwitch = bindSwitch(R.id.switchBlockCookies, "block_third_party_cookies", true)
         cookieSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean("block_third_party_cookies", isChecked).apply()
+            // Keep first-party cookies on; third-party policy is re-applied
+            // when each tab's WebView is rebound on resume.
             CookieManager.getInstance().setAcceptCookie(true)
+            PrivacyManager.applyThirdPartyCookiePolicy(this)
         }
         // Do Not Track
         bindSwitch(R.id.switchDoNotTrack, "do_not_track", true)
@@ -132,13 +137,16 @@ class SettingsActivity : BaseActivity() {
 
     private fun updateDynamicLabels() {
         // Search engine label
-        val engineName = when (prefs.getString("search_engine", "google")) {
-            "google" -> "Google"
-            "bing" -> "Bing"
-            "duckduckgo" -> "DuckDuckGo"
-            "yahoo" -> "Yahoo"
-            "yandex" -> "Yandex"
-            "ecosia" -> "Ecosia"
+        val rawEngine = prefs.getString("search_engine", "google") ?: "google"
+        val engineName = when {
+            rawEngine.startsWith(com.helix.browser.utils.UrlUtils.CUSTOM_PREFIX) ->
+                getString(R.string.custom_search_engine)
+            rawEngine == "google" -> "Google"
+            rawEngine == "bing" -> "Bing"
+            rawEngine == "duckduckgo" -> "DuckDuckGo"
+            rawEngine == "yahoo" -> "Yahoo"
+            rawEngine == "yandex" -> "Yandex"
+            rawEngine == "ecosia" -> "Ecosia"
             else -> "Google"
         }
         findViewById<TextView>(R.id.tvSearchEngine).text = engineName
@@ -157,17 +165,54 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun showSearchEngineDialog() {
-        val engines = arrayOf("Google", "Bing", "DuckDuckGo", "Yahoo", "Yandex", "Ecosia")
-        val values = arrayOf("google", "bing", "duckduckgo", "yahoo", "yandex", "ecosia")
-        val current = prefs.getString("search_engine", "google")
-        val checkedIndex = values.indexOf(current)
+        val engines = arrayOf("Google", "Bing", "DuckDuckGo", "Yahoo", "Yandex", "Ecosia", getString(R.string.custom_search_engine))
+        val values = arrayOf("google", "bing", "duckduckgo", "yahoo", "yandex", "ecosia", "__custom__")
+        val current = prefs.getString("search_engine", "google") ?: "google"
+        val checkedIndex = if (current.startsWith(com.helix.browser.utils.UrlUtils.CUSTOM_PREFIX))
+            values.size - 1 else values.indexOf(current).coerceAtLeast(0)
 
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.search_engine_pref)
             .setSingleChoiceItems(engines, checkedIndex) { dialog, which ->
-                prefs.edit().putString("search_engine", values[which]).apply()
-                findViewById<TextView>(R.id.tvSearchEngine).text = engines[which]
-                dialog.dismiss()
+                if (values[which] == "__custom__") {
+                    dialog.dismiss()
+                    showCustomSearchEngineDialog()
+                } else {
+                    prefs.edit().putString("search_engine", values[which]).apply()
+                    findViewById<TextView>(R.id.tvSearchEngine).text = engines[which]
+                    dialog.dismiss()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showCustomSearchEngineDialog() {
+        val current = prefs.getString("search_engine", "") ?: ""
+        val existing = if (current.startsWith(com.helix.browser.utils.UrlUtils.CUSTOM_PREFIX))
+            current.removePrefix(com.helix.browser.utils.UrlUtils.CUSTOM_PREFIX) else ""
+        val input = android.widget.EditText(this).apply {
+            setText(existing)
+            hint = "https://example.com/search?q=%s"
+            setSelection(text.length)
+            setPadding(60, 40, 60, 40)
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_URI
+            setTextColor(getColor(R.color.text_primary))
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.custom_search_engine_title)
+            .setMessage(R.string.custom_search_engine_hint)
+            .setView(input)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val template = input.text.toString().trim()
+                if (template.startsWith("http://") || template.startsWith("https://")) {
+                    val value = com.helix.browser.utils.UrlUtils.CUSTOM_PREFIX + template
+                    prefs.edit().putString("search_engine", value).apply()
+                    findViewById<TextView>(R.id.tvSearchEngine).text =
+                        getString(R.string.custom_search_engine)
+                } else {
+                    Toast.makeText(this, R.string.custom_search_engine_invalid, Toast.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton(R.string.cancel, null)
             .show()

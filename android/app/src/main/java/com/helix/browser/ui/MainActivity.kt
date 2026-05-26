@@ -555,7 +555,8 @@ class MainActivity : BaseActivity() {
             },
             onGeolocationPermission = { origin, callback -> requestGeolocationPermission(origin, callback) },
             onWebPermissionRequest = { request -> handleWebPermissionRequest(request) },
-            isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) }
+            isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) },
+            isBlockPopupsEnabled = { PrivacyManager.isBlockPopupsEnabled(this) }
         )
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ -> downloadFile(url, userAgent, contentDisposition, mimeType) }
         setupWebViewContextMenu(webView)
@@ -1311,6 +1312,53 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         webViewPool.clear()
         tabManager.closeAllIncognito()
         super.onDestroy()
+    }
+
+    // --- Edge-swipe gesture navigation (Chrome/Opera-style) ---
+    //
+    // Tracks ACTION_DOWN inside the left/right edge gutter and, if the user
+    // drags far enough horizontally within the gesture window, fires back or
+    // forward navigation. We intentionally only consider gestures that start
+    // very close to the edge (within EDGE_PX) and require a strong horizontal
+    // bias, otherwise normal scroll/pan gestures inside WebView would steal
+    // navigation accidentally.
+    private var edgeSwipeStartX: Float = 0f
+    private var edgeSwipeStartY: Float = 0f
+    private var edgeSwipeFromLeft: Boolean = false
+    private var edgeSwipeTracking: Boolean = false
+    private val edgeGutterPx by lazy { (resources.displayMetrics.density * 18).toInt() }
+    private val edgeSwipeMinDistPx by lazy { (resources.displayMetrics.density * 80).toInt() }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            android.view.MotionEvent.ACTION_DOWN -> {
+                val w = window?.decorView?.width ?: 0
+                edgeSwipeStartX = ev.rawX
+                edgeSwipeStartY = ev.rawY
+                edgeSwipeFromLeft = ev.rawX <= edgeGutterPx
+                val fromRight = w > 0 && ev.rawX >= w - edgeGutterPx
+                edgeSwipeTracking = edgeSwipeFromLeft || fromRight
+            }
+            android.view.MotionEvent.ACTION_UP -> {
+                if (edgeSwipeTracking) {
+                    val dx = ev.rawX - edgeSwipeStartX
+                    val dy = kotlin.math.abs(ev.rawY - edgeSwipeStartY)
+                    val webView = currentWebView
+                    if (webView != null && dy < kotlin.math.abs(dx) / 2 &&
+                        kotlin.math.abs(dx) >= edgeSwipeMinDistPx) {
+                        if (edgeSwipeFromLeft && dx > 0 && webView.canGoBack()) {
+                            webView.goBack(); edgeSwipeTracking = false; return true
+                        }
+                        if (!edgeSwipeFromLeft && dx < 0 && webView.canGoForward()) {
+                            webView.goForward(); edgeSwipeTracking = false; return true
+                        }
+                    }
+                }
+                edgeSwipeTracking = false
+            }
+            android.view.MotionEvent.ACTION_CANCEL -> edgeSwipeTracking = false
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     /**

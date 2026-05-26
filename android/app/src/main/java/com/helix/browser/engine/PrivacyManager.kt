@@ -79,9 +79,18 @@ object PrivacyManager {
     fun getTrackersBlockedCount(context: Context): Int =
         prefs(context).getInt(KEY_TRACKERS_BLOCKED_COUNT, 0)
 
+    // Serialize counter updates: SharedPreferences itself is thread-safe for
+    // individual put/get, but the read-modify-write here is not. Multiple
+    // WebView intercept threads can fire incrementTrackersBlocked
+    // concurrently and lose updates without this lock.
+    private val trackerCountLock = Any()
+
     fun incrementTrackersBlocked(context: Context, count: Int = 1) {
-        val current = getTrackersBlockedCount(context)
-        prefs(context).edit().putInt(KEY_TRACKERS_BLOCKED_COUNT, current + count).apply()
+        synchronized(trackerCountLock) {
+            val p = prefs(context)
+            val current = p.getInt(KEY_TRACKERS_BLOCKED_COUNT, 0)
+            p.edit().putInt(KEY_TRACKERS_BLOCKED_COUNT, current + count).apply()
+        }
     }
 
     fun resetTrackersBlockedCount(context: Context) {
