@@ -21,6 +21,7 @@ class HelixWebChromeClient(
     private val onEnterFullscreen: ((customView: View, callback: CustomViewCallback) -> Unit)? = null,
     private val onExitFullscreen: (() -> Unit)? = null,
     private val onGeolocationPermission: ((origin: String, callback: GeolocationPermissions.Callback) -> Unit)? = null,
+    private val onWebPermissionRequest: ((PermissionRequest) -> Unit)? = null,
     private val onCreateWindow: ((view: WebView) -> Boolean)? = null,
     private val isAdBlockEnabled: () -> Boolean = { false }
 ) : WebChromeClient() {
@@ -62,8 +63,10 @@ class HelixWebChromeClient(
     }
 
     override fun onPermissionRequest(request: PermissionRequest) {
-        // Auto-deny sensitive permissions unless explicitly allowed
-        request.deny()
+        // Delegate to host (MainActivity) so the user is prompted and the
+        // decision is persisted per-origin. Fallback denies if no host wired.
+        val handler = onWebPermissionRequest
+        if (handler != null) handler.invoke(request) else request.deny()
     }
 
     override fun onJsAlert(view: WebView, url: String, message: String, result: JsResult): Boolean {

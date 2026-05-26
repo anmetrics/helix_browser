@@ -80,6 +80,19 @@
             app:icon="@drawable/ic_security" />
 
         <SwitchPreferenceCompat
+            app:key="https_only_mode"
+            app:title="@string/https_only_mode_title"
+            app:summary="@string/https_only_mode_summary"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_lock" />
+
+        <Preference
+            app:key="site_permissions"
+            app:title="@string/site_permissions_title"
+            app:summary="@string/site_permissions_summary"
+            app:icon="@drawable/ic_security" />
+
+        <SwitchPreferenceCompat
             app:key="anti_fingerprinting"
             app:title="@string/anti_fingerprinting"
             app:summary="@string/anti_fingerprinting_summary"

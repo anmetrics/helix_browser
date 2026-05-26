@@ -502,6 +502,7 @@ class MainActivity : BaseActivity() {
             isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) },
             isTrackerBlockEnabled = { PrivacyManager.isBlockTrackersEnabled(this) },
             isHttpsUpgradeEnabled = { PrivacyManager.isHttpsUpgradeEnabled(this) },
+            isHttpsOnlyModeEnabled = { PrivacyManager.isHttpsOnlyModeEnabled(this) },
             getPrivacyScripts = { PrivacyManager.getPrivacyScripts(this) },
             onTrackerBlocked = { PrivacyManager.incrementTrackersBlocked(this) }
         )
@@ -553,6 +554,7 @@ class MainActivity : BaseActivity() {
                 showSystemUI()
             },
             onGeolocationPermission = { origin, callback -> requestGeolocationPermission(origin, callback) },
+            onWebPermissionRequest = { request -> handleWebPermissionRequest(request) },
             isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) }
         )
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ -> downloadFile(url, userAgent, contentDisposition, mimeType) }
@@ -681,6 +683,19 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         view.findViewById<View>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_print).setOnClickListener { printCurrentPage(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_add_to_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
+        // Reader mode toggle (label swaps to "Exit reader" when active).
+        val tvReaderMode = view.findViewById<android.widget.TextView>(R.id.tvReaderMode)
+        currentWebView?.let { wv ->
+            com.helix.browser.engine.ReaderMode.isActive(wv) { active ->
+                tvReaderMode.setText(if (active) R.string.reader_mode_exit else R.string.reader_mode)
+            }
+        }
+        view.findViewById<View>(R.id.menu_reader_mode).setOnClickListener {
+            toggleReaderMode(); dialog.dismiss()
+        }
+        view.findViewById<View>(R.id.menu_pip).setOnClickListener {
+            enterPictureInPicture(); dialog.dismiss()
+        }
         view.findViewById<View>(R.id.menu_settings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_reopen_tab).isVisible = tabManager.recentlyClosed.isNotEmpty()
         dialog.show()
@@ -693,25 +708,136 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         printManager.print(viewModel.currentTitle.value ?: "Helix Browser", printAdapter, null)
     }
 
-    private fun addToHomeScreen() {
-        val url = viewModel.currentUrl.value ?: return
-        val title = viewModel.currentTitle.value ?: url
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val shortcutManager = getSystemService(ShortcutManager::class.java) ?: return
-            if (shortcutManager.isRequestPinShortcutSupported) {
-                val intent = Intent(this, MainActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    data = Uri.parse(url)
+    private fun toggleReaderMode() {
+        val wv = currentWebView ?: return
+        com.helix.browser.engine.ReaderMode.isActive(wv) { active ->
+            runOnUiThread {
+                if (active) {
+                    com.helix.browser.engine.ReaderMode.exit(wv)
+                } else {
+                    val dark = Prefs.isDarkMode(this) ||
+                        (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                            android.content.res.Configuration.UI_MODE_NIGHT_YES
+                    com.helix.browser.engine.ReaderMode.enter(wv, dark)
                 }
-                val shortcut = ShortcutInfo.Builder(this, url)
-                    .setShortLabel(title)
-                    .setLongLabel(title)
-                    .setIcon(Icon.createWithResource(this, R.drawable.ic_helix_logo))
-                    .setIntent(intent)
-                    .build()
-                shortcutManager.requestPinShortcut(shortcut, null)
             }
         }
+    }
+
+    private fun enterPictureInPicture() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
+            !packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+            Toast.makeText(this, R.string.pip_unsupported, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // Best-effort: pause any visible playback before suspending the
+        // activity into a PiP window. WebView keeps playing its <video>
+        // element inside the PiP container.
+        val params = android.app.PictureInPictureParams.Builder()
+            .setAspectRatio(android.util.Rational(16, 9))
+            .build()
+        try {
+            enterPictureInPictureMode(params)
+        } catch (e: Exception) {
+            Toast.makeText(this, R.string.pip_unsupported, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun addToHomeScreen() {
+        val url = viewModel.currentUrl.value ?: return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val shortcutManager = getSystemService(ShortcutManager::class.java) ?: return
+        if (!shortcutManager.isRequestPinShortcutSupported) return
+
+        // Probe the page for a Web App Manifest (PWA). Falls back to current
+        // title + Helix icon if no manifest, an invalid manifest, or no
+        // suitable icon is found. We never block the install flow on this.
+        val wv = currentWebView
+        val fallbackTitle = viewModel.currentTitle.value ?: url
+        if (wv == null) {
+            pinShortcut(url, fallbackTitle, null); return
+        }
+        val probe = """
+            (function(){
+              try {
+                var link = document.querySelector('link[rel="manifest"]');
+                if (!link) return JSON.stringify({});
+                var href = new URL(link.getAttribute('href'), document.baseURI).href;
+                return fetch(href, {credentials: 'omit'})
+                  .then(function(r){return r.json();})
+                  .then(function(m){
+                    var icons = (m.icons||[]).slice().sort(function(a,b){
+                      var as = parseInt((a.sizes||'0').split('x')[0])||0;
+                      var bs = parseInt((b.sizes||'0').split('x')[0])||0;
+                      return bs - as;
+                    });
+                    var icon = icons[0] ? new URL(icons[0].src, href).href : null;
+                    return JSON.stringify({name: m.name || m.short_name, icon: icon, start_url: m.start_url});
+                  })
+                  .catch(function(){ return JSON.stringify({}); });
+              } catch(e){ return JSON.stringify({}); }
+            })();
+        """.trimIndent()
+        try {
+            wv.evaluateJavascript(probe) { raw ->
+                // evaluateJavascript returns a JSON-encoded string; promises
+                // are stringified as "[object Promise]" — in that case we
+                // can't await synchronously and fall back to the default icon.
+                val s = raw?.trim('"', ' ')?.replace("\\\"", "\"") ?: ""
+                val (name, iconUrl) = parseManifestProbe(s)
+                if (iconUrl != null) {
+                    loadIconAsync(iconUrl) { bmp ->
+                        pinShortcut(url, name ?: fallbackTitle, bmp)
+                    }
+                } else {
+                    pinShortcut(url, name ?: fallbackTitle, null)
+                }
+            }
+        } catch (e: Exception) {
+            pinShortcut(url, fallbackTitle, null)
+        }
+    }
+
+    private fun parseManifestProbe(json: String): Pair<String?, String?> {
+        if (json.isEmpty() || json == "null" || json.startsWith("[object")) return null to null
+        return try {
+            val obj = org.json.JSONObject(json)
+            (obj.optString("name").takeIf { it.isNotBlank() }) to
+            (obj.optString("icon").takeIf { it.isNotBlank() })
+        } catch (e: Exception) { null to null }
+    }
+
+    private fun loadIconAsync(iconUrl: String, onReady: (android.graphics.Bitmap?) -> Unit) {
+        Thread {
+            val bmp = try {
+                val conn = java.net.URL(iconUrl).openConnection() as java.net.HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+                conn.inputStream.use { android.graphics.BitmapFactory.decodeStream(it) }
+            } catch (e: Exception) { null }
+            runOnUiThread { onReady(bmp) }
+        }.start()
+    }
+
+    private fun pinShortcut(url: String, title: String, customIcon: android.graphics.Bitmap?) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        if (isFinishing || isDestroyed) return
+        val shortcutManager = getSystemService(ShortcutManager::class.java) ?: return
+        val intent = Intent(this, MainActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            data = Uri.parse(url)
+        }
+        val icon = if (customIcon != null)
+            Icon.createWithBitmap(customIcon)
+        else
+            Icon.createWithResource(this, R.drawable.ic_helix_logo)
+        val shortcut = ShortcutInfo.Builder(this, url)
+            .setShortLabel(title.take(10))
+            .setLongLabel(title.take(25))
+            .setIcon(icon)
+            .setIntent(intent)
+            .build()
+        shortcutManager.requestPinShortcut(shortcut, null)
     }
 
     private var pendingGeolocationCallback: android.webkit.GeolocationPermissions.Callback? = null
@@ -764,6 +890,75 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
             }
             .setOnCancelListener { callback.invoke(origin, false, false) }
             .show()
+    }
+
+    private var pendingWebPermissionRequest: android.webkit.PermissionRequest? = null
+    private val osPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        val req = pendingWebPermissionRequest
+        pendingWebPermissionRequest = null
+        if (req == null) return@registerForActivityResult
+        val allOsGranted = grants.values.all { it } && grants.isNotEmpty()
+        if (allOsGranted) req.grant(req.resources) else req.deny()
+    }
+
+    private fun handleWebPermissionRequest(request: android.webkit.PermissionRequest) {
+        val origin = request.origin.toString()
+        val webResources = request.resources
+        val permKey: String
+        val titleRes: Int
+        val messageRes: Int
+        val osPerms: Array<String>
+        when {
+            webResources.contains(android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE) -> {
+                permKey = "camera"
+                titleRes = R.string.permission_camera_title
+                messageRes = R.string.permission_camera_message
+                osPerms = arrayOf(Manifest.permission.CAMERA)
+            }
+            webResources.contains(android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE) -> {
+                permKey = "microphone"
+                titleRes = R.string.permission_mic_title
+                messageRes = R.string.permission_mic_message
+                osPerms = arrayOf(Manifest.permission.RECORD_AUDIO)
+            }
+            else -> { request.deny(); return }
+        }
+
+        when (Prefs.getSitePermission(this, permKey, origin)) {
+            "allow" -> { grantWebPermissionIfOsAllows(request, osPerms); return }
+            "deny"  -> { request.deny(); return }
+        }
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(getString(titleRes))
+            .setMessage(getString(messageRes, origin))
+            .setPositiveButton(R.string.allow) { _, _ ->
+                Prefs.setSitePermission(this, permKey, origin, "allow")
+                grantWebPermissionIfOsAllows(request, osPerms)
+            }
+            .setNegativeButton(R.string.deny) { _, _ ->
+                Prefs.setSitePermission(this, permKey, origin, "deny")
+                request.deny()
+            }
+            .setOnCancelListener { request.deny() }
+            .show()
+    }
+
+    private fun grantWebPermissionIfOsAllows(
+        request: android.webkit.PermissionRequest,
+        osPerms: Array<String>
+    ) {
+        val missing = osPerms.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+        if (missing.isEmpty()) {
+            request.grant(request.resources)
+        } else {
+            pendingWebPermissionRequest = request
+            osPermissionLauncher.launch(missing.toTypedArray())
+        }
     }
 
     private fun setupWebViewContextMenu(webView: HelixWebView) {

@@ -318,6 +318,38 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
 
+            <!-- HTTPS-Only Mode -->
+            <LinearLayout style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_lock"
+                    app:tint="@color/warning_red" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/https_only_mode_title" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/https_only_mode_summary" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchHttpsOnly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Site Permissions -->
+            <LinearLayout
+                android:id="@+id/settSitePermissions"
+                style="@style/SettingsItemStyle">
+                <ImageView style="@style/SettingsIconStyle"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/accent_purple" />
+                <LinearLayout style="@style/SettingsTextContainer">
+                    <TextView style="@style/SettingsTitleStyle"
+                        android:text="@string/site_permissions_title" />
+                    <TextView style="@style/SettingsSubtitleStyle"
+                        android:text="@string/site_permissions_summary" />
+                </LinearLayout>
+            </LinearLayout>
+
             <!-- Anti-fingerprinting -->
             <LinearLayout style="@style/SettingsItemStyle">
                 <ImageView style="@style/SettingsIconStyle"

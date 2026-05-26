@@ -57,6 +57,8 @@ class SettingsActivity : BaseActivity() {
         bindSwitch(R.id.switchDoNotTrack, "do_not_track", true)
         // HTTPS upgrade
         bindSwitch(R.id.switchHttpsUpgrade, "https_upgrade", true)
+        // HTTPS-Only mode (strict)
+        bindSwitch(R.id.switchHttpsOnly, "https_only_mode", false)
         // Anti-fingerprinting
         bindSwitch(R.id.switchAntiFingerprinting, "anti_fingerprinting", false)
         // Block popups
@@ -90,6 +92,11 @@ class SettingsActivity : BaseActivity() {
         // Language
         findViewById<android.view.View>(R.id.settLanguage).setOnClickListener {
             startActivityForResult(Intent(this, LanguageActivity::class.java), REQUEST_LANGUAGE)
+        }
+
+        // Site permissions
+        findViewById<android.view.View>(R.id.settSitePermissions).setOnClickListener {
+            startActivity(Intent(this, SitePermissionsActivity::class.java))
         }
 
         // Clear cache

@@ -182,4 +182,28 @@
     <string name="permission_mic_message">%1$s wants to use your microphone.</string>
     <string name="permission_notifications_title">Notifications request</string>
     <string name="permission_notifications_message">%1$s wants to send you notifications.</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">HTTPS-Only mode</string>
+    <string name="https_only_mode_summary">Block all insecure (HTTP) connections. Sites without HTTPS will not load.</string>
+    <string name="https_only_blocked_title">Connection is not secure</string>
+    <string name="https_only_blocked_message">Helix blocked this page because HTTPS-Only mode is on and the site does not support HTTPS.</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">Site permissions</string>
+    <string name="site_permissions_summary">Manage location, camera, microphone and notification access per site</string>
+    <string name="site_permissions_empty">No site permissions saved yet</string>
+    <string name="site_permission_revoke">Reset</string>
+    <string name="site_permission_label_allow">Allowed</string>
+    <string name="site_permission_label_deny">Blocked</string>
+    <string name="site_permission_label_location">Location</string>
+    <string name="site_permission_label_camera">Camera</string>
+    <string name="site_permission_label_microphone">Microphone</string>
+    <string name="site_permission_label_notifications">Notifications</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">Exit reader</string>
+    <string name="picture_in_picture">Picture-in-picture</string>
+    <string name="pip_unsupported">Picture-in-picture is not supported on this device</string>
+    <string name="pip_no_video">No video is playing on this page</string>
 </resources>

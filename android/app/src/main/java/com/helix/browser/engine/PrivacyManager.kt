@@ -12,6 +12,7 @@ object PrivacyManager {
     private const val KEY_BLOCK_THIRD_PARTY_COOKIES = "block_third_party_cookies"
     private const val KEY_DO_NOT_TRACK = "do_not_track"
     private const val KEY_HTTPS_UPGRADE = "https_upgrade"
+    private const val KEY_HTTPS_ONLY_MODE = "https_only_mode"
     private const val KEY_ANTI_FINGERPRINTING = "anti_fingerprinting"
     private const val KEY_BLOCK_POPUPS = "block_popups"
     private const val KEY_RESTORE_TABS = "restore_tabs"
@@ -54,6 +55,14 @@ object PrivacyManager {
 
     fun isHttpsUpgradeEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_HTTPS_UPGRADE, true)
+
+    /**
+     * Strict HTTPS-Only mode: when true the browser refuses to load any
+     * http:// resource. The WebViewClient redirects to an interstitial
+     * instead of upgrading silently. HTTPS-Only implies https_upgrade.
+     */
+    fun isHttpsOnlyModeEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HTTPS_ONLY_MODE, false)
 
     fun isAntiFingerPrintingEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_ANTI_FINGERPRINTING, false)

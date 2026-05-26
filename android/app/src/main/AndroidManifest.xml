@@ -49,9 +49,11 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
             android:windowSoftInputMode="adjustResize"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:supportsPictureInPicture="true"
+            android:resizeableActivity="true">
             <!-- Handle web links opened from other apps -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -100,6 +102,12 @@
         <!-- Language Settings -->
         <activity
             android:name=".ui.LanguageActivity"
+            android:exported="false"
+            android:theme="@style/Theme.HelixBrowser" />
+
+        <!-- Site Permissions -->
+        <activity
+            android:name=".ui.SitePermissionsActivity"
             android:exported="false"
             android:theme="@style/Theme.HelixBrowser" />
 

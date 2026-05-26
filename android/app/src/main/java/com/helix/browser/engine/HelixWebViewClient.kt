@@ -20,6 +20,7 @@ class HelixWebViewClient(
     private val isAdBlockEnabled: () -> Boolean = { false },
     private val isTrackerBlockEnabled: () -> Boolean = { false },
     private val isHttpsUpgradeEnabled: () -> Boolean = { false },
+    private val isHttpsOnlyModeEnabled: () -> Boolean = { false },
     private val getPrivacyScripts: () -> String = { "" },
     private val onTrackerBlocked: () -> Unit = {}
 ) : WebViewClient() {
@@ -151,7 +152,19 @@ class HelixWebViewClient(
             return true
         }
 
-        // HTTPS upgrade: redirect http to https
+        // HTTPS-Only Mode (strict): refuse cleartext entirely; show interstitial.
+        if (isHttpsOnlyModeEnabled() && url.startsWith("http://")) {
+            val upgraded = PrivacyManager.upgradeToHttps(url)
+            if (upgraded != null) {
+                view.loadUrl(upgraded)
+            } else {
+                val html = buildHttpsOnlyInterstitial(view.context, url)
+                view.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+            }
+            return true
+        }
+
+        // HTTPS upgrade (best-effort): attempt https rewrite, fall back to http on failure.
         if (isHttpsUpgradeEnabled()) {
             val upgraded = PrivacyManager.upgradeToHttps(url)
             if (upgraded != null) {
@@ -200,6 +213,30 @@ class HelixWebViewClient(
                 <p>$description</p>
                 <p class="url">$url</p>
                 <button onclick="history.back()">${context.getString(com.helix.browser.R.string.error_page_go_back)}</button>
+            </body>
+            </html>
+        """.trimIndent()
+    }
+
+    private fun buildHttpsOnlyInterstitial(context: android.content.Context, url: String): String {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head><meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                body { font-family: -apple-system, sans-serif; background: #000; color: #fff;
+                       display: flex; align-items: center; justify-content: center;
+                       min-height: 100vh; margin: 0; flex-direction: column; text-align: center; padding: 24px; }
+                .icon { font-size: 64px; margin-bottom: 16px; }
+                h1 { font-size: 22px; font-weight: 600; color: #FF9500; margin-bottom: 8px; }
+                p { color: #999; font-size: 14px; max-width: 320px; }
+                .url { color: #FF9500; word-break: break-all; margin-top: 12px; font-size: 13px; }
+            </style></head>
+            <body>
+                <div class="icon">🔒</div>
+                <h1>${context.getString(com.helix.browser.R.string.https_only_blocked_title)}</h1>
+                <p>${context.getString(com.helix.browser.R.string.https_only_blocked_message)}</p>
+                <p class="url">$url</p>
             </body>
             </html>
         """.trimIndent()

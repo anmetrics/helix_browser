@@ -181,6 +181,21 @@
 
     <View style="@style/MenuDivider" />
 
+    <!-- Reader mode -->
+    <LinearLayout android:id="@+id/menu_reader_mode"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_text_zoom" style="@style/MenuIconStyle" />
+        <TextView android:id="@+id/tvReaderMode"
+            android:text="@string/reader_mode" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
+    <!-- Picture-in-Picture -->
+    <LinearLayout android:id="@+id/menu_pip"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_desktop" style="@style/MenuIconStyle" />
+        <TextView android:text="@string/picture_in_picture" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
     <!-- Print -->
     <LinearLayout android:id="@+id/menu_print"
         style="@style/MenuItemStyle">
