@@ -52,17 +52,21 @@ class TabManager {
         return tab
     }
 
+    fun findTab(tabId: String): BrowserTab? = _tabs.firstOrNull { it.id == tabId }
+
     fun closeTab(tabId: String) {
         val index = _tabs.indexOfFirst { it.id == tabId }
         if (index < 0) return
         val tab = _tabs[index]
         // Don't allow closing pinned tabs without explicit unpin
         if (tab.isPinned) return
-        // Save to recently closed (keep max 10)
+        // Save to recently closed (keep max 10) — strip bitmaps so they can be GC'd.
         if (tab.url.isNotEmpty() && !tab.isIncognito) {
             _recentlyClosed.add(0, tab.copy(thumbnail = null, favicon = null))
             if (_recentlyClosed.size > 10) _recentlyClosed.removeAt(_recentlyClosed.size - 1)
         }
+        // Release native bitmap memory held by the closed tab.
+        tab.releaseBitmaps()
         // Remove from any group
         _tabGroups.forEach { it.tabIds.remove(tabId) }
         _tabGroups.removeAll { it.tabIds.isEmpty() }

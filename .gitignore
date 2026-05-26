@@ -27,10 +27,10 @@ captures/
 .cxx/
 
 # ─── Keystore / signing ──────────────────────────────────────────
-# Uncomment these if you don't want keystores in version control:
-#*.jks
-#*.keystore
-#release.properties
+*.jks
+*.keystore
+keystore.properties
+release.properties
 
 # ─── Kotlin toolchain ────────────────────────────────────────────
 .kotlin/

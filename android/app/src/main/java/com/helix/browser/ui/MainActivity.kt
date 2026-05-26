@@ -179,18 +179,31 @@ class MainActivity : BaseActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
-        val url = when (intent.action) {
+        val raw = when (intent.action) {
             Intent.ACTION_VIEW -> intent.dataString
-            Intent.ACTION_WEB_SEARCH -> intent.getStringExtra(android.app.SearchManager.QUERY)
-                ?.let { UrlUtils.buildSearchQuery(it, Prefs.getSearchEngine(this)) }
+            Intent.ACTION_WEB_SEARCH -> runCatching {
+                intent.getStringExtra(android.app.SearchManager.QUERY)
+            }.getOrNull()?.let { UrlUtils.buildSearchQuery(it, Prefs.getSearchEngine(this)) }
             else -> null
-        }
-        if (url != null) {
-            if (tabManager.tabCount == 0) {
-                createNewTab(url)
-            } else {
-                loadUrl(url)
-            }
+        } ?: return
+
+        val url = sanitizeIncomingUrl(raw) ?: return
+        if (tabManager.tabCount == 0) createNewTab(url) else loadUrl(url)
+    }
+
+    private fun sanitizeIncomingUrl(input: String): String? {
+        // Cap length to defend against OOM via malicious deep links.
+        if (input.length > MAX_INCOMING_URL_LENGTH) return null
+        val trimmed = input.trim()
+        if (trimmed.isEmpty()) return null
+        // Only honor schemes the browser actually loads. Reject file://, intent://,
+        // javascript:, content:// and other privileged/dangerous schemes from
+        // untrusted callers.
+        val scheme = runCatching { Uri.parse(trimmed).scheme?.lowercase() }.getOrNull()
+        return when (scheme) {
+            "http", "https", "about", "data" -> trimmed
+            null -> UrlUtils.formatUrl(trimmed) // treat bare input as search/url
+            else -> null
         }
     }
 
@@ -324,14 +337,14 @@ class MainActivity : BaseActivity() {
                 if (isClosingCurrent) {
                     tabManager.currentTab?.let { switchToTab(it) } ?: run {
                         // All tabs closed
-                        webViewPool.remove(tab.id)?.destroy()
+                        webViewPool.remove(tab.id)?.let { safelyDestroyWebView(it) }
                         binding.webViewContainer.removeAllViews()
                         currentWebView = null
                         createNewTab()
                     }
                 } else {
                     // Just clean up the webview
-                    webViewPool.remove(tab.id)?.destroy()
+                    webViewPool.remove(tab.id)?.let { safelyDestroyWebView(it) }
                 }
             }
         )
@@ -449,9 +462,16 @@ class MainActivity : BaseActivity() {
 
     private fun createWebViewForTab(tab: BrowserTab): HelixWebView {
         val webView = HelixWebView(this)
+        // Capture only the tab id, never the BrowserTab reference. The tab
+        // may be removed from TabManager mid-load; we re-resolve via id and
+        // bail if it is gone, so callbacks cannot mutate a closed tab.
+        val tabId = tab.id
+        fun resolveTab(): BrowserTab? = tabManager.findTab(tabId)
+        fun isCurrent(): Boolean = tabManager.currentTab?.id == tabId
         webView.webViewClient = HelixWebViewClient(
             onPageStarted = { url, _ ->
-                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
+                if (isCurrent()) runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
                     viewModel.onPageStarted(url)
                     updateNavButtons()
                     headerHideRunnable?.let { binding.root.removeCallbacks(it) }
@@ -459,9 +479,11 @@ class MainActivity : BaseActivity() {
                 }
             },
             onPageFinished = { url ->
-                tab.url = url
-                tab.title = webView.title ?: url
-                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
+                val t = resolveTab() ?: return@HelixWebViewClient  // tab closed; skip
+                t.url = url
+                t.title = webView.title ?: url
+                if (isCurrent()) runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
                     viewModel.onPageFinished(url, webView.title ?: "")
                     updateNavButtons()
                     headerHideRunnable?.let { binding.root.removeCallbacks(it) }
@@ -473,7 +495,9 @@ class MainActivity : BaseActivity() {
                 }
             },
             onPageError = { _, _, _ ->
-                if (tabManager.currentTab?.id == tab.id) runOnUiThread { viewModel.isLoading.value = false }
+                if (isCurrent()) runOnUiThread {
+                    if (!isFinishing && !isDestroyed) viewModel.isLoading.value = false
+                }
             },
             isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) },
             isTrackerBlockEnabled = { PrivacyManager.isBlockTrackersEnabled(this) },
@@ -484,19 +508,27 @@ class MainActivity : BaseActivity() {
         // Apply third-party cookie policy
         PrivacyManager.applyThirdPartyCookiePolicy(this, webView)
         webView.webChromeClient = HelixWebChromeClient(
-            onProgressChanged = { progress -> if (tabManager.currentTab?.id == tab.id) runOnUiThread { viewModel.onProgressChanged(progress) } },
+            onProgressChanged = { progress ->
+                if (isCurrent()) runOnUiThread {
+                    if (!isFinishing && !isDestroyed) viewModel.onProgressChanged(progress)
+                }
+            },
             onTitleReceived = { title ->
-                tab.title = title
-                if (tabManager.currentTab?.id == tab.id) runOnUiThread { 
-                    viewModel.currentTitle.value = title 
-                    // Force refresh tab adapter for title update
+                val t = resolveTab() ?: return@HelixWebChromeClient
+                t.title = title
+                if (isCurrent()) runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    viewModel.currentTitle.value = title
                     desktopTabAdapter?.notifyItemChanged(tabManager.currentIndex)
                 }
             },
             onFaviconReceived = { favicon ->
-                tab.favicon = favicon
-                if (tabManager.currentTab?.id == tab.id) runOnUiThread {
-                    // Force refresh tab adapter for favicon update
+                val t = resolveTab() ?: return@HelixWebChromeClient
+                // Recycle the previous favicon before replacing to avoid bitmap leak.
+                t.favicon?.takeIf { it !== favicon && !it.isRecycled }?.recycle()
+                t.favicon = favicon
+                if (isCurrent()) runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
                     desktopTabAdapter?.notifyItemChanged(tabManager.currentIndex)
                     updateSiteIdentityIcon()
                 }
@@ -680,6 +712,58 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
                 shortcutManager.requestPinShortcut(shortcut, null)
             }
         }
+    }
+
+    private var pendingGeolocationCallback: android.webkit.GeolocationPermissions.Callback? = null
+    private var pendingGeolocationOrigin: String? = null
+
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        val granted = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                      grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        val origin = pendingGeolocationOrigin
+        pendingGeolocationCallback?.invoke(origin, granted, false)
+        pendingGeolocationCallback = null
+        pendingGeolocationOrigin = null
+    }
+
+    private fun requestGeolocationPermission(
+        origin: String,
+        callback: android.webkit.GeolocationPermissions.Callback
+    ) {
+        // Never auto-allow. Check remembered per-origin decision first.
+        when (Prefs.getSitePermission(this, "geolocation", origin)) {
+            "allow" -> { callback.invoke(origin, true, true); return }
+            "deny"  -> { callback.invoke(origin, false, true); return }
+        }
+        val hasOsPerm = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(getString(R.string.permission_location_title))
+            .setMessage(getString(R.string.permission_location_message, origin))
+            .setPositiveButton(R.string.allow) { _, _ ->
+                Prefs.setSitePermission(this, "geolocation", origin, "allow")
+                if (hasOsPerm) {
+                    callback.invoke(origin, true, true)
+                } else {
+                    pendingGeolocationCallback = callback
+                    pendingGeolocationOrigin = origin
+                    locationPermissionLauncher.launch(arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ))
+                }
+            }
+            .setNegativeButton(R.string.deny) { _, _ ->
+                Prefs.setSitePermission(this, "geolocation", origin, "deny")
+                callback.invoke(origin, false, true)
+            }
+            .setOnCancelListener { callback.invoke(origin, false, false) }
+            .show()
     }
 
     private fun setupWebViewContextMenu(webView: HelixWebView) {
@@ -1023,20 +1107,43 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         }
     }
     override fun onDestroy() {
-        // Remove all WebViews from their parent before destroying to prevent memory leaks
         binding.webViewContainer.removeAllViews()
         currentWebView = null
-        webViewPool.values.forEach { webView ->
-            (webView.parent as? android.view.ViewGroup)?.removeView(webView)
-            webView.stopLoading()
-            webView.webViewClient = WebViewClient()
-            webView.webChromeClient = null
-            webView.removeAllViews()
-            webView.destroy()
-        }
+        // Clear any pending toolbar callbacks holding references to root view.
+        headerHideRunnable?.let { binding.root.removeCallbacks(it) }
+        headerHideRunnable = null
+        webViewPool.values.forEach { safelyDestroyWebView(it) }
         webViewPool.clear()
         tabManager.closeAllIncognito()
         super.onDestroy()
+    }
+
+    /**
+     * Tear down a WebView so it cannot retain callbacks, the activity, or
+     * native resources after removal. Safe to call from any path (tab close,
+     * activity destroy, low-memory eviction).
+     */
+    private fun safelyDestroyWebView(webView: HelixWebView) {
+        try {
+            webView.stopLoading()
+            webView.loadUrl("about:blank")
+            webView.onPause()
+            webView.pauseTimers()
+            webView.clearHistory()
+            webView.removeAllViews()
+            // Detach from any parent so destroy() is legal.
+            (webView.parent as? android.view.ViewGroup)?.removeView(webView)
+            // Null out delegates so any in-flight callback no longer reaches us.
+            webView.webViewClient = WebViewClient()
+            webView.webChromeClient = null
+            webView.setDownloadListener(null)
+            webView.setFindListener(null)
+            webView.setOnLongClickListener(null)
+            webView.setOnTouchListener(null)
+            webView.destroy()
+        } catch (t: Throwable) {
+            android.util.Log.w("MainActivity", "safelyDestroyWebView failed", t)
+        }
     }
 
     private fun setupSuggestions() {
@@ -1130,5 +1237,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         }.start()
     }
 
-    companion object { const val REQUEST_TAB_SWITCHER = 1001 }
+    companion object {
+        const val REQUEST_TAB_SWITCHER = 1001
+        private const val MAX_INCOMING_URL_LENGTH = 4096
+    }
 }

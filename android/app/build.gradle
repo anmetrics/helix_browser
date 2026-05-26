@@ -5,6 +5,21 @@ plugins {
     id 'kotlin-parcelize'
 }
 
+// Load release signing credentials from keystore.properties (gitignored) or
+// from environment variables (preferred for CI). Falls back gracefully so
+// debug builds still work on a fresh checkout without a keystore.
+def keystorePropsFile = rootProject.file("keystore.properties")
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+}
+def env = System.getenv()
+def releaseStoreFile = keystoreProps['storeFile'] ?: env['HELIX_KEYSTORE_FILE']
+def releaseStorePassword = keystoreProps['storePassword'] ?: env['HELIX_KEYSTORE_PASSWORD']
+def releaseKeyAlias = keystoreProps['keyAlias'] ?: env['HELIX_KEY_ALIAS']
+def releaseKeyPassword = keystoreProps['keyPassword'] ?: env['HELIX_KEY_PASSWORD']
+def hasReleaseSigning = releaseStoreFile != null && new File(releaseStoreFile).exists()
+
 android {
     namespace 'com.helix.browser'
     compileSdk 35
@@ -17,6 +32,26 @@ android {
         versionName "1.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // Ship only language resources the app actually translates; cuts APK size.
+        resourceConfigurations += [
+            'en','vi','de','es','fr','pt','ru','ja','ko','hi','id','ar'
+        ]
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+                enableV1Signing true
+                enableV2Signing true
+                enableV3Signing true
+                enableV4Signing true
+            }
+        }
     }
 
     buildTypes {
@@ -24,11 +59,20 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
         debug {
             applicationIdSuffix ".debug"
             debuggable true
         }
+    }
+
+    bundle {
+        language { enableSplit = true }
+        density  { enableSplit = true }
+        abi      { enableSplit = true }
     }
 
     compileOptions {
@@ -44,6 +88,13 @@ android {
         viewBinding true
         buildConfig true
     }
+}
+
+// Export Room schemas so migrations can be diffed in code review.
+// Files land in app/schemas/ and SHOULD be checked into git.
+ksp {
+    arg('room.schemaLocation', "$projectDir/schemas")
+    arg('room.incremental', 'true')
 }
 
 dependencies {

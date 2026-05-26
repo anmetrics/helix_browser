@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <!--
+        Browser policy:
+        - The base config permits cleartext (HTTP) because users navigate to arbitrary
+          sites via WebView. The browser layer enforces opt-in HTTPS-only mode and
+          blocks mixed content per WebView (see HelixWebView).
+        - Trust ONLY system CAs in production builds. User-installed CAs are a
+          known MITM vector (proxies, malware, corporate snooping) — we do not
+          honor them for app HTTPS connections. Debug builds may install certs
+          via the debug-overrides element if a debug network_security_config is
+          provided.
+    -->
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
-            <certificates src="user" />
         </trust-anchors>
     </base-config>
 </network-security-config>

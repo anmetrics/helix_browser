@@ -16,4 +16,15 @@ data class BrowserTab(
     var lastAccessTime: Long = System.currentTimeMillis(),
     var isMuted: Boolean = false,
     var isSuspended: Boolean = false
-)
+) {
+    /**
+     * Release bitmaps held by this tab. Call when the tab is permanently closed.
+     * Safe to call multiple times.
+     */
+    fun releaseBitmaps() {
+        favicon?.takeIf { !it.isRecycled }?.recycle()
+        favicon = null
+        thumbnail?.takeIf { !it.isRecycled }?.recycle()
+        thumbnail = null
+    }
+}

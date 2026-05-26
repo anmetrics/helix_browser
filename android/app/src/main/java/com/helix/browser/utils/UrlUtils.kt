@@ -90,4 +90,14 @@ object Prefs {
 
     fun getLanguage(context: Context) = prefs(context).getString(KEY_LANGUAGE, "system") ?: "system"
     fun setLanguage(context: Context, lang: String) = prefs(context).edit().putString(KEY_LANGUAGE, lang).apply()
+
+    // Per-origin site permissions (geolocation, camera, mic, notifications).
+    // Values: "allow" | "deny" | absent => prompt user.
+    private fun sitePermKey(permission: String, origin: String) = "site_perm:$permission:$origin"
+    fun getSitePermission(context: Context, permission: String, origin: String): String? =
+        prefs(context).getString(sitePermKey(permission, origin), null)
+    fun setSitePermission(context: Context, permission: String, origin: String, decision: String) =
+        prefs(context).edit().putString(sitePermKey(permission, origin), decision).apply()
+    fun clearSitePermission(context: Context, permission: String, origin: String) =
+        prefs(context).edit().remove(sitePermKey(permission, origin)).apply()
 }
