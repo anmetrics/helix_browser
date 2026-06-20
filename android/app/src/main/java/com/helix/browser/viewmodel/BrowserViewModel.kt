@@ -398,7 +398,17 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                         setRequestProperty("Accept", "application/json, text/javascript")
                     }
                     if (conn.responseCode != HttpURLConnection.HTTP_OK) return@withContext emptyList()
-                    val body = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                    // Decode using the charset the server actually declares (suggest
+                    // endpoints sometimes return ISO-8859-1/windows-1252); decoding
+                    // those bytes as UTF-8 mangles non-ASCII text (e.g. Vietnamese)
+                    // into U+FFFD replacement chars. Fall back to UTF-8.
+                    val charset = conn.contentType
+                        ?.substringAfter("charset=", "")
+                        ?.trim()
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.let { runCatching { java.nio.charset.Charset.forName(it) }.getOrNull() }
+                        ?: Charsets.UTF_8
+                    val body = conn.inputStream.bufferedReader(charset).use(BufferedReader::readText)
                     UrlUtils.parseSuggestResponse(body)
                         .filter { it.isNotBlank() }
                         .distinct()
