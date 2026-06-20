@@ -56,10 +56,9 @@ class HistoryActivity : BaseActivity() {
         }
 
         lifecycleScope.launch {
-            viewModel.allHistory.collectLatest { items ->
+            viewModel.results.collectLatest { items ->
                 adapter.submitList(items)
-                binding.emptyView.visibility =
-                    if (items.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+                renderEmptyState(items.isEmpty())
             }
         }
 
@@ -77,15 +76,61 @@ class HistoryActivity : BaseActivity() {
         overrideCloseTransitionCompat(R.anim.fade_in, R.anim.slide_out_left)
     }
 
+    // Show the rich empty state, switching copy between "no history at all" and
+    // "no matches for the current search" so the user understands why the list
+    // is blank while typing.
+    private fun renderEmptyState(isEmpty: Boolean) {
+        binding.emptyView.visibility = if (isEmpty) android.view.View.VISIBLE else android.view.View.GONE
+        if (!isEmpty) return
+        val searching = viewModel.searchQuery.value.isNotBlank()
+        binding.emptyTitle.text =
+            if (searching) getString(R.string.search_no_results) else getString(R.string.no_history)
+        binding.emptySubtitle.text =
+            if (searching) getString(R.string.search_no_results_subtitle)
+            else getString(R.string.no_history_subtitle)
+    }
+
+    // Time-range "Clear browsing data" chooser. Each entry maps to an absolute
+    // epoch-millis cutoff (computed lazily at confirm time, not dialog-build
+    // time, so a slow tap can't use a stale "now"). "All time" uses 0, which the
+    // repository treats as "delete everything". The actual delete runs off the
+    // main thread; the confirmation toast is shown only after it completes via
+    // the clearRange callback, and is posted through the lifecycle scope so it
+    // never fires against a destroyed Activity.
     private fun showClearHistoryDialog() {
+        val labels = arrayOf(
+            getString(R.string.clear_range_last_hour),
+            getString(R.string.clear_range_last_24_hours),
+            getString(R.string.clear_range_last_7_days),
+            getString(R.string.clear_range_all_time)
+        )
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.clear_history_dialog_title)
-            .setMessage(R.string.clear_history_dialog_message)
-            .setPositiveButton(R.string.clear_history_confirm) { _, _ ->
-                viewModel.clearAll()
-                Toast.makeText(this, getString(R.string.history_cleared), Toast.LENGTH_SHORT).show()
+            .setItems(labels) { _, which ->
+                val now = System.currentTimeMillis()
+                val sinceMillis = when (which) {
+                    0 -> now - ONE_HOUR_MS
+                    1 -> now - ONE_DAY_MS
+                    2 -> now - SEVEN_DAYS_MS
+                    else -> 0L
+                }
+                viewModel.clearRange(sinceMillis) {
+                    lifecycleScope.launch {
+                        Toast.makeText(
+                            this@HistoryActivity,
+                            getString(R.string.history_cleared),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    companion object {
+        private const val ONE_HOUR_MS = 60L * 60L * 1000L
+        private const val ONE_DAY_MS = 24L * ONE_HOUR_MS
+        private const val SEVEN_DAYS_MS = 7L * ONE_DAY_MS
     }
 }

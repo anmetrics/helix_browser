@@ -60,12 +60,12 @@
     </LinearLayout>
 
     <ImageButton
-        android:id="@+id/btnDelete"
+        android:id="@+id/btnOverflow"
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:padding="8dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_delete"
+        android:src="@drawable/ic_more_vert"
         app:tint="@color/text_tertiary"
-        android:contentDescription="@string/desc_delete" />
+        android:contentDescription="@string/desc_more" />
 </LinearLayout>

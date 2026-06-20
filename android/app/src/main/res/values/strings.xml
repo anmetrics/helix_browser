@@ -226,7 +226,164 @@
     <string name="bookmarks_imported">Imported %1$d bookmarks</string>
     <string name="bookmarks_import_failed">Import failed</string>
 
+    <!-- Bookmark folders & editing -->
+    <string name="new_folder">New folder</string>
+    <string name="create_folder">Create folder</string>
+    <string name="rename_folder">Rename folder</string>
+    <string name="folder_name_hint">Folder name</string>
+    <string name="folder_created">Folder created</string>
+    <string name="edit">Edit</string>
+    <string name="edit_bookmark">Edit bookmark</string>
+    <string name="edit_bookmark_title_hint">Name</string>
+    <string name="edit_bookmark_url_hint">URL</string>
+    <string name="delete">Delete</string>
+    <string name="rename">Rename</string>
+    <string name="save">Save</string>
+    <string name="move_to_folder">Move to folder</string>
+    <string name="move_here_root">Bookmarks (root)</string>
+    <string name="moved_to_folder">Moved</string>
+    <string name="move_into_descendant_error">Can\'t move a folder into itself or one of its subfolders</string>
+    <string name="delete_folder_title">Delete folder?</string>
+    <string name="delete_folder_message">Items inside \"%1$s\" will be moved up one level.</string>
+    <string name="empty_folder">This folder is empty</string>
+    <string name="desc_open_folder">Open folder</string>
+
     <!-- Accessibility -->
     <string name="desc_voice_search">Voice search</string>
     <string name="desc_tabs">Open tab switcher</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">No app found to open this link</string>
+    <string name="download_unsupported_scheme">This download link can\'t be opened</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">New incognito tab</string>
+    <string name="close_all_tabs">Close all tabs</string>
+    <string name="close_other_tabs">Close other tabs</string>
+    <string name="close_tabs_to_right">Close tabs to the right</string>
+    <string name="tab_closed">Tab closed</string>
+    <string name="undo">Undo</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="one">Close 1 tab?</item>
+        <item quantity="other">Close all %d tabs?</item>
+    </plurals>
+
+    <!-- Address bar -->
+    <string name="voice_search_unavailable">Voice search not available</string>
+    <string name="desc_clear_address">Clear address bar</string>
+    <string name="paste_and_go">Paste and go</string>
+
+    <!-- Cookies -->
+    <string name="cookies_in_use">%1$d cookies in use</string>
+    <string name="no_cookies">No cookies</string>
+
+    <!-- Search / suggestions -->
+    <string name="search_no_results">No results found</string>
+    <string name="search_no_results_subtitle">Try a different search term</string>
+    <string name="search_for">Search for \"%1$s\"</string>
+    <string name="search_suggestion_subtitle">Search suggestion</string>
+
+    <!-- History empty / sections -->
+    <string name="no_history_subtitle">Pages you visit will show up here</string>
+    <string name="history_section_today">Today</string>
+    <string name="history_section_yesterday">Yesterday</string>
+
+    <!-- Tab actions (more) -->
+    <string name="unpin_tab">Unpin tab</string>
+
+    <!-- Premium -->
+    <string name="premium_remove_ads">Helix Premium — Remove ads</string>
+    <string name="premium_active">Helix Premium — Active</string>
+
+    <!-- Download actions -->
+    <string name="download_cancel">Cancel</string>
+    <string name="download_retry">Retry</string>
+    <string name="download_open">Open</string>
+    <string name="download_remove">Remove</string>
+    <string name="download_more_options">More options</string>
+    <string name="download_clear_completed">Clear completed</string>
+    <string name="download_size_progress">%1$s / %2$s</string>
+    <string name="download_cancelled">Download cancelled</string>
+    <string name="download_removed">Download removed</string>
+    <string name="download_retrying">Retrying download</string>
+    <string name="download_retry_failed">Couldn\'t retry this download</string>
+    <string name="download_completed_cleared">Completed downloads cleared</string>
+    <string name="download_nothing_to_clear">No completed downloads to clear</string>
+    <string name="download_open_failed">Couldn\'t open this file</string>
+    <string name="download_no_app_to_open">No app found to open this file</string>
+
+    <!-- Error page -->
+    <string name="error_page_try_again">Try again</string>
+
+    <!-- Clear browsing data ranges -->
+    <string name="clear_range_last_hour">Last hour</string>
+    <string name="clear_range_last_24_hours">Last 24 hours</string>
+    <string name="clear_range_last_7_days">Last 7 days</string>
+    <string name="clear_range_all_time">All time</string>
+
+    <!-- HTTP authentication -->
+    <string name="http_auth_title">Sign in</string>
+    <string name="http_auth_sign_in">Sign in</string>
+    <string name="http_auth_username_hint">Username</string>
+    <string name="http_auth_password_hint">Password</string>
+    <string name="http_auth_remember">Remember credentials</string>
+    <string name="http_auth_realm_label">The site %1$s is requesting your username and password. The site says: “%2$s”</string>
+
+    <!-- Download confirmation -->
+    <string name="download_confirm_title">Download file</string>
+    <string name="download_filename_hint">File name</string>
+    <string name="download_size_unknown">Unknown size</string>
+    <string name="download_meta">%1$s · %2$s</string>
+    <string name="download">Download</string>
+
+    <!-- Print -->
+    <string name="print_no_page">Nothing to print</string>
+    <string name="print_unavailable">Printing is unavailable on this device</string>
+
+    <!-- Tab groups -->
+    <string name="new_group">New group</string>
+    <string name="add_to_group">Add to group</string>
+    <string name="ungroup">Ungroup</string>
+    <string name="remove_from_group">Remove from group</string>
+    <string name="select_tabs">Select tabs</string>
+    <string name="tabs_selected_count">%d selected</string>
+    <string name="tabs_closed_count">%d tabs closed</string>
+    <string name="group_name_hint">Group name</string>
+    <string name="default_group_name">New group</string>
+    <string name="create">Create</string>
+    <string name="rename_group">Rename group</string>
+    <string name="change_group_color">Change color</string>
+    <string name="group_color">Group color</string>
+    <string name="tab_group_options">Group options</string>
+    <string name="tab_group_header_format">%1$s · %2$d</string>
+    <string name="tab_selected">Selected</string>
+
+    <!-- Inline answer / clipboard -->
+    <string name="answer_copied">Copied to clipboard</string>
+    <string name="answer_tap_to_copy">Tap to copy</string>
+
+    <!-- Accessibility settings -->
+    <string name="accessibility_category">Accessibility</string>
+    <string name="force_enable_zoom_title">Force enable zoom</string>
+    <string name="force_enable_zoom_summary">Allow pinch-to-zoom on all sites, even those that block it</string>
+    <string name="min_font_size_title">Minimum font size</string>
+    <string name="min_font_size_summary">Make small text easier to read</string>
+    <string name="min_font_off">Off</string>
+    <string name="min_font_small">Small</string>
+    <string name="min_font_medium">Medium</string>
+    <string name="min_font_large">Large</string>
+    <string name="min_font_huge">Huge</string>
+
+    <!-- PDF viewer -->
+    <string name="pdf_viewer_title">PDF</string>
+    <string name="pdf_open_failed">Couldn\'t open this PDF</string>
+    <string name="pdf_page_content_description">PDF page</string>
+    <string name="pdf_opening">Opening PDF…</string>
+
+    <!-- Screenshot -->
+    <string name="screenshot">Screenshot</string>
+    <string name="screenshot_no_page">Nothing to capture</string>
+    <string name="screenshot_capturing">Capturing screenshot…</string>
+    <string name="screenshot_saved">Screenshot ready to share</string>
+    <string name="screenshot_failed">Couldn\'t capture screenshot</string>
 </resources>

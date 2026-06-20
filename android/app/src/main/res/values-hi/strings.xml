@@ -46,4 +46,203 @@
     <string name="language">भाषा</string>
     <string name="select_language">भाषा चुनें</string>
     <string name="system_default">सिस्टम डिफॉल्ट</string>
+    <string name="search_tabs_hint">अपने टैब खोजें</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="incognito_mode">गुप्त मोड</string>
+    <string name="downloading_via_helix">Helix Browser के माध्यम से डाउनलोड हो रहा है</string>
+    <string name="download_started">डाउनलोड हो रहा है: %s</string>
+    <string name="share_via">इसके माध्यम से साझा करें</string>
+    <string name="search_or_type_url">खोजें या URL दर्ज करें...</string>
+    <string name="fast_secure_private">तेज़ • सुरक्षित • निजी</string>
+    <string name="save_history">इतिहास सहेजें</string>
+    <string name="find">खोजें</string>
+    <string name="bookmarks_hint">बुकमार्क में खोजें...</string>
+    <string name="no_bookmarks">अभी तक कोई बुकमार्क नहीं</string>
+    <string name="history_hint">इतिहास खोजें...</string>
+    <string name="no_history">अभी तक कोई ब्राउज़िंग इतिहास नहीं</string>
+    <string name="private_tab_label">निजी</string>
+    <string name="ssl_untrusted">सुरक्षा प्रमाणपत्र विश्वसनीय नहीं है।</string>
+    <string name="ssl_expired">सुरक्षा प्रमाणपत्र की समय-सीमा समाप्त हो गई है।</string>
+    <string name="ssl_id_mismatch">डोमेन नाम प्रमाणपत्र से मेल नहीं खाता।</string>
+    <string name="ssl_not_yet_valid">सुरक्षा प्रमाणपत्र अभी मान्य नहीं है।</string>
+    <string name="ssl_date_invalid">प्रमाणपत्र की तिथि अमान्य है।</string>
+    <string name="ssl_invalid">सुरक्षा प्रमाणपत्र अमान्य है।</string>
+    <string name="ssl_unknown">अज्ञात SSL त्रुटि।</string>
+    <string name="ssl_title">असुरक्षित कनेक्शन</string>
+    <string name="ssl_message">%1$s\n\nURL: %2$s\n\nक्या आप आगे बढ़ना चाहते हैं?</string>
+    <string name="continue_button">जारी रखें</string>
+    <string name="go_back_button">वापस जाएं</string>
+    <string name="error_page_title">कनेक्ट नहीं हो सका</string>
+    <string name="error_page_go_back">वापस जाएं</string>
+    <string name="ssl_error_page_title">असुरक्षित कनेक्शन</string>
+    <string name="ssl_error_page_message">इस वेबसाइट का सुरक्षा प्रमाणपत्र अमान्य है (SSL त्रुटि %d)।</string>
+    <string name="ssl_error_page_go_back">सुरक्षित रूप से वापस जाएं</string>
+    <string name="search_engine_pref">खोज इंजन</string>
+    <string name="homepage_pref">होमपेज</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">वेबसाइटों के लिए JavaScript सक्षम करें</string>
+    <string name="desktop_site_summary">हमेशा डेस्कटॉप संस्करण का उपयोग करें</string>
+    <string name="block_ads_title">विज्ञापन ब्लॉक करें</string>
+    <string name="block_ads_summary">विज्ञापन और ट्रैकर्स ब्लॉक करें</string>
+    <string name="block_trackers_summary">ट्रैकिंग स्क्रिप्ट ब्लॉक करें</string>
+    <string name="block_third_party_cookies_summary">थर्ड-पार्टी साइटों से कुकीज़ ब्लॉक करें</string>
+    <string name="do_not_track_summary">ट्रैक न करें का अनुरोध भेजें</string>
+    <string name="https_upgrade_summary">HTTP को स्वचालित रूप से HTTPS में अपग्रेड करें</string>
+    <string name="anti_fingerprinting_summary">ब्राउज़र फिंगरप्रिंटिंग स्क्रिप्ट ब्लॉक करें</string>
+    <string name="block_popups_summary">स्वचालित पॉपअप विंडो ब्लॉक करें</string>
+    <string name="trackers_blocked_summary_format">%d ट्रैकर्स ब्लॉक किए गए</string>
+    <string name="clear_cache">कैश मिटाएं</string>
+    <string name="clear_cache_summary">कैश की गई वेबसाइट डेटा मिटाएं</string>
+    <string name="clear_cookies">कुकीज़ मिटाएं</string>
+    <string name="clear_cookies_summary">वेबसाइट कुकीज़ मिटाएं</string>
+    <string name="clear_history_summary">ब्राउज़िंग इतिहास मिटाएं</string>
+    <string name="clear_all_data_summary">सभी डेटा, कुकीज़ और कैश मिटाएं</string>
+    <string name="tabs_category">टैब</string>
+    <string name="restore_tabs_summary">पुनः आरंभ करने पर टैब बहाल करें</string>
+    <string name="suspend_tabs_summary">10 मिनट के बाद निष्क्रिय टैब निलंबित करें</string>
+    <string name="info_category">जानकारी</string>
+    <string name="version_pref">संस्करण</string>
+    <string name="engine_pref">इंजन</string>
+    <string name="cache_cleared">कैश मिटा दिया गया</string>
+    <string name="cookies_cleared">कुकीज़ मिटा दी गईं</string>
+    <string name="all_data_cleared">सभी ब्राउज़िंग डेटा मिटा दिया गया</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">अनुशंसित</string>
+    <string name="all_languages">सभी भाषाएं</string>
+    <string name="clear_history_dialog_title">इतिहास मिटाएं</string>
+    <string name="clear_history_dialog_message">क्या आप वाकई अपना संपूर्ण ब्राउज़िंग इतिहास मिटाना चाहते हैं?</string>
+    <string name="clear_history_confirm">मिटाएं</string>
+    <string name="history_cleared">इतिहास मिटा दिया गया</string>
+    <string name="desc_secure">सुरक्षित कनेक्शन</string>
+    <string name="desc_not_secure">सुरक्षित नहीं</string>
+    <string name="security_secure_title">कनेक्शन सुरक्षित है</string>
+    <string name="security_secure_message">इस साइट पर भेजे जाने पर आपकी जानकारी (उदाहरण के लिए, पासवर्ड या क्रेडिट कार्ड नंबर) निजी रहती है।</string>
+    <string name="security_not_secure_title">कनेक्शन सुरक्षित नहीं है</string>
+    <string name="security_not_secure_message">आपको इस साइट पर कोई संवेदनशील जानकारी (उदाहरण के लिए, पासवर्ड या क्रेडिट कार्ड) दर्ज नहीं करनी चाहिए, क्योंकि इसे हमलावरों द्वारा चुराया जा सकता है।</string>
+    <string name="security_internal_title">आंतरिक पेज</string>
+    <string name="security_internal_message">यह एक ब्राउज़र आंतरिक पेज है।</string>
+    <string name="desc_bookmark">इस पेज को बुकमार्क करें</string>
+    <string name="desc_refresh">पेज रिफ्रेश करें</string>
+    <string name="desc_prev">पिछला</string>
+    <string name="desc_next">अगला</string>
+    <string name="desc_close">बंद करें</string>
+    <string name="desc_back">वापस जाएं</string>
+    <string name="desc_forward">आगे जाएं</string>
+    <string name="desc_home">होम पर जाएं</string>
+    <string name="desc_more">अधिक विकल्प</string>
+    <string name="desc_favicon">फ़ेविकॉन</string>
+    <string name="desc_delete">हटाएं</string>
+    <string name="tab_count">%d टैब</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">विज्ञापन-मुक्त ब्राउज़िंग + विशिष्ट सुविधाएं</string>
+    <string name="close_all">सभी बंद करें</string>
+    <string name="dismiss">खारिज करें</string>
+    <string name="no_downloads">अभी तक कोई डाउनलोड नहीं</string>
+    <string name="print_page">पेज प्रिंट करें</string>
+    <string name="add_to_home">होम स्क्रीन में जोड़ें</string>
+    <string name="translate_page">अनुवाद करें</string>
+    <string name="page_info">पेज जानकारी</string>
+    <string name="zoom_in">ज़ूम इन</string>
+    <string name="zoom_out">ज़ूम आउट</string>
+    <string name="text_zoom">टेक्स्ट ज़ूम</string>
+    <string name="copy_link">लिंक कॉपी करें</string>
+    <string name="link_copied">लिंक कॉपी किया गया</string>
+    <string name="open_in_new_tab">नए टैब में खोलें</string>
+    <string name="open_in_incognito">गुप्त टैब में खोलें</string>
+    <string name="save_image">छवि सहेजें</string>
+    <string name="share_link">लिंक साझा करें</string>
+    <string name="reader_mode">रीडर मोड</string>
+    <string name="reopen_closed_tab">बंद टैब फिर से खोलें</string>
+    <string name="not_secure">सुरक्षित नहीं</string>
+    <string name="page_info_connection">कनेक्शन</string>
+    <string name="page_info_secure_subtitle">इस साइट पर आप जो जानकारी भेजते हैं वह निजी है</string>
+    <string name="page_info_not_secure_subtitle">इस साइट से आपका कनेक्शन निजी नहीं है। हमलावर इस साइट को दी गई जानकारी देख सकते हैं।</string>
+    <string name="page_info_internal_subtitle">यह एक Helix आंतरिक पेज है</string>
+    <string name="page_info_permissions">अनुमतियां</string>
+    <string name="page_info_no_permissions">कोई विशेष अनुमति नहीं दी गई</string>
+    <string name="page_info_cookies">कुकीज़ और साइट डेटा</string>
+    <string name="page_info_certificate">प्रमाणपत्र मान्य है</string>
+    <string name="page_info_certificate_invalid">प्रमाणपत्र विश्वसनीय नहीं है</string>
+    <string name="learn_more">अधिक जानें</string>
+    <string name="proceed_anyway">आगे बढ़ें</string>
+    <string name="connection_secure">सुरक्षित कनेक्शन</string>
+    <string name="connection_not_secure">सुरक्षित नहीं</string>
+    <string name="connection_internal">आंतरिक पेज</string>
+
+    <!-- Site permissions -->
+    <string name="allow">अनुमति दें</string>
+    <string name="deny">ब्लॉक करें</string>
+    <string name="permission_location_title">स्थान अनुरोध</string>
+    <string name="permission_location_message">%1$s आपके स्थान तक पहुंचना चाहता है।</string>
+    <string name="permission_camera_title">कैमरा अनुरोध</string>
+    <string name="permission_camera_message">%1$s आपके कैमरे का उपयोग करना चाहता है।</string>
+    <string name="permission_mic_title">माइक्रोफ़ोन अनुरोध</string>
+    <string name="permission_mic_message">%1$s आपके माइक्रोफ़ोन का उपयोग करना चाहता है।</string>
+    <string name="permission_notifications_title">सूचना अनुरोध</string>
+    <string name="permission_notifications_message">%1$s आपको सूचनाएं भेजना चाहता है।</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">केवल-HTTPS मोड</string>
+    <string name="https_only_mode_summary">सभी असुरक्षित (HTTP) कनेक्शन ब्लॉक करें। HTTPS के बिना साइटें लोड नहीं होंगी।</string>
+    <string name="https_only_blocked_title">कनेक्शन सुरक्षित नहीं है</string>
+    <string name="https_only_blocked_message">Helix ने इस पेज को ब्लॉक किया क्योंकि केवल-HTTPS मोड चालू है और साइट HTTPS का समर्थन नहीं करती।</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">साइट अनुमतियां</string>
+    <string name="site_permissions_summary">प्रत्येक साइट के लिए स्थान, कैमरा, माइक्रोफ़ोन और सूचना पहुंच प्रबंधित करें</string>
+    <string name="site_permissions_empty">अभी तक कोई साइट अनुमति सहेजी नहीं गई</string>
+    <string name="site_permission_revoke">रीसेट करें</string>
+    <string name="site_permission_label_allow">अनुमत</string>
+    <string name="site_permission_label_deny">ब्लॉक किया गया</string>
+    <string name="site_permission_label_location">स्थान</string>
+    <string name="site_permission_label_camera">कैमरा</string>
+    <string name="site_permission_label_microphone">माइक्रोफ़ोन</string>
+    <string name="site_permission_label_notifications">सूचनाएं</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">रीडर से बाहर निकलें</string>
+    <string name="picture_in_picture">पिक्चर-इन-पिक्चर</string>
+    <string name="pip_unsupported">इस डिवाइस पर पिक्चर-इन-पिक्चर समर्थित नहीं है</string>
+    <string name="pip_no_video">इस पेज पर कोई वीडियो नहीं चल रहा है</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">कस्टम</string>
+    <string name="custom_search_engine_title">कस्टम खोज इंजन</string>
+    <string name="custom_search_engine_hint">एक खोज URL दर्ज करें जहां %%s क्वेरी के स्थान पर हो। उदाहरण: https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">URL http:// या https:// से शुरू होना चाहिए</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">पेज सहेजें (ऑफ़लाइन)</string>
+    <string name="save_page_no_url">पहले एक पेज खोलें</string>
+    <string name="save_page_done">%1$s के रूप में सहेजा गया</string>
+    <string name="save_page_failed">पेज सहेजने में विफल</string>
+    <string name="no_recently_closed">कोई हाल ही में बंद किया गया टैब नहीं</string>
+    <string name="bookmarks_import">बुकमार्क आयात करें…</string>
+    <string name="bookmarks_export">बुकमार्क निर्यात करें…</string>
+    <string name="bookmarks_exported">%1$d बुकमार्क निर्यात किए गए</string>
+    <string name="bookmarks_export_failed">निर्यात विफल</string>
+    <string name="bookmarks_imported">%1$d बुकमार्क आयात किए गए</string>
+    <string name="bookmarks_import_failed">आयात विफल</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">वॉयस खोज</string>
+    <string name="desc_tabs">टैब स्विचर खोलें</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">इस लिंक को खोलने के लिए कोई ऐप नहीं मिला</string>
+    <string name="download_unsupported_scheme">यह डाउनलोड लिंक नहीं खोला जा सकता</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">नया गुप्त टैब</string>
+    <string name="close_all_tabs">सभी टैब बंद करें</string>
+    <string name="close_other_tabs">अन्य टैब बंद करें</string>
+    <string name="close_tabs_to_right">दाईं ओर के टैब बंद करें</string>
+    <string name="tab_closed">टैब बंद किया गया</string>
+    <string name="undo">पूर्ववत करें</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="one">%d टैब बंद करें?</item>
+        <item quantity="other">सभी %d टैब बंद करें?</item>
+    </plurals>
 </resources>

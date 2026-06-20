@@ -326,7 +326,10 @@ class WebViewModel: ObservableObject {
         if let index = tabs.firstIndex(where: { $0.id == activeTabId }) {
             tabs[index].url = url
             tabs[index].title = title.isEmpty ? UrlUtils.getDisplayUrl(url) : title
-            tabs[index].faviconUrl = UrlUtils.getFaviconUrl(url)
+            // PRIVACY: the favicon URL points at a remote (Google s2) favicon
+            // service, so fetching it would leak the visited host. Never generate
+            // one for incognito tabs — they render a generic icon instead.
+            tabs[index].faviconUrl = tabs[index].isIncognito ? nil : UrlUtils.getFaviconUrl(url)
             self.currentUrlString = url
         }
 

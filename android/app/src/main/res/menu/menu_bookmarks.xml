@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_new_folder"
+        android:icon="@drawable/ic_create_new_folder"
+        android:title="@string/new_folder"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_import"
         android:title="@string/bookmarks_import"
         app:showAsAction="never" />

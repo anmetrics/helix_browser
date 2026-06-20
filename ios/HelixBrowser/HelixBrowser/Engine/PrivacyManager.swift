@@ -187,6 +187,40 @@ class PrivacyManager {
         return WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
     }
 
+    // MARK: - Third-Party Cookie Blocker
+    /// Blocks cookie writes/reads when the document is loaded inside a cross-origin
+    /// (third-party) frame. WebKit exposes no public API to set a third-party cookie
+    /// policy directly, so this enforces the setting at the script level: top-level
+    /// documents keep full cookie access, while documents framed by a different
+    /// registrable site have `document.cookie` neutralised. Injected into all frames
+    /// at document start so it takes effect before any page script runs.
+    var thirdPartyCookieBlockScript: WKUserScript {
+        let js = """
+        (function() {
+            function isThirdParty() {
+                try {
+                    if (window.top === window.self) return false;
+                    var top;
+                    try { top = window.top.location.hostname; }
+                    catch (e) { return true; } // cross-origin top frame: treat as third-party
+                    return top !== window.location.hostname;
+                } catch (e) {
+                    return true;
+                }
+            }
+            if (!isThirdParty()) return;
+            try {
+                Object.defineProperty(document, 'cookie', {
+                    configurable: true,
+                    get: function() { return ''; },
+                    set: function() {}
+                });
+            } catch (e) {}
+        })();
+        """
+        return WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+    }
+
     func applyPrivacySettings(to config: WKWebViewConfiguration) {
         let prefs = Prefs.shared
         if prefs.isBlockFingerprintingEnabled {
@@ -197,6 +231,9 @@ class PrivacyManager {
         }
         if prefs.isBlockTrackersEnabled {
             config.userContentController.addUserScript(trackerBlockingScript)
+        }
+        if prefs.isBlockThirdPartyCookies {
+            config.userContentController.addUserScript(thirdPartyCookieBlockScript)
         }
         if prefs.isAdBlockEnabled {
             config.userContentController.addUserScript(youtubeAdBlockScript)

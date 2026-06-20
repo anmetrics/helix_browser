@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -170,6 +171,71 @@
             android:textColor="@color/text_secondary"
             android:textSize="15sp"
             android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <!-- Multi-select contextual action bar. Overlays the top bar while in
+         selection mode; hidden otherwise. -->
+    <LinearLayout
+        android:id="@+id/selectionBar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:background="@color/surface_container_high"
+        android:elevation="20dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/btnSelectionClose"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="11dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            app:tint="@color/text_primary"
+            android:contentDescription="@string/cancel" />
+
+        <TextView
+            android:id="@+id/selectionCount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"
+            tools:text="2 selected" />
+
+        <ImageButton
+            android:id="@+id/btnSelectionShare"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="11dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_share"
+            app:tint="@color/text_primary"
+            android:contentDescription="@string/share" />
+
+        <ImageButton
+            android:id="@+id/btnSelectionGroup"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="11dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_folder"
+            app:tint="@color/text_primary"
+            android:contentDescription="@string/add_to_group" />
+
+        <ImageButton
+            android:id="@+id/btnSelectionCloseTabs"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="11dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            app:tint="@color/text_primary"
+            android:contentDescription="@string/close_all" />
     </LinearLayout>
 
     <!-- Bottom section -->

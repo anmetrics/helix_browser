@@ -210,6 +210,13 @@
         <TextView android:text="@string/print_page" style="@style/MenuTextStyle" />
     </LinearLayout>
 
+    <!-- Screenshot -->
+    <LinearLayout android:id="@+id/menu_screenshot"
+        style="@style/MenuItemStyle">
+        <ImageView android:src="@drawable/ic_share" style="@style/MenuIconStyle" />
+        <TextView android:text="@string/screenshot" style="@style/MenuTextStyle" />
+    </LinearLayout>
+
     <!-- Add to Home Screen -->
     <LinearLayout android:id="@+id/menu_add_to_home"
         style="@style/MenuItemStyle">

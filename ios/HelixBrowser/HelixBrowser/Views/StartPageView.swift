@@ -40,7 +40,9 @@ class StartPageView: UIView {
 
         let titleLabel = UILabel()
         titleLabel.text = "Helix Browser"
-        titleLabel.font = .systemFont(ofSize: 28, weight: .bold)
+        titleLabel.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: .systemFont(ofSize: 28, weight: .bold))
+        titleLabel.adjustsFontForContentSizeCategory = true
+        titleLabel.numberOfLines = 0
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -48,7 +50,9 @@ class StartPageView: UIView {
 
         let subtitleLabel = UILabel()
         subtitleLabel.text = "Nhanh. An toàn. Riêng tư."
-        subtitleLabel.font = .systemFont(ofSize: 14, weight: .medium)
+        subtitleLabel.font = UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: .systemFont(ofSize: 14, weight: .medium))
+        subtitleLabel.adjustsFontForContentSizeCategory = true
+        subtitleLabel.numberOfLines = 0
         subtitleLabel.textColor = BrandColors.textSecondary
         subtitleLabel.textAlignment = .center
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -72,7 +76,9 @@ class StartPageView: UIView {
 
         let statsLabel = UILabel()
         statsLabel.text = "\(trackerCount) trình theo dõi đã bị chặn"
-        statsLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+        statsLabel.font = UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: .systemFont(ofSize: 14, weight: .semibold))
+        statsLabel.adjustsFontForContentSizeCategory = true
+        statsLabel.numberOfLines = 0
         statsLabel.textColor = BrandColors.secureGreen
         statsLabel.translatesAutoresizingMaskIntoConstraints = false
         statsView.addSubview(statsLabel)
@@ -80,7 +86,9 @@ class StartPageView: UIView {
         // Favorites section
         let favLabel = UILabel()
         favLabel.text = "Trang yêu thích"
-        favLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+        favLabel.font = UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: .systemFont(ofSize: 14, weight: .semibold))
+        favLabel.adjustsFontForContentSizeCategory = true
+        favLabel.numberOfLines = 0
         favLabel.textColor = BrandColors.textSecondary
         favLabel.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(favLabel)
@@ -91,7 +99,7 @@ class StartPageView: UIView {
         favGrid.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(favGrid)
 
-        // Create 2-column grid
+        // Create 4-column grid
         for row in stride(from: 0, to: favorites.count, by: 4) {
             let rowStack = UIStackView()
             rowStack.distribution = .fillEqually
@@ -165,7 +173,9 @@ class StartPageView: UIView {
 
         let label = UILabel()
         label.text = title
-        label.font = .systemFont(ofSize: 11, weight: .medium)
+        label.font = UIFontMetrics(forTextStyle: .caption2).scaledFont(for: .systemFont(ofSize: 11, weight: .medium))
+        label.adjustsFontForContentSizeCategory = true
+        label.numberOfLines = 0
         label.textColor = BrandColors.textSecondary
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false

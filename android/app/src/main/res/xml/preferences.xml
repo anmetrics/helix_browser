@@ -138,6 +138,21 @@
             app:icon="@drawable/ic_delete" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/accessibility_category">
+        <SwitchPreferenceCompat
+            app:key="a11y_force_zoom"
+            app:title="@string/force_enable_zoom_title"
+            app:summary="@string/force_enable_zoom_summary"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_text_zoom" />
+
+        <Preference
+            app:key="a11y_min_font_size"
+            app:title="@string/min_font_size_title"
+            app:summary="@string/min_font_size_summary"
+            app:icon="@drawable/ic_text_zoom" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/tabs_category">
         <SwitchPreferenceCompat
             app:key="restore_tabs"

@@ -357,6 +357,12 @@ class BrowserWindow(Gtk.ApplicationWindow):
         else:
             webview = WebKit2.WebView()
 
+        # Tag each webview with its own incognito flag so load/title events are
+        # attributed to the correct tab. Without this, a background incognito
+        # tab finishing a load while a normal tab is active would have its URL
+        # written to history (it was checking the *active* tab's flag).
+        webview._helix_incognito = incognito
+
         settings = webview.get_settings()
         settings.set_enable_javascript(True)
         settings.set_enable_developer_extras(True)
@@ -393,8 +399,9 @@ class BrowserWindow(Gtk.ApplicationWindow):
         if event == WebKit2.LoadEvent.FINISHED:
             self.progress_bar.set_fraction(0)
             self._update_nav_buttons()
-            tab = self.tab_manager.active_tab
-            if tab and self.prefs.is_save_history and not tab.is_incognito:
+            # Use the webview's own incognito flag, not the active tab's, so a
+            # background incognito load can never leak into the history DB.
+            if self.prefs.is_save_history and not getattr(webview, "_helix_incognito", False):
                 uri = webview.get_uri() or ""
                 title = webview.get_title() or ""
                 if uri and not uri.startswith("helix://"):

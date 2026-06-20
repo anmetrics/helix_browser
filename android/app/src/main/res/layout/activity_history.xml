@@ -54,16 +54,48 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
+        <!-- Empty state: icon-in-circle + title + subtitle, matching the
+             tab-switcher empty state for visual consistency. Copy is swapped at
+             runtime between "no history" and "no search results". -->
+        <LinearLayout
             android:id="@+id/emptyView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:orientation="vertical"
             android:gravity="center"
-            android:text="@string/no_history"
-            android:textColor="@color/text_tertiary"
-            android:textSize="15sp"
-            android:fontFamily="sans-serif"
-            android:visibility="gone" />
+            android:paddingHorizontal="32dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:padding="20dp"
+                android:src="@drawable/ic_history"
+                android:background="@drawable/bg_quick_action_icon"
+                android:importantForAccessibility="no"
+                app:tint="@color/text_tertiary" />
+
+            <TextView
+                android:id="@+id/emptyTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/no_history"
+                android:textColor="@color/text_secondary"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/emptySubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="@string/no_history_subtitle"
+                android:textColor="@color/text_tertiary"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"

@@ -62,6 +62,7 @@
                 android:textSize="12sp" />
 
             <View
+                android:id="@+id/statusSizeSeparator"
                 android:layout_width="4dp"
                 android:layout_height="4dp"
                 android:layout_marginHorizontal="6dp"
@@ -69,10 +70,51 @@
 
             <TextView
                 android:id="@+id/size"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:singleLine="true"
+                android:ellipsize="end"
                 android:textColor="@color/text_tertiary"
                 android:textSize="12sp" />
         </LinearLayout>
+
+        <!-- Determinate progress bar shown only while a download is active. -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_marginTop="6dp"
+            android:max="100"
+            android:progress="0"
+            android:progressTint="@color/accent_purple"
+            android:progressBackgroundTint="@color/surface_container_high"
+            android:visibility="gone" />
     </LinearLayout>
+
+    <!-- Per-row action button (Cancel / Retry / Open). -->
+    <ImageButton
+        android:id="@+id/btnAction"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="4dp"
+        android:scaleType="centerInside"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:visibility="gone"
+        app:tint="@color/text_secondary" />
+
+    <!-- Overflow menu (Open / Share / Retry / Cancel / Remove). -->
+    <ImageButton
+        android:id="@+id/btnOverflow"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="4dp"
+        android:scaleType="centerInside"
+        android:padding="8dp"
+        android:src="@drawable/ic_more_vert"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/download_more_options"
+        app:tint="@color/text_secondary" />
 </LinearLayout>

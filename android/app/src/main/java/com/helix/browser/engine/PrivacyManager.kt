@@ -1,12 +1,33 @@
 package com.helix.browser.engine
 
 import android.content.Context
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import android.webkit.WebView
 import androidx.preference.PreferenceManager
+import com.helix.browser.HelixApp
+import com.helix.browser.data.HistoryRepository
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 object PrivacyManager {
+
+    private const val TAG = "PrivacyManager"
+
+    // Background scope for off-main-thread persistence work (Room).
+    // PrivacyManager is a process-lifetime singleton, so this scope lives as
+    // long as the app; a SupervisorJob keeps one failed clear from cancelling
+    // future ones, and the exception handler guarantees we never crash the
+    // process from a fire-and-forget DB wipe.
+    private val ioExceptionHandler = CoroutineExceptionHandler { _, e ->
+        Log.w(TAG, "Background privacy task failed", e)
+    }
+    private val ioScope =
+        CoroutineScope(Dispatchers.IO + SupervisorJob() + ioExceptionHandler)
 
     private const val KEY_BLOCK_TRACKERS = "block_trackers"
     private const val KEY_BLOCK_THIRD_PARTY_COOKIES = "block_third_party_cookies"
@@ -590,25 +611,81 @@ object PrivacyManager {
 
     // --- Clear All Browsing Data ---
 
+    // Wipes every "browsing data" surface the user expects "Clear all browsing
+    // data" to erase: cookies, WebView HTTP cache, DOM/Web storage, autofill
+    // form data, the WebView's own back/forward history, remembered SSL error
+    // decisions, the tracker counter AND the persistent Room visit history.
+    //
+    // Bookmarks are intentionally NOT touched: like Chrome/flagship browsers,
+    // bookmarks are user-saved content, not "browsing data".
+    //
+    // Threading: WebView / CookieManager / WebStorage APIs MUST run on the
+    // thread that owns the WebView (the main thread); constructing a WebView off
+    // the main thread throws. So the WebView work stays on the caller's (main)
+    // thread, and only the Room history delete is dispatched to a background IO
+    // dispatcher so no disk I/O happens on the main thread.
+    //
+    // Resolves the HistoryRepository from the application singleton. Prefer the
+    // explicit (Context, HistoryRepository) overload from tests.
     fun clearAllBrowsingData(context: Context) {
-        // Clear cookies
-        CookieManager.getInstance().removeAllCookies(null)
-        CookieManager.getInstance().flush()
+        clearAllBrowsingData(context, runCatching { HelixApp.instance.historyRepository }.getOrNull())
+    }
+
+    fun clearAllBrowsingData(context: Context, historyRepository: HistoryRepository?) {
+        // Clear cookies. Each external WebView call is isolated so one failing
+        // surface does not abort the rest of the wipe (fail-soft, never leave
+        // data behind silently because an earlier step threw).
+        try {
+            CookieManager.getInstance().removeAllCookies(null)
+            CookieManager.getInstance().flush()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to clear cookies", e)
+        }
 
         // Clear WebView cache
-        WebView(context).clearCache(true)
+        try {
+            WebView(context).clearCache(true)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to clear WebView cache", e)
+        }
 
         // Clear WebStorage (localStorage, sessionStorage, IndexedDB)
-        WebStorage.getInstance().deleteAllData()
+        try {
+            WebStorage.getInstance().deleteAllData()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to clear web storage", e)
+        }
 
         // Clear form data and history from WebView database
-        val webView = WebView(context)
-        webView.clearFormData()
-        webView.clearHistory()
-        webView.clearSslPreferences()
-        webView.destroy()
+        try {
+            val webView = WebView(context)
+            webView.clearFormData()
+            webView.clearHistory()
+            webView.clearSslPreferences()
+            webView.destroy()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to clear WebView form/history/SSL data", e)
+        }
 
         // Reset tracker count
-        resetTrackersBlockedCount(context)
+        try {
+            resetTrackersBlockedCount(context)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to reset tracker count", e)
+        }
+
+        // Clear the persistent Room visit history off the main thread. Without
+        // this the user's full URL/title log survived "Clear all browsing data",
+        // contradicting the UI's promise. clearAll() is a suspend DB call, so it
+        // runs on the IO dispatcher; failures are logged by ioExceptionHandler
+        // rather than crashing the caller.
+        val repo = historyRepository
+        if (repo == null) {
+            Log.w(TAG, "HistoryRepository unavailable; browsing history not cleared")
+            return
+        }
+        ioScope.launch {
+            repo.clearAll()
+        }
     }
 }

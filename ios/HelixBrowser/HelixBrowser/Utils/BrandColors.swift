@@ -13,6 +13,10 @@ struct BrandColors {
     static let accentPurpleCG = CGColor(red: 0x8B/255, green: 0x8B/255, blue: 0xFF/255, alpha: 1)
     static let accentPinkCG = CGColor(red: 0xFF/255, green: 0x7E/255, blue: 0xB3/255, alpha: 1)
 
+    // Convenience aliases for the UIColor accents (used across view controllers).
+    static let accentPurple = accentPurpleUI
+    static let accentPink = accentPinkUI
+
     static var gradientLayer: CAGradientLayer {
         let layer = CAGradientLayer()
         layer.colors = [accentPurpleCG, accentPinkCG]

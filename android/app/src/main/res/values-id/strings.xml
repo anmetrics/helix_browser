@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Helix Browser</string>
     <string name="search_hint">Cari atau ketik URL</string>
+    <string name="search_tabs_hint">Cari tab Anda</string>
     <string name="new_tab">Tab Baru</string>
     <string name="incognito_tab">Tab Penyamaran</string>
     <string name="bookmarks">Bookmark</string>
@@ -46,4 +47,202 @@
     <string name="language">Bahasa</string>
     <string name="select_language">Pilih Bahasa</string>
     <string name="system_default">Default sistem</string>
+    <string name="cancel">Batal</string>
+    <string name="incognito_mode">Mode Penyamaran</string>
+    <string name="downloading_via_helix">Mengunduh via Helix Browser</string>
+    <string name="download_started">Mengunduh: %s</string>
+    <string name="share_via">Bagikan via</string>
+    <string name="search_or_type_url">Cari atau masukkan URL...</string>
+    <string name="fast_secure_private">Cepat • Aman • Pribadi</string>
+    <string name="save_history">Simpan riwayat</string>
+    <string name="find">Cari</string>
+    <string name="bookmarks_hint">Cari di bookmark...</string>
+    <string name="no_bookmarks">Belum ada bookmark</string>
+    <string name="history_hint">Cari riwayat...</string>
+    <string name="no_history">Belum ada riwayat penjelajahan</string>
+    <string name="private_tab_label">Pribadi</string>
+    <string name="ssl_untrusted">Sertifikat keamanan tidak tepercaya.</string>
+    <string name="ssl_expired">Sertifikat keamanan telah kedaluwarsa.</string>
+    <string name="ssl_id_mismatch">Nama domain tidak cocok dengan sertifikat.</string>
+    <string name="ssl_not_yet_valid">Sertifikat keamanan belum valid.</string>
+    <string name="ssl_date_invalid">Tanggal sertifikat tidak valid.</string>
+    <string name="ssl_invalid">Sertifikat keamanan tidak valid.</string>
+    <string name="ssl_unknown">Kesalahan SSL tidak diketahui.</string>
+    <string name="ssl_title">Koneksi Tidak Aman</string>
+    <string name="ssl_message">%1$s\n\nURL: %2$s\n\nApakah Anda ingin melanjutkan?</string>
+    <string name="continue_button">Lanjutkan</string>
+    <string name="go_back_button">Kembali</string>
+    <string name="error_page_title">Tidak dapat terhubung</string>
+    <string name="error_page_go_back">Kembali</string>
+    <string name="ssl_error_page_title">Koneksi Tidak Aman</string>
+    <string name="ssl_error_page_message">Situs web ini memiliki sertifikat keamanan yang tidak valid (Kesalahan SSL %d).</string>
+    <string name="ssl_error_page_go_back">Kembali dengan aman</string>
+    <string name="search_engine_pref">Mesin Pencari</string>
+    <string name="homepage_pref">Beranda</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">Aktifkan JavaScript untuk situs web</string>
+    <string name="desktop_site_summary">Selalu gunakan versi desktop</string>
+    <string name="block_ads_title">Blokir Iklan</string>
+    <string name="block_ads_summary">Blokir iklan dan pelacak</string>
+    <string name="block_trackers_summary">Blokir skrip pelacak</string>
+    <string name="block_third_party_cookies_summary">Blokir cookie dari situs pihak ketiga</string>
+    <string name="do_not_track_summary">Kirim permintaan Jangan Lacak</string>
+    <string name="https_upgrade_summary">Otomatis tingkatkan HTTP ke HTTPS</string>
+    <string name="anti_fingerprinting_summary">Blokir skrip sidik jari peramban</string>
+    <string name="block_popups_summary">Blokir jendela popup otomatis</string>
+    <string name="trackers_blocked_summary_format">%d pelacak diblokir</string>
+    <string name="clear_cache">Hapus Cache</string>
+    <string name="clear_cache_summary">Hapus data situs web yang di-cache</string>
+    <string name="clear_cookies">Hapus Cookie</string>
+    <string name="clear_cookies_summary">Hapus cookie situs web</string>
+    <string name="clear_history_summary">Hapus riwayat penjelajahan</string>
+    <string name="clear_all_data_summary">Hapus semua data, cookie, dan cache</string>
+    <string name="tabs_category">Tab</string>
+    <string name="restore_tabs_summary">Pulihkan tab saat dimulai ulang</string>
+    <string name="suspend_tabs_summary">Tangguhkan tab tidak aktif setelah 10 menit</string>
+    <string name="info_category">Informasi</string>
+    <string name="version_pref">Versi</string>
+    <string name="engine_pref">Mesin</string>
+    <string name="cache_cleared">Cache dihapus</string>
+    <string name="cookies_cleared">Cookie dihapus</string>
+    <string name="all_data_cleared">Semua data penjelajahan dihapus</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">Direkomendasikan</string>
+    <string name="all_languages">Semua Bahasa</string>
+    <string name="clear_history_dialog_title">Hapus Riwayat</string>
+    <string name="clear_history_dialog_message">Apakah Anda yakin ingin menghapus seluruh riwayat penjelajahan Anda?</string>
+    <string name="clear_history_confirm">Hapus</string>
+    <string name="history_cleared">Riwayat dihapus</string>
+    <string name="desc_secure">Koneksi aman</string>
+    <string name="desc_not_secure">Tidak aman</string>
+    <string name="security_secure_title">Koneksi aman</string>
+    <string name="security_secure_message">Informasi Anda (misalnya, kata sandi atau nomor kartu kredit) bersifat pribadi saat dikirim ke situs ini.</string>
+    <string name="security_not_secure_title">Koneksi tidak aman</string>
+    <string name="security_not_secure_message">Anda tidak boleh memasukkan informasi sensitif apa pun di situs ini (misalnya, kata sandi atau kartu kredit), karena dapat dicuri oleh penyerang.</string>
+    <string name="security_internal_title">Halaman internal</string>
+    <string name="security_internal_message">Ini adalah halaman internal peramban.</string>
+    <string name="desc_bookmark">Bookmark halaman ini</string>
+    <string name="desc_refresh">Muat ulang halaman</string>
+    <string name="desc_prev">Sebelumnya</string>
+    <string name="desc_next">Berikutnya</string>
+    <string name="desc_close">Tutup</string>
+    <string name="desc_back">Kembali</string>
+    <string name="desc_forward">Maju</string>
+    <string name="desc_home">Ke beranda</string>
+    <string name="desc_more">Opsi lainnya</string>
+    <string name="desc_favicon">Favicon</string>
+    <string name="desc_delete">Hapus</string>
+    <string name="tab_count">%d tab</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">Penjelajahan bebas iklan + fitur eksklusif</string>
+    <string name="close_all">Tutup Semua</string>
+    <string name="dismiss">Tutup</string>
+    <string name="no_downloads">Belum ada unduhan</string>
+    <string name="print_page">Cetak halaman</string>
+    <string name="add_to_home">Tambahkan ke layar Beranda</string>
+    <string name="translate_page">Terjemahkan</string>
+    <string name="page_info">Info halaman</string>
+    <string name="zoom_in">Perbesar</string>
+    <string name="zoom_out">Perkecil</string>
+    <string name="text_zoom">Zoom teks</string>
+    <string name="copy_link">Salin tautan</string>
+    <string name="link_copied">Tautan disalin</string>
+    <string name="open_in_new_tab">Buka di tab baru</string>
+    <string name="open_in_incognito">Buka di tab penyamaran</string>
+    <string name="save_image">Simpan gambar</string>
+    <string name="share_link">Bagikan tautan</string>
+    <string name="reader_mode">Mode baca</string>
+    <string name="reopen_closed_tab">Buka kembali tab yang ditutup</string>
+    <string name="not_secure">Tidak aman</string>
+    <string name="page_info_connection">Koneksi</string>
+    <string name="page_info_secure_subtitle">Informasi yang Anda kirim ke situs ini bersifat pribadi</string>
+    <string name="page_info_not_secure_subtitle">Koneksi Anda ke situs ini tidak pribadi. Penyerang mungkin dapat melihat informasi yang Anda berikan ke situs ini.</string>
+    <string name="page_info_internal_subtitle">Ini adalah halaman internal Helix</string>
+    <string name="page_info_permissions">Izin</string>
+    <string name="page_info_no_permissions">Tidak ada izin khusus yang diberikan</string>
+    <string name="page_info_cookies">Cookie dan data situs</string>
+    <string name="page_info_certificate">Sertifikat valid</string>
+    <string name="page_info_certificate_invalid">Sertifikat tidak tepercaya</string>
+    <string name="learn_more">Pelajari lebih lanjut</string>
+    <string name="proceed_anyway">Lanjutkan</string>
+    <string name="connection_secure">Koneksi aman</string>
+    <string name="connection_not_secure">Tidak aman</string>
+    <string name="connection_internal">Halaman internal</string>
+
+    <!-- Site permissions -->
+    <string name="allow">Izinkan</string>
+    <string name="deny">Blokir</string>
+    <string name="permission_location_title">Permintaan lokasi</string>
+    <string name="permission_location_message">%1$s ingin mengakses lokasi Anda.</string>
+    <string name="permission_camera_title">Permintaan kamera</string>
+    <string name="permission_camera_message">%1$s ingin menggunakan kamera Anda.</string>
+    <string name="permission_mic_title">Permintaan mikrofon</string>
+    <string name="permission_mic_message">%1$s ingin menggunakan mikrofon Anda.</string>
+    <string name="permission_notifications_title">Permintaan notifikasi</string>
+    <string name="permission_notifications_message">%1$s ingin mengirimi Anda notifikasi.</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">Mode Hanya-HTTPS</string>
+    <string name="https_only_mode_summary">Blokir semua koneksi tidak aman (HTTP). Situs tanpa HTTPS tidak akan dimuat.</string>
+    <string name="https_only_blocked_title">Koneksi tidak aman</string>
+    <string name="https_only_blocked_message">Helix memblokir halaman ini karena mode Hanya-HTTPS aktif dan situs tidak mendukung HTTPS.</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">Izin situs</string>
+    <string name="site_permissions_summary">Kelola akses lokasi, kamera, mikrofon, dan notifikasi per situs</string>
+    <string name="site_permissions_empty">Belum ada izin situs yang disimpan</string>
+    <string name="site_permission_revoke">Atur ulang</string>
+    <string name="site_permission_label_allow">Diizinkan</string>
+    <string name="site_permission_label_deny">Diblokir</string>
+    <string name="site_permission_label_location">Lokasi</string>
+    <string name="site_permission_label_camera">Kamera</string>
+    <string name="site_permission_label_microphone">Mikrofon</string>
+    <string name="site_permission_label_notifications">Notifikasi</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">Keluar dari mode baca</string>
+    <string name="picture_in_picture">Gambar-dalam-gambar</string>
+    <string name="pip_unsupported">Gambar-dalam-gambar tidak didukung di perangkat ini</string>
+    <string name="pip_no_video">Tidak ada video yang diputar di halaman ini</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">Khusus</string>
+    <string name="custom_search_engine_title">Mesin pencari khusus</string>
+    <string name="custom_search_engine_hint">Masukkan URL pencarian dengan %%s di tempat kueri berada. Contoh: https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">URL harus dimulai dengan http:// atau https://</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">Simpan halaman (offline)</string>
+    <string name="save_page_no_url">Buka halaman terlebih dahulu</string>
+    <string name="save_page_done">Disimpan sebagai %1$s</string>
+    <string name="save_page_failed">Gagal menyimpan halaman</string>
+    <string name="no_recently_closed">Tidak ada tab yang baru ditutup</string>
+    <string name="bookmarks_import">Impor bookmark…</string>
+    <string name="bookmarks_export">Ekspor bookmark…</string>
+    <string name="bookmarks_exported">%1$d bookmark diekspor</string>
+    <string name="bookmarks_export_failed">Ekspor gagal</string>
+    <string name="bookmarks_imported">%1$d bookmark diimpor</string>
+    <string name="bookmarks_import_failed">Impor gagal</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">Pencarian suara</string>
+    <string name="desc_tabs">Buka pengalih tab</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">Tidak ada aplikasi untuk membuka tautan ini</string>
+    <string name="download_unsupported_scheme">Tautan unduhan ini tidak dapat dibuka</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">Tab penyamaran baru</string>
+    <string name="close_all_tabs">Tutup semua tab</string>
+    <string name="close_other_tabs">Tutup tab lainnya</string>
+    <string name="close_tabs_to_right">Tutup tab di sebelah kanan</string>
+    <string name="tab_closed">Tab ditutup</string>
+    <string name="undo">Urungkan</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="one">Tutup 1 tab?</item>
+        <item quantity="other">Tutup semua %d tab?</item>
+    </plurals>
 </resources>

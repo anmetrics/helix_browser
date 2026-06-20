@@ -23,6 +23,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -65,8 +69,33 @@ class MainActivity : BaseActivity() {
     private var suggestionsAdapter: SuggestionsAdapter? = null
     private var isTablet = false
 
-    private val webViewPool = LinkedHashMap<String, HelixWebView>()
+    // Inline-omnibox-autocomplete state.
+    // - lastUserTypedText: the user's own typed prefix WITHOUT any autocompletion
+    //   we appended. Compared against the next afterTextChanged to decide whether
+    //   the edit was forward typing (extends the prefix) vs a deletion/edit, so we
+    //   never fight backspace.
+    // - applyingInlineCompletion: re-entrancy guard. setText/setSelection from the
+    //   completion path re-enters the address-bar TextWatcher; this flag makes that
+    //   re-entry a no-op so we don't recurse or re-fetch suggestions.
+    // - pendingInlineCompletion: the suffix last emitted by the ViewModel, applied
+    //   on the next forward keystroke once the field text matches the prefix it was
+    //   computed for (the suffix arrives slightly after the keystroke, debounced).
+    private var lastUserTypedText: String = ""
+    private var applyingInlineCompletion = false
+    private var pendingInlineCompletion: String? = null
+
+    // accessOrder=true makes iteration order least-recently-accessed first, so
+    // the eldest entries are the best LRU eviction candidates. Capped to
+    // MAX_LIVE_WEBVIEWS live WebViews (plus the foreground tab) to bound memory.
+    private val webViewPool = LinkedHashMap<String, HelixWebView>(16, 0.75f, true)
     private var currentWebView: HelixWebView? = null
+
+    // Id of the tab currently attached to the foreground. Written only on the main
+    // thread (attachWebViewForTab); read from the off-UI-thread FindListener so it
+    // can decide ownership WITHOUT dereferencing TabManager's main-thread-confined
+    // mutable list (avoids a data race / IndexOutOfBounds on concurrent tab close).
+    @Volatile
+    private var foregroundTabId: String? = null
 
     private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
     private var fullscreenView: View? = null
@@ -147,11 +176,11 @@ class MainActivity : BaseActivity() {
         setupGestures()
         setupSuggestions()
         
-        // Initialize desktop mode state based on device type if not already set
-        if (viewModel.isDesktopMode.value == null) {
-            viewModel.isDesktopMode.value = isTablet
-        }
-        
+        // Desktop mode is now per-tab (BrowserTab.isDesktopMode); the shared
+        // LiveData only mirrors the current tab's flag for the menu checkmark and is
+        // seeded when the first tab attaches. New tablet tabs default to desktop via
+        // createNewTab().
+
         handleIntent(intent)
 
         // Restore tabs if enabled, otherwise create a new one
@@ -203,12 +232,15 @@ class MainActivity : BaseActivity() {
         if (input.length > MAX_INCOMING_URL_LENGTH) return null
         val trimmed = input.trim()
         if (trimmed.isEmpty()) return null
-        // Only honor schemes the browser actually loads. Reject file://, intent://,
-        // javascript:, content:// and other privileged/dangerous schemes from
-        // untrusted callers.
+        // Only honor schemes the browser actually loads from EXTERNAL callers.
+        // MainActivity is exported, so an attacker app can fire ACTION_VIEW: we must
+        // reject data:, javascript:, file://, content://, intent:// etc. data: pages
+        // are produced internally via loadDataWithBaseURL for chrome/interstitials
+        // only and must NEVER be accepted from an intent (arbitrary HTML/JS in the
+        // top frame -> phishing/JS execution in an opaque origin).
         val scheme = runCatching { Uri.parse(trimmed).scheme?.lowercase() }.getOrNull()
         return when (scheme) {
-            "http", "https", "about", "data" -> trimmed
+            "http", "https", "about" -> trimmed
             null -> UrlUtils.formatUrl(trimmed) // treat bare input as search/url
             else -> null
         }
@@ -218,21 +250,29 @@ class MainActivity : BaseActivity() {
         binding.addressBar.apply {
             setOnFocusChangeListener { _, hasFocus ->
                 if (hasFocus) {
+                    // Entering edit mode: seed the pre-fill and reset inline-
+                    // autocomplete state so the existing (selected-all) URL is never
+                    // mistaken for a typed prefix to complete against.
+                    pendingInlineCompletion = null
                     setText(viewModel.currentUrl.value)
+                    lastUserTypedText = text?.toString() ?: ""
                     selectAll()
                     binding.btnCancelSearch.isVisible = true
-                    // Show mic when address bar is focused (Chrome behavior).
-                    // It hides as the user types in the TextWatcher below.
-                    binding.btnVoiceSearch.isVisible = text.isNullOrEmpty() &&
-                        android.speech.SpeechRecognizer.isRecognitionAvailable(this@MainActivity)
                     binding.btnBookmark.isVisible = false
                     binding.btnRefresh.isVisible = false
+                    // Mic (empty field) <-> clear-X (non-empty field), matching Chrome.
+                    updateAddressBarEndIcons()
                     updateSiteIdentityIcon()
                     showKeyboard(this)
                 } else {
+                    // Leaving edit mode: discard inline-autocomplete state so it
+                    // can't leak into the next editing session.
+                    pendingInlineCompletion = null
+                    lastUserTypedText = ""
                     updateAddressBarDisplay()
                     binding.btnCancelSearch.isVisible = false
                     binding.btnVoiceSearch.isVisible = false
+                    binding.btnClearAddress.isVisible = false
                     binding.btnBookmark.isVisible = true
                     binding.btnRefresh.isVisible = true
                     binding.suggestionsRecyclerView.isVisible = false
@@ -242,8 +282,19 @@ class MainActivity : BaseActivity() {
                 if (isFocused) showKeyboard(this)
             }
             setOnEditorActionListener { _, actionId, event ->
-                if (actionId == EditorInfo.IME_ACTION_GO || event?.keyCode == KeyEvent.KEYCODE_ENTER) {
+                // A hardware/Bluetooth Enter delivers the editor-action callback for
+                // BOTH ACTION_DOWN and ACTION_UP; without filtering, loadUrl() would
+                // run twice for one keypress. Soft-keyboard IME_ACTION_GO has a null
+                // event, so we act on: IME action, or only the DOWN of a physical key.
+                val isEnterKey = event != null && event.keyCode == KeyEvent.KEYCODE_ENTER
+                val isImeGo = actionId == EditorInfo.IME_ACTION_GO
+                if (isImeGo || (isEnterKey && event!!.action == KeyEvent.ACTION_DOWN)) {
+                    // Submit the full visible text INCLUDING any inline-autocomplete
+                    // suffix (Chrome accepts the completion on Enter). Clear the
+                    // inline-completion state so a stale suffix can't be reapplied.
                     val input = text.toString().trim()
+                    pendingInlineCompletion = null
+                    lastUserTypedText = ""
                     if (input.isNotEmpty()) {
                         val url = UrlUtils.formatUrl(input)
                         loadUrl(url)
@@ -251,7 +302,11 @@ class MainActivity : BaseActivity() {
                         hideKeyboard()
                     }
                     true
-                } else false
+                } else {
+                    // Consume the matching key-up so the system does not also treat it
+                    // as a default action, but never re-load on it.
+                    isEnterKey
+                }
             }
         }
         binding.btnCancelSearch.setOnClickListener {
@@ -283,10 +338,48 @@ class MainActivity : BaseActivity() {
             try {
                 voiceSearchLauncher.launch(intent)
             } catch (e: Exception) {
-                Toast.makeText(this, "Voice search not available", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.voice_search_unavailable), Toast.LENGTH_SHORT).show()
+            }
+        }
+        // One-tap clear (Chrome-style). Keeps focus and reveals the mic + the
+        // "Paste and go" chip (if the clipboard holds a URL) for a now-empty field.
+        binding.btnClearAddress.setOnClickListener {
+            binding.addressBar.setText("")
+            binding.addressBar.requestFocus()
+            showKeyboard(binding.addressBar)
+        }
+        // Paste-and-go: when the field is focused & empty and the clipboard holds
+        // a usable URL/query, tapping the chip loads it directly.
+        binding.btnPasteAndGo.setOnClickListener {
+            val clip = clipboardText()?.trim()
+            if (!clip.isNullOrEmpty()) {
+                loadUrl(UrlUtils.formatUrl(clip))
+                binding.addressBar.clearFocus()
+                hideKeyboard()
             }
         }
     }
+
+    // Show the clear (X) button when the focused address bar has text, otherwise
+    // the mic (when speech is available). Also surfaces a "Paste and go" chip when
+    // the field is empty and the clipboard holds non-blank text.
+    private fun updateAddressBarEndIcons() {
+        val focused = binding.addressBar.isFocused
+        val empty = binding.addressBar.text.isNullOrEmpty()
+        binding.btnClearAddress.isVisible = focused && !empty
+        binding.btnVoiceSearch.isVisible = focused && empty &&
+            android.speech.SpeechRecognizer.isRecognitionAvailable(this)
+        val hasClip = focused && empty && !clipboardText().isNullOrBlank()
+        binding.btnPasteAndGo.isVisible = hasClip
+    }
+
+    // Best-effort read of plain text from the primary clipboard. Returns null on
+    // any failure (no clip, security exception on locked clipboards, etc.).
+    private fun clipboardText(): String? = runCatching {
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+        cm?.primaryClip?.takeIf { it.itemCount > 0 }
+            ?.getItemAt(0)?.coerceToText(this)?.toString()
+    }.getOrNull()
 
     private fun setupBottomNavigation() {
         binding.btnBack.setOnClickListener { animateClick(it); currentWebView?.goBack() }
@@ -303,25 +396,100 @@ class MainActivity : BaseActivity() {
             binding.btnTabs.requestLayout()
         } else {
             binding.btnTabs.setOnClickListener {
-                currentWebView?.let { webView ->
-                    val tab = tabManager.currentTab
-                    if (tab != null && webView.width > 0 && webView.height > 0) {
-                        try {
-                            val bitmap = android.graphics.Bitmap.createBitmap(webView.width, webView.height, android.graphics.Bitmap.Config.ARGB_8888)
-                            val canvas = android.graphics.Canvas(bitmap)
-                            webView.draw(canvas)
-                            val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, webView.width / 4, webView.height / 4, true)
-                            tab.thumbnail = scaledBitmap
-                            if (bitmap != scaledBitmap) bitmap.recycle()
-                        } catch (e: Exception) { e.printStackTrace() }
-                    }
-                }
+                currentWebView?.let { webView -> captureTabThumbnail(webView) }
                 val intent = Intent(this, TabSwitcherActivity::class.java)
                 tabSwitcherLauncher.launch(intent)
                 overridePendingTransitionCompat(R.anim.slide_up, R.anim.fade_out)
             }
         }
         binding.btnMenu.setOnClickListener { showMoreOptionsMenu() }
+    }
+
+    /**
+     * Capture a downscaled snapshot of the current WebView for the tab switcher.
+     *
+     * We allocate the destination bitmap already downscaled (1/4) and scale the
+     * Canvas, so we never hold a full-resolution ARGB_8888 buffer. The WebView
+     * is hardware-accelerated, so a plain software Canvas.draw() can render
+     * blank/black; we temporarily force LAYER_TYPE_SOFTWARE for the duration of
+     * the draw so the snapshot is correct. Skips capture entirely when memory is
+     * low or the view is not laid out.
+     */
+    private fun captureTabThumbnail(webView: HelixWebView) {
+        val tab = tabManager.currentTab ?: return
+        if (webView.width <= 0 || webView.height <= 0) return
+        // Skip under memory pressure so capturing a thumbnail never tips us over.
+        val mi = android.app.ActivityManager.MemoryInfo()
+        (getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager)
+            ?.getMemoryInfo(mi)
+        if (mi.lowMemory) return
+
+        val tabId = tab.id
+        val w = webView.width
+        val h = webView.height
+
+        // API 26+: copy the WebView's surface off the UI thread with PixelCopy so we
+        // never force a software layer + synchronous full-tree draw on the main thread
+        // (which hitches when the tabs button is tapped on a complex page). We capture
+        // at full size into a hardware-sourced bitmap, then downscale on the callback.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val loc = IntArray(2)
+            webView.getLocationInWindow(loc)
+            val src = android.graphics.Rect(loc[0], loc[1], loc[0] + w, loc[1] + h)
+            val full = try {
+                android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
+            } catch (t: Throwable) {
+                android.util.Log.w("MainActivity", "captureTabThumbnail alloc failed", t); return
+            }
+            try {
+                android.view.PixelCopy.request(window, src, full, { result ->
+                    if (result == android.view.PixelCopy.SUCCESS) {
+                        val scaled = try {
+                            android.graphics.Bitmap.createScaledBitmap(
+                                full, (w * 0.25f).toInt().coerceAtLeast(1),
+                                (h * 0.25f).toInt().coerceAtLeast(1), true
+                            )
+                        } catch (t: Throwable) { null }
+                        full.recycle()
+                        if (scaled != null) {
+                            // The tab may have closed during the async copy; re-resolve.
+                            val t = tabManager.findTab(tabId)
+                            if (t != null && !isDestroyed) {
+                                t.thumbnail?.takeIf { !it.isRecycled && it !== scaled }?.recycle()
+                                t.thumbnail = scaled
+                            } else {
+                                scaled.recycle()
+                            }
+                        }
+                    } else {
+                        full.recycle()
+                    }
+                }, binding.root.handler ?: android.os.Handler(mainLooper))
+            } catch (t: Throwable) {
+                full.recycle()
+                android.util.Log.w("MainActivity", "captureTabThumbnail PixelCopy failed", t)
+            }
+            return
+        }
+
+        // Pre-O fallback: software-layer draw (synchronous, but only on old devices).
+        val scale = 0.25f
+        val sw = (w * scale).toInt().coerceAtLeast(1)
+        val sh = (h * scale).toInt().coerceAtLeast(1)
+        val originalLayerType = webView.layerType
+        try {
+            val bitmap = android.graphics.Bitmap.createBitmap(sw, sh, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            canvas.scale(scale, scale)
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+            webView.draw(canvas)
+            tab.thumbnail?.takeIf { !it.isRecycled && it !== bitmap }?.recycle()
+            tab.thumbnail = bitmap
+        } catch (e: Throwable) {
+            android.util.Log.w("MainActivity", "captureTabThumbnail failed", e)
+        } finally {
+            webView.setLayerType(originalLayerType, null)
+        }
     }
 
     private fun setupDesktopTabBar() {
@@ -395,14 +563,19 @@ class MainActivity : BaseActivity() {
             binding.btnBookmark.setImageResource(if (bookmarked) R.drawable.ic_bookmark_filled else R.drawable.ic_bookmark)
         }
         viewModel.canGoBack.observe(this) { can ->
-            binding.btnBack.alpha = if (can) 1f else 0.4f
+            binding.btnBack.alpha = if (can) 1f else DISABLED_NAV_ALPHA
         }
         viewModel.canGoForward.observe(this) { can ->
-            binding.btnForward.alpha = if (can) 1f else 0.4f
+            binding.btnForward.alpha = if (can) 1f else DISABLED_NAV_ALPHA
         }
         viewModel.showFindInPage.observe(this) { show ->
             binding.findInPageBar.isVisible = show
-            if (show) binding.findInPageInput.requestFocus()
+            if (show) {
+                binding.findInPageInput.requestFocus()
+                // Raise the keyboard so the user can type immediately (Chrome behavior),
+                // rather than tapping into an empty bar with no IME.
+                showKeyboard(binding.findInPageInput)
+            }
         }
 
         if (isTablet) {
@@ -423,9 +596,19 @@ class MainActivity : BaseActivity() {
         binding.btnFindNext.setOnClickListener { currentWebView?.findNext(true) }
         binding.btnFindPrev.setOnClickListener { currentWebView?.findNext(false) }
         binding.btnCloseFindInPage.setOnClickListener { hideFindInPage() }
-        binding.findInPageInput.setOnEditorActionListener { v, _, _ ->
-            currentWebView?.findAllAsync(v.text.toString())
-            true
+        binding.findInPageInput.setOnEditorActionListener { _, actionId, event ->
+            // Only advance on the search/IME action or a physical Enter DOWN. Live
+            // find (afterTextChanged) already issues the initial query, so Enter
+            // should move to the NEXT match like a flagship browser instead of
+            // re-running findAllAsync. Don't blanket-consume other actions.
+            val isEnterDown = event != null && event.keyCode == KeyEvent.KEYCODE_ENTER &&
+                event.action == KeyEvent.ACTION_DOWN
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || isEnterDown) {
+                currentWebView?.findNext(true)
+                true
+            } else {
+                false
+            }
         }
         // Live find: re-query as the user types so the counter updates in real time.
         binding.findInPageInput.addTextChangedListener(object : TextWatcher {
@@ -445,10 +628,21 @@ class MainActivity : BaseActivity() {
 
     fun createNewTab(url: String = "", isIncognito: Boolean = false) {
         val tab = tabManager.addTab(isIncognito, url)
+        // Seed the new tab's desktop preference from the global default (the
+        // Settings "Desktop site" pref, OR'd with the tablet default) before the
+        // WebView is created, so the first load uses the right user-agent. After
+        // this, desktop mode is per-tab and the menu toggle only affects one tab.
+        if (defaultDesktopMode()) tab.isDesktopMode = true
         switchToTab(tab)
     }
 
     private fun switchToTab(tab: BrowserTab) {
+        // Snapshot the OUTGOING tab before we detach its WebView, so both phone and
+        // tablet flows keep fresh background-tab thumbnails (the phone tabs button
+        // also captures, but tablet switches go only through here).
+        currentWebView?.let { outgoing ->
+            if (tabManager.currentTab?.id != tab.id) captureTabThumbnail(outgoing)
+        }
         tabManager.switchToTab(tab.id)
         attachWebViewForTab(tab)
         updateTabCountBadge()
@@ -458,22 +652,58 @@ class MainActivity : BaseActivity() {
         binding.root.setBackgroundColor(getColor(if (tab.isIncognito) R.color.incognito_background else R.color.background))
     }
 
+    // Tear down any active HTML5 fullscreen (<video>) view. Must run before we
+    // detach/destroy the WebView that owns it, otherwise the chrome client keeps
+    // believing it is fullscreen, the custom view + callback leak, and the system
+    // UI stays hidden with no matching show. Safe to call when not in fullscreen.
+    private fun exitFullscreenIfActive() {
+        val view = fullscreenView ?: return
+        binding.webViewContainer.removeView(view)
+        runCatching { fullscreenCallback?.onCustomViewHidden() }
+        fullscreenView = null
+        fullscreenCallback = null
+        showSystemUI()
+    }
+
     private fun attachWebViewForTab(tab: BrowserTab) {
+        // A page in fullscreen video that is being swapped out must exit fullscreen
+        // first so its custom view/callback are released and system UI restored.
+        exitFullscreenIfActive()
         binding.webViewContainer.removeAllViews()
+        // Switching back to a tab clears its suspended flag; recreate from URL.
+        tab.isSuspended = false
         val webView = webViewPool.getOrPut(tab.id) { createWebViewForTab(tab) }
         currentWebView = webView
+        // Publish foreground tab id for the off-UI-thread FindListener (read-only).
+        foregroundTabId = tab.id
+        // Bound the pool: destroy least-recently-used non-current WebViews so a
+        // large number of tabs cannot OOM. Recreation happens lazily from
+        // tab.url the next time the tab is attached.
+        enforceWebViewPoolCap(tab.id)
         (webView.parent as? android.view.ViewGroup)?.removeView(webView)
         binding.webViewContainer.addView(webView, android.widget.FrameLayout.LayoutParams(android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT))
         webView.requestFocus()
         viewModel.updateNavState(webView.canGoBack(), webView.canGoForward())
         viewModel.currentUrl.value = webView.url ?: tab.url
         viewModel.currentTitle.value = webView.title ?: tab.title
+        // Seed loading UI from the attached WebView. An already-loaded tab fires no
+        // onPageStarted/Finished on attach, so without this the previous tab's stale
+        // isLoading/progress (and the swipe-refresh spinner) would persist, leaving a
+        // stuck progress bar + stop icon on an idle page.
+        val p = webView.progress
+        val loading = p in 1..99
+        viewModel.loadingProgress.value = p
+        viewModel.isLoading.value = loading
+        binding.swipeRefreshLayout.isRefreshing = false
         updateAddressBarDisplay()
 
-        // Sync desktop mode state when switching tabs
-        if (viewModel.isDesktopMode.value == true) {
-            webView.setDesktopMode(true)
-        }
+        // Per-tab desktop mode. The attached WebView already carries the correct
+        // user-agent for this tab (applied at creation in createWebViewForTab, or
+        // by the menu toggle while it was foreground), so we do NOT re-apply here
+        // (that would force a needless reload). We only mirror the tab's flag into
+        // the shared LiveData so the overflow menu's "Desktop site" checkmark
+        // reflects the tab the user is now looking at.
+        viewModel.isDesktopMode.value = tab.isDesktopMode
 
         headerHideRunnable?.let { binding.root.removeCallbacks(it) }
         setToolbarScrollable(false)
@@ -515,6 +745,12 @@ class MainActivity : BaseActivity() {
                         headerHideRunnable = Runnable { setToolbarScrollable(true) }.also {
                             binding.root.postDelayed(it, 5000)
                         }
+                    } else if (url == "about:blank" && webView.url == "about:blank") {
+                        // The internal start page just rendered; populate the
+                        // most-visited tiles from local history (off the main
+                        // thread). Falls back silently to the hardcoded shortcuts
+                        // already in the HTML when history is empty / disabled.
+                        loadTopSiteTiles(webView)
                     }
                 }
             },
@@ -558,10 +794,10 @@ class MainActivity : BaseActivity() {
                     updateSiteIdentityIcon()
                 }
             },
-            onShowFileChooser = { callback, _ ->
+            onShowFileChooser = { callback, params ->
                 fileChooserCallback?.onReceiveValue(null)
                 fileChooserCallback = callback
-                fileChooserLauncher.launch("*/*")
+                fileChooserLauncher.launch(resolveFileChooserMimeFilter(params))
                 true
             },
             onEnterFullscreen = { view, callback ->
@@ -571,30 +807,36 @@ class MainActivity : BaseActivity() {
                 hideSystemUI()
             },
             onExitFullscreen = {
-                fullscreenView?.let { binding.webViewContainer.removeView(it) }
-                fullscreenCallback?.onCustomViewHidden()
-                fullscreenView = null
-                fullscreenCallback = null
-                showSystemUI()
+                exitFullscreenIfActive()
             },
             onGeolocationPermission = { origin, callback -> requestGeolocationPermission(origin, callback) },
             onWebPermissionRequest = { request -> handleWebPermissionRequest(request) },
             isAdBlockEnabled = { Prefs.isAdBlockEnabled(this) },
             isBlockPopupsEnabled = { PrivacyManager.isBlockPopupsEnabled(this) }
         )
-        webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ -> downloadFile(url, userAgent, contentDisposition, mimeType) }
+        webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, contentLength -> downloadFile(url, userAgent, contentDisposition, mimeType, contentLength) }
         webView.setFindListener { active, total, doneCounting ->
-            // FindListener fires off the UI thread; only update if this WebView
-            // is the visible one (otherwise we'd overwrite the count for the
-            // foreground tab).
+            // FindListener fires off the UI thread; only update if this WebView is
+            // the visible one. We compare against the @Volatile foregroundTabId
+            // instead of tabManager.currentTab so we never touch the main-thread-
+            // confined tab list from this background callback (avoids a data race).
             if (!doneCounting) return@setFindListener
-            if (tabManager.currentTab?.id == tabId) runOnUiThread {
+            if (foregroundTabId == tabId) runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 binding.tvFindCount.text = if (total > 0) "${active + 1}/$total" else "0/0"
             }
         }
         setupWebViewContextMenu(webView)
+        // Bridge so the start-page search box can focus the real omnibox.
+        // The bridge only acts when the WebView is showing the internal
+        // new-tab page (about:blank), so it cannot be abused by real sites.
+        webView.addJavascriptInterface(HelixHomeBridge(webView), "HelixHome")
         if (tab.isIncognito) webView.setIncognitoMode(true)
+        // Apply this tab's OWN desktop-site preference before the first load so the
+        // page is fetched with the right user-agent in one pass. setDesktopMode()
+        // ends with reload(), which is a no-op on a brand-new WebView with nothing
+        // loaded yet, so this does not double-load.
+        if (tab.isDesktopMode) webView.setDesktopMode(true)
         if (tab.url.isNotEmpty()) webView.loadUrl(tab.url)
         else webView.loadDataWithBaseURL("about:blank", buildNewTabHtml(), "text/html", "UTF-8", null)
         return webView
@@ -623,9 +865,8 @@ class MainActivity : BaseActivity() {
     private fun buildNewTabHtml(): String = """
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>${getString(R.string.new_tab)}</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0F0F0F;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:15vh;color:#F0F0F0;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0F0F0F;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:15vh;color:#F0F0F0;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
 .logo{font-size:44px;font-weight:700;margin-bottom:4px;color:#F0F0F0;letter-spacing:-1.5px;}
 .logo span{background:linear-gradient(135deg,#7B68EE,#49CCF9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .tagline{font-size:13px;color:#636366;margin-bottom:40px;font-weight:400;letter-spacing:0.5px;}
@@ -644,11 +885,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 <body>
 <div class="logo"><span>H</span>elix</div>
 <div class="tagline">${getString(R.string.fast_secure_private)}</div>
-<div class="search-box" onclick="window.location.href='about:blank'">
+<div class="search-box" onclick="if(window.HelixHome)window.HelixHome.focusAddressBar();">
 <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
 <span>${getString(R.string.search_or_type_url)}</span>
 </div>
-<div class="shortcuts">
+<div class="shortcuts" id="helixTiles">
 <a class="shortcut" href="https://google.com"><div class="shortcut-icon s-google">G</div>Google</a>
 <a class="shortcut" href="https://youtube.com"><div class="shortcut-icon s-yt">&#9654;</div>YouTube</a>
 <a class="shortcut" href="https://github.com"><div class="shortcut-icon s-gh">&#10023;</div>GitHub</a>
@@ -658,7 +899,110 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 <a class="shortcut" href="https://wikipedia.org"><div class="shortcut-icon s-wiki">W</div>Wikipedia</a>
 <a class="shortcut" href="https://netflix.com"><div class="shortcut-icon s-netflix">N</div>Netflix</a>
 </div>
+<script>
+// Replace the hardcoded shortcut grid with the user's most-visited tiles.
+// Receives a parsed array of {u:url, l:label, a:avatarLetter, c:hexColor}.
+// We build the DOM with textContent / setAttribute only (never innerHTML for
+// the dynamic strings), so a malicious page title in history can't inject markup.
+function helixRenderTiles(items){
+  try{
+    if(!items || !items.length) return; // keep the fallback grid
+    var grid = document.getElementById('helixTiles');
+    if(!grid) return;
+    grid.textContent = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i];
+      if(!it || !it.u) continue;
+      var a = document.createElement('a');
+      a.className = 'shortcut';
+      a.setAttribute('href','#');
+      (function(url){
+        a.addEventListener('click', function(e){
+          e.preventDefault();
+          if(window.HelixHome && window.HelixHome.openUrl) window.HelixHome.openUrl(url);
+        });
+      })(it.u);
+      var icon = document.createElement('div');
+      icon.className = 'shortcut-icon';
+      icon.textContent = it.a || '?';
+      if(it.c) icon.style.color = it.c;
+      a.appendChild(icon);
+      a.appendChild(document.createTextNode(it.l || it.u));
+      grid.appendChild(a);
+    }
+  }catch(e){}
+}
+</script>
 </body></html>""".trimIndent()
+
+    // Fetch the user's most-visited sites off the main thread and inject them into
+    // the already-rendered internal start page, replacing the hardcoded shortcut
+    // grid. Fails soft to the hardcoded grid when history is empty/disabled or the
+    // DB read throws. No remote network: tiles use letter avatars derived locally.
+    private fun loadTopSiteTiles(webView: HelixWebView) {
+        // Respect the privacy toggle: if history saving is off, keep the curated
+        // shortcuts and never touch the history DB.
+        if (!Prefs.isSaveHistoryEnabled(this)) return
+        // Incognito tabs must not surface browsing history on their start page.
+        if (tabManager.currentTab?.isIncognito == true) return
+        val repo = (application as HelixApp).historyRepository
+        lifecycleScope.launch {
+            val json = try {
+                withContext(Dispatchers.IO) { buildTopSitesJson(repo.getTopSites(TOP_SITES_COUNT)) }
+            } catch (t: Throwable) {
+                android.util.Log.w("MainActivity", "getTopSites failed", t)
+                null
+            } ?: return@launch
+            if (isFinishing || isDestroyed) return@launch
+            // Only inject if this WebView is still the foreground one showing the
+            // start page (the user may have navigated/switched during the IO read).
+            if (webView !== currentWebView) return@launch
+            if (webView.url != null && webView.url != "about:blank") return@launch
+            try {
+                webView.evaluateJavascript("helixRenderTiles($json);", null)
+            } catch (t: Throwable) {
+                android.util.Log.w("MainActivity", "tile injection failed", t)
+            }
+        }
+    }
+
+    // Map history rows to a compact JSON array the start page understands. Each
+    // entry carries the loadable URL, a host label, a single avatar letter, and a
+    // deterministic accent color. org.json handles all string escaping so no page
+    // title or URL can break out of the JSON / JS string context.
+    private fun buildTopSitesJson(rows: List<com.helix.browser.data.HistoryItem>): String {
+        val arr = org.json.JSONArray()
+        val seenHosts = HashSet<String>()
+        for (row in rows) {
+            val url = row.url
+            // Only http/https tiles are openable and safe to surface; skip internal
+            // / data / about rows defensively.
+            val scheme = runCatching { Uri.parse(url).scheme?.lowercase() }.getOrNull()
+            if (scheme != "http" && scheme != "https") continue
+            val host = UrlUtils.getDisplayUrl(url).substringBefore('/').removePrefix("www.")
+            if (host.isEmpty() || !seenHosts.add(host)) continue
+            val label = row.title.takeIf { it.isNotBlank() } ?: host
+            val letter = host.firstOrNull { it.isLetterOrDigit() }?.uppercaseChar()?.toString() ?: "?"
+            arr.put(org.json.JSONObject().apply {
+                put("u", url)
+                put("l", label.take(MAX_TILE_LABEL_LEN))
+                put("a", letter)
+                put("c", tileColorForHost(host))
+            })
+        }
+        return arr.toString()
+    }
+
+    // Deterministic accent color from the host so a site keeps the same tile color
+    // across sessions. Palette mirrors the curated-shortcut accents already in CSS.
+    private fun tileColorForHost(host: String): String {
+        val palette = arrayOf(
+            "#4285F4", "#FF4500", "#1877F2", "#E50914",
+            "#7B68EE", "#49CCF9", "#34A853", "#FBBC05"
+        )
+        val idx = (host.hashCode() and Int.MAX_VALUE) % palette.size
+        return palette[idx]
+    }
 
     private fun showMoreOptionsMenu() {
         val dialog = BottomSheetDialog(this, R.style.Theme_HelixBrowser_BottomSheet)
@@ -686,14 +1030,19 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         }
 
         view.findViewById<View>(R.id.menu_find_in_page).setOnClickListener { viewModel.showFindInPage.value = true; dialog.dismiss() }
-        view.findViewById<View>(R.id.ic_check_desktop).isVisible = viewModel.isDesktopMode.value == true
+        // Per-tab desktop site: checkmark reflects the CURRENT tab's flag, and the
+        // toggle applies only to the current tab (its WebView reloads with the new
+        // user-agent). Other tabs keep their own desktop/mobile preference.
+        val currentTab = tabManager.currentTab
+        view.findViewById<View>(R.id.ic_check_desktop).isVisible = currentTab?.isDesktopMode == true
         view.findViewById<View>(R.id.menu_desktop_site).setOnClickListener {
-            val isDesktop = viewModel.isDesktopMode.value?.not() ?: false
-            viewModel.isDesktopMode.value = isDesktop
-            
-            // Apply to all active WebViews
-            webViewPool.values.forEach { it.setDesktopMode(isDesktop) }
-            
+            val tab = tabManager.currentTab
+            if (tab != null) {
+                val isDesktop = !tab.isDesktopMode
+                tabManager.setDesktopMode(tab.id, isDesktop)
+                viewModel.isDesktopMode.value = isDesktop
+                currentWebView?.setDesktopMode(isDesktop)
+            }
             dialog.dismiss()
         }
         // Text zoom
@@ -713,6 +1062,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         view.findViewById<View>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_save_page).setOnClickListener { savePageAsArchive(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_print).setOnClickListener { printCurrentPage(); dialog.dismiss() }
+        view.findViewById<View>(R.id.menu_screenshot).setOnClickListener { captureScreenshot(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_add_to_home).setOnClickListener { addToHomeScreen(); dialog.dismiss() }
         // Reader mode toggle (label swaps to "Exit reader" when active).
         val tvReaderMode = view.findViewById<android.widget.TextView>(R.id.tvReaderMode)
@@ -732,11 +1082,222 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         dialog.show()
     }
 
+    // Print / "Save as PDF" the current page. The Android print framework always
+    // offers a "Save as PDF" target, so this is the Save-as-PDF entry point and is
+    // also reused by the overflow Save-as-PDF action. Guards the internal start /
+    // error pages (nothing meaningful to print) and wraps the framework call so a
+    // device without a print spooler fails soft instead of crashing.
     private fun printCurrentPage() {
         val webView = currentWebView ?: return
-        val printManager = getSystemService(Context.PRINT_SERVICE) as PrintManager
-        val printAdapter = webView.createPrintDocumentAdapter(viewModel.currentTitle.value ?: "Page")
-        printManager.print(viewModel.currentTitle.value ?: "Helix Browser", printAdapter, null)
+        val url = viewModel.currentUrl.value
+        if (url.isNullOrBlank() || url == "about:blank") {
+            Toast.makeText(this, R.string.print_no_page, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val printManager = getSystemService(Context.PRINT_SERVICE) as? PrintManager
+        if (printManager == null) {
+            Toast.makeText(this, R.string.print_unavailable, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // Sanitize the page title for use as both the document name and job name;
+        // an empty/blank title falls back to a generic name.
+        val docName = (viewModel.currentTitle.value?.trim()?.takeIf { it.isNotEmpty() }
+            ?: getString(R.string.app_name))
+            .replace(Regex("[\\x00-\\x1F/\\\\]"), "_")
+            .take(100)
+        try {
+            val printAdapter = webView.createPrintDocumentAdapter(docName)
+            printManager.print(docName, printAdapter, null)
+        } catch (t: Throwable) {
+            android.util.Log.w("MainActivity", "print failed", t)
+            Toast.makeText(this, R.string.print_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Capture the current page as an image and share it via the system share sheet.
+    //
+    // Strategy (mirrors the tab-thumbnail capture path for correctness):
+    //  - Full page first: when the WebView reports a content height taller than the
+    //    viewport and the total pixel budget stays under a cap, we draw the whole
+    //    document into one bitmap via a temporary software layer on the UI thread
+    //    (WebView.draw() is main-thread-only; hardware layers render blank to a
+    //    software Canvas, hence the forced LAYER_TYPE_SOFTWARE for the draw).
+    //  - Visible area fallback: if full-page is too large / unavailable / fails, we
+    //    grab the on-screen region with PixelCopy (API 26+, off the UI thread) or a
+    //    software-layer draw of the visible rect on older devices.
+    //  - The expensive PNG encode + file write always run on Dispatchers.IO; the
+    //    bitmap is recycled afterwards so we never retain a full-res buffer.
+    // Internal start / error pages and zero-sized / low-memory states are skipped.
+    @Suppress("DEPRECATION") // WebView.getScale() is the only API to map contentHeight to device px.
+    private fun captureScreenshot() {
+        val webView = currentWebView ?: return
+        val url = viewModel.currentUrl.value
+        if (url.isNullOrBlank() || url == "about:blank") {
+            Toast.makeText(this, R.string.screenshot_no_page, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val w = webView.width
+        val h = webView.height
+        if (w <= 0 || h <= 0) {
+            Toast.makeText(this, R.string.screenshot_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // Skip under memory pressure: a full-page bitmap is large and must never be
+        // the thing that tips the process over.
+        val mi = android.app.ActivityManager.MemoryInfo()
+        (getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager)?.getMemoryInfo(mi)
+        if (mi.lowMemory) {
+            Toast.makeText(this, R.string.screenshot_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Toast.makeText(this, R.string.screenshot_capturing, Toast.LENGTH_SHORT).show()
+
+        // Full document height in device pixels (contentHeight is in CSS px at the
+        // current scale). Clamp to at least the viewport so a bad/zero report still
+        // yields the visible area.
+        val fullHeight = (webView.contentHeight * webView.scale).toInt().coerceAtLeast(h)
+        // Cap total pixels so a very long page (e.g. an infinite feed) cannot OOM.
+        // ARGB_8888 == 4 bytes/px; SCREENSHOT_MAX_PIXELS keeps the buffer bounded.
+        val cappedHeight = fullHeight.coerceAtMost((SCREENSHOT_MAX_PIXELS / w).coerceAtLeast(h))
+
+        val fullPageBitmap: android.graphics.Bitmap? =
+            if (cappedHeight > h) drawWebViewToBitmap(webView, w, cappedHeight) else null
+
+        if (fullPageBitmap != null) {
+            finishScreenshot(fullPageBitmap)
+            return
+        }
+
+        // Visible-area fallback. Prefer PixelCopy (off the UI thread) on API 26+.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val loc = IntArray(2)
+            webView.getLocationInWindow(loc)
+            val src = android.graphics.Rect(loc[0], loc[1], loc[0] + w, loc[1] + h)
+            val bmp = try {
+                android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
+            } catch (t: Throwable) {
+                android.util.Log.w("MainActivity", "screenshot alloc failed", t)
+                Toast.makeText(this, R.string.screenshot_failed, Toast.LENGTH_SHORT).show()
+                return
+            }
+            try {
+                android.view.PixelCopy.request(window, src, bmp, { result ->
+                    if (isFinishing || isDestroyed) { bmp.recycle(); return@request }
+                    if (result == android.view.PixelCopy.SUCCESS) {
+                        finishScreenshot(bmp)
+                    } else {
+                        bmp.recycle()
+                        // Last-ditch: software draw of the visible rect.
+                        val sw = drawWebViewToBitmap(webView, w, h)
+                        if (sw != null) finishScreenshot(sw)
+                        else Toast.makeText(this, R.string.screenshot_failed, Toast.LENGTH_SHORT).show()
+                    }
+                }, binding.root.handler ?: android.os.Handler(mainLooper))
+            } catch (t: Throwable) {
+                bmp.recycle()
+                android.util.Log.w("MainActivity", "screenshot PixelCopy failed", t)
+                val sw = drawWebViewToBitmap(webView, w, h)
+                if (sw != null) finishScreenshot(sw)
+                else Toast.makeText(this, R.string.screenshot_failed, Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+
+        // Pre-O: software-layer draw of the visible area.
+        val bmp = drawWebViewToBitmap(webView, w, h)
+        if (bmp != null) finishScreenshot(bmp)
+        else Toast.makeText(this, R.string.screenshot_failed, Toast.LENGTH_SHORT).show()
+    }
+
+    // Draw [webView] at [width] x [height] device pixels into a fresh ARGB_8888
+    // bitmap via a temporary software layer (WebView is hardware-accelerated, so a
+    // plain Canvas draw renders blank). Used for full-page capture and the pre-O /
+    // PixelCopy-failure visible-area fallback. Returns null on allocation/draw
+    // failure (e.g. OOM on a very tall page). MUST run on the UI thread.
+    private fun drawWebViewToBitmap(
+        webView: HelixWebView,
+        width: Int,
+        height: Int
+    ): android.graphics.Bitmap? {
+        if (width <= 0 || height <= 0) return null
+        val originalLayerType = webView.layerType
+        return try {
+            val bitmap = android.graphics.Bitmap.createBitmap(
+                width, height, android.graphics.Bitmap.Config.ARGB_8888
+            )
+            val canvas = android.graphics.Canvas(bitmap)
+            // Paint the theme background first so transparent page regions are not
+            // left as black/transparent in the exported PNG.
+            canvas.drawColor(getColor(R.color.background))
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+            webView.draw(canvas)
+            bitmap
+        } catch (t: Throwable) {
+            android.util.Log.w("MainActivity", "drawWebViewToBitmap failed", t)
+            null
+        } finally {
+            webView.setLayerType(originalLayerType, null)
+        }
+    }
+
+    // Encode [bitmap] to PNG in the cache dir (off the main thread) and hand the
+    // resulting FileProvider content URI to the system share sheet. The bitmap is
+    // recycled once encoded. Old screenshots are pruned so the cache stays bounded.
+    private fun finishScreenshot(bitmap: android.graphics.Bitmap) {
+        lifecycleScope.launch {
+            val uri = try {
+                withContext(Dispatchers.IO) {
+                    val dir = File(cacheDir, "screenshots").apply { mkdirs() }
+                    pruneOldFiles(dir, SCREENSHOT_KEEP_COUNT)
+                    val safeTitle = (viewModel.currentTitle.value ?: "screenshot")
+                        .replace(Regex("[^A-Za-z0-9_\\- ]"), "_").trim()
+                        .ifEmpty { "screenshot" }.take(40)
+                    val file = File(dir, "$safeTitle-${System.currentTimeMillis()}.png")
+                    java.io.FileOutputStream(file).use { out ->
+                        bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
+                    }
+                    androidx.core.content.FileProvider.getUriForFile(
+                        this@MainActivity, "$packageName.fileprovider", file
+                    )
+                }
+            } catch (t: Throwable) {
+                android.util.Log.w("MainActivity", "screenshot save failed", t)
+                null
+            } finally {
+                if (!bitmap.isRecycled) bitmap.recycle()
+            }
+            if (isFinishing || isDestroyed) return@launch
+            if (uri == null) {
+                Toast.makeText(this@MainActivity, R.string.screenshot_failed, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            try {
+                val share = Intent(Intent.ACTION_SEND).apply {
+                    type = "image/png"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    putExtra(Intent.EXTRA_SUBJECT, viewModel.currentTitle.value ?: getString(R.string.screenshot))
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(Intent.createChooser(share, getString(R.string.share_via)))
+                Toast.makeText(this@MainActivity, R.string.screenshot_saved, Toast.LENGTH_SHORT).show()
+            } catch (t: Throwable) {
+                android.util.Log.w("MainActivity", "screenshot share failed", t)
+                Toast.makeText(this@MainActivity, R.string.screenshot_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Keep only the [keep] most-recent files in [dir], deleting the rest. Bounds the
+    // cache so repeated screenshots/PDF downloads don't grow unbounded. Best-effort.
+    private fun pruneOldFiles(dir: File, keep: Int) {
+        runCatching {
+            val files = dir.listFiles()?.filter { it.isFile } ?: return
+            if (files.size <= keep) return
+            files.sortedByDescending { it.lastModified() }
+                .drop(keep)
+                .forEach { runCatching { it.delete() } }
+        }
     }
 
     private fun showRecentlyClosedTabs() {
@@ -796,10 +1357,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
                 if (active) {
                     com.helix.browser.engine.ReaderMode.exit(wv)
                 } else {
-                    val dark = Prefs.isDarkMode(this) ||
-                        (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
-                            android.content.res.Configuration.UI_MODE_NIGHT_YES
-                    com.helix.browser.engine.ReaderMode.enter(wv, dark)
+                    // The app is dark-locked, so reader mode always renders dark.
+                    com.helix.browser.engine.ReaderMode.enter(wv, dark = true)
                 }
             }
         }
@@ -821,6 +1380,21 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
             enterPictureInPictureMode(params)
         } catch (e: Exception) {
             Toast.makeText(this, R.string.pip_unsupported, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.O)
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        if (isInPictureInPictureMode) {
+            // Collapse browser chrome while the PiP window is showing so the video
+            // surface is unobstructed; keep the foreground WebView resumed/playing.
+            binding.bottomNavContainer.isVisible = false
+            currentWebView?.onResume()
+        } else {
+            // Restored to full-window: bring chrome back. If the user dismissed the
+            // PiP window (activity stopping), normal lifecycle teardown handles the rest.
+            binding.bottomNavContainer.isVisible = true
         }
     }
 
@@ -1192,11 +1766,21 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 
         pageInfoDomain.text = domain
 
-        // Cookies count (best-effort)
-        val cookieCount = try {
-            android.webkit.CookieManager.getInstance().getCookie(url)?.split(";")?.size ?: 0
+        // Build the scheme://host origin (cookies are origin-scoped, not path-scoped).
+        val origin = try {
+            val u = java.net.URI(url)
+            if (u.scheme != null && u.host != null) "${u.scheme}://${u.host}" else url
+        } catch (_: Exception) { url }
+
+        // Cookies count: getCookie returns "a=1; b=2" (or "" / null). Trim and drop
+        // blank entries so a cleared origin reports 0 rather than 1.
+        fun countCookies(): Int = try {
+            android.webkit.CookieManager.getInstance().getCookie(origin)
+                ?.split(";")?.map { it.trim() }?.count { it.isNotEmpty() } ?: 0
         } catch (_: Exception) { 0 }
-        pageInfoCookiesDetail.text = if (cookieCount > 0) "$cookieCount cookies in use" else "No cookies"
+        val cookieCount = countCookies()
+        pageInfoCookiesDetail.text = if (cookieCount > 0)
+            getString(R.string.cookies_in_use, cookieCount) else getString(R.string.no_cookies)
 
         view.findViewById<View>(R.id.pageInfoConnectionRow).setOnClickListener {
             // Connection details — show toast for now or dedicated screen
@@ -1217,7 +1801,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
                 .setTitle(R.string.clear_cookies)
                 .setMessage("Clear cookies for $domain?")
                 .setPositiveButton(R.string.clear_history_confirm) { _, _ ->
-                    android.webkit.CookieManager.getInstance().setCookie(url, "")
+                    clearCookiesForHost(domain)
+                    // Refresh the count label so the sheet reflects reality if reopened.
+                    pageInfoCookiesDetail.text = getString(R.string.no_cookies)
                     Toast.makeText(this, getString(R.string.cookies_cleared), Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton(R.string.cancel, null)
@@ -1238,6 +1824,30 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         dialog.show()
     }
 
+    // Actually delete every cookie for a host on both http and https origins by
+    // enumerating them and issuing an explicit expiry per name (setCookie(url, "")
+    // is a no-op). Mirrors HelixWebView.clearIncognitoData's deletion pattern.
+    private fun clearCookiesForHost(host: String) {
+        if (host.isBlank()) return
+        val cm = android.webkit.CookieManager.getInstance()
+        for (scheme in arrayOf("https", "http")) {
+            val origin = "$scheme://$host"
+            val header = runCatching { cm.getCookie("$origin/") }.getOrNull() ?: continue
+            header.split(";").forEach { pair ->
+                val name = pair.substringBefore('=').trim()
+                if (name.isNotEmpty()) {
+                    runCatching {
+                        cm.setCookie(
+                            "$origin/",
+                            "$name=; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/"
+                        )
+                    }
+                }
+            }
+        }
+        cm.flush()
+    }
+
     private fun shareCurrentPage() {
         val url = viewModel.currentUrl.value ?: return
         val intent = Intent(Intent.ACTION_SEND).apply {
@@ -1248,22 +1858,293 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         startActivity(Intent.createChooser(intent, getString(R.string.share_via)))
     }
 
-    private fun downloadFile(url: String, userAgent: String, contentDisposition: String, mimeType: String) {
+    private fun downloadFile(
+        url: String,
+        userAgent: String,
+        contentDisposition: String,
+        mimeType: String,
+        contentLength: Long = 0L
+    ) {
+        // DownloadManager only understands http/https. Reject any other scheme
+        // (data:, blob:, file:, javascript:, content:, intent: …) rather than
+        // forwarding attacker-controlled URLs to the system downloader.
+        val scheme = runCatching { Uri.parse(url).scheme?.lowercase() }.getOrNull()
+        if (scheme != "http" && scheme != "https") {
+            Toast.makeText(this, getString(R.string.download_unsupported_scheme), Toast.LENGTH_SHORT).show()
+            return
+        }
+        val guessed = URLUtil.guessFileName(url, contentDisposition, mimeType)
+
+        // In-app PDF routing: a PDF download opens directly in the bundled PDF
+        // viewer instead of going through DownloadManager. We detect either the
+        // application/pdf MIME or a .pdf extension on the (disposition-derived)
+        // filename or the URL path. The viewer reads from app cache via a
+        // FileProvider content URI, so no storage permission is needed here.
+        val isPdf = mimeType.substringBefore(';').trim().equals("application/pdf", ignoreCase = true) ||
+            guessed.endsWith(".pdf", ignoreCase = true) ||
+            runCatching { Uri.parse(url).path }.getOrNull()?.endsWith(".pdf", ignoreCase = true) == true
+        if (isPdf) {
+            openPdfInViewer(url, userAgent, guessed)
+            return
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             permissionLauncher.launch(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE))
             return
         }
-        val fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
-        val request = DownloadManager.Request(Uri.parse(url)).apply {
-            setTitle(fileName)
-            setDescription(getString(R.string.downloading_via_helix))
-            setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-            addRequestHeader("User-Agent", userAgent)
-            allowScanningByMediaScanner()
+        showDownloadConfirmation(url, userAgent, guessed, contentLength)
+    }
+
+    // Fetch a PDF into app cache (off the main thread, bounded size) and launch the
+    // in-app PdfViewerActivity with a FileProvider content URI. Keeps the http/https
+    // scheme guarantee from downloadFile(). Falls back to the normal download-confirm
+    // sheet on any fetch failure so the user can still save the file.
+    private fun openPdfInViewer(url: String, userAgent: String, guessedName: String) {
+        Toast.makeText(this, R.string.pdf_opening, Toast.LENGTH_SHORT).show()
+        val title = guessedName.substringBeforeLast('.', guessedName)
+            .ifBlank { getString(R.string.pdf_viewer_title) }
+        val safeName = sanitizeDownloadFileName(guessedName, "document.pdf")
+        lifecycleScope.launch {
+            val uri = try {
+                withContext(Dispatchers.IO) {
+                    val dir = File(cacheDir, "pdf").apply { mkdirs() }
+                    pruneOldFiles(dir, PDF_CACHE_KEEP_COUNT)
+                    val file = File(dir, "${System.currentTimeMillis()}-$safeName")
+                    val conn = (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply {
+                        connectTimeout = 15000
+                        readTimeout = 20000
+                        instanceFollowRedirects = true
+                        if (userAgent.isNotEmpty()) setRequestProperty("User-Agent", userAgent)
+                    }
+                    try {
+                        // Defend against a hostile/huge response: stop writing past the
+                        // cap and treat it as a failure so we don't fill the cache.
+                        conn.inputStream.use { input ->
+                            file.outputStream().use { out ->
+                                val buf = ByteArray(64 * 1024)
+                                var total = 0L
+                                while (true) {
+                                    val n = input.read(buf)
+                                    if (n < 0) break
+                                    total += n
+                                    if (total > MAX_PDF_BYTES) throw java.io.IOException("pdf too large")
+                                    out.write(buf, 0, n)
+                                }
+                            }
+                        }
+                    } finally {
+                        conn.disconnect()
+                    }
+                    if (file.length() <= 0L) throw java.io.IOException("empty pdf")
+                    androidx.core.content.FileProvider.getUriForFile(
+                        this@MainActivity, "$packageName.fileprovider", file
+                    )
+                }
+            } catch (t: Throwable) {
+                android.util.Log.w("MainActivity", "openPdfInViewer fetch failed", t)
+                null
+            }
+            if (isFinishing || isDestroyed) return@launch
+            if (uri == null) {
+                // Fetch failed: fall back to the standard download path so the user
+                // is not left with nothing.
+                showDownloadConfirmation(url, userAgent, guessedName, 0L)
+                return@launch
+            }
+            try {
+                val intent = Intent(this@MainActivity, PdfViewerActivity::class.java).apply {
+                    putExtra(PdfViewerActivity.EXTRA_PDF_URI, uri.toString())
+                    putExtra(PdfViewerActivity.EXTRA_PDF_TITLE, title)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(intent)
+            } catch (t: Throwable) {
+                android.util.Log.w("MainActivity", "launch PdfViewerActivity failed", t)
+                Toast.makeText(this@MainActivity, R.string.download_failed, Toast.LENGTH_SHORT).show()
+            }
         }
-        (getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
-        Toast.makeText(this, getString(R.string.download_started, fileName), Toast.LENGTH_SHORT).show()
+    }
+
+    // Chrome-style pre-download bottom sheet: previews the guessed filename
+    // (editable), the host, and the size (when known), with Download / Cancel.
+    // Nothing is enqueued until the user confirms. Built programmatically so it
+    // needs no owned layout file. Re-validates the (possibly edited) filename
+    // and the scheme at confirm time before enqueueing.
+    private fun showDownloadConfirmation(
+        url: String,
+        userAgent: String,
+        guessedName: String,
+        contentLength: Long
+    ) {
+        if (isFinishing || isDestroyed) return
+        val density = resources.displayMetrics.density
+        fun dp(v: Int) = (v * density).toInt()
+
+        val host = runCatching { Uri.parse(url).host }.getOrNull()?.removePrefix("www.")
+            ?: UrlUtils.getDisplayUrl(url).substringBefore('/')
+
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(dp(20), dp(20), dp(20), dp(16))
+        }
+
+        val titleView = android.widget.TextView(this).apply {
+            text = getString(R.string.download_confirm_title)
+            setTextColor(getColor(R.color.text_primary))
+            textSize = 18f
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+        }
+        container.addView(titleView)
+
+        val nameInput = android.widget.EditText(this).apply {
+            setText(guessedName)
+            setSelection(0, guessedName.substringBeforeLast('.', guessedName).length.coerceAtMost(guessedName.length))
+            setSingleLine(true)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+            setTextColor(getColor(R.color.text_primary))
+            setHintTextColor(getColor(R.color.hint_color))
+            hint = getString(R.string.download_filename_hint)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
+            }
+        }
+        container.addView(nameInput, android.widget.LinearLayout.LayoutParams(
+            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(12) })
+
+        val sizeText = if (contentLength > 0) formatBytes(contentLength)
+            else getString(R.string.download_size_unknown)
+        val metaView = android.widget.TextView(this).apply {
+            text = getString(R.string.download_meta, host, sizeText)
+            setTextColor(getColor(R.color.text_secondary))
+            textSize = 13f
+            ellipsize = android.text.TextUtils.TruncateAt.MIDDLE
+            setSingleLine(true)
+        }
+        container.addView(metaView, android.widget.LinearLayout.LayoutParams(
+            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(8) })
+
+        val buttonRow = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.END
+        }
+        val dialog = BottomSheetDialog(this, R.style.Theme_HelixBrowser_BottomSheet)
+
+        val cancelBtn = com.google.android.material.button.MaterialButton(
+            this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle
+        ).apply {
+            text = getString(R.string.cancel)
+            setOnClickListener { dialog.dismiss() }
+        }
+        val downloadBtn = com.google.android.material.button.MaterialButton(this).apply {
+            text = getString(R.string.download)
+            setOnClickListener {
+                val chosen = sanitizeDownloadFileName(nameInput.text?.toString(), guessedName)
+                dialog.dismiss()
+                enqueueDownload(url, userAgent, chosen)
+            }
+        }
+        buttonRow.addView(cancelBtn)
+        buttonRow.addView(downloadBtn, android.widget.LinearLayout.LayoutParams(
+            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { marginStart = dp(8) })
+        container.addView(buttonRow, android.widget.LinearLayout.LayoutParams(
+            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(16) })
+
+        dialog.setContentView(container)
+        dialog.show()
+    }
+
+    // Strip path separators and control/reserved characters from a user-edited
+    // download filename so it can never escape the Downloads directory (path
+    // traversal) or produce an invalid file. Falls back to the guessed name, then
+    // to a generic name, if the user clears the field entirely.
+    private fun sanitizeDownloadFileName(input: String?, fallback: String): String {
+        val raw = input?.trim().orEmpty().ifEmpty { fallback }
+        // Keep only the last path segment, then drop anything not safe in a name.
+        val base = raw.substringAfterLast('/').substringAfterLast('\\')
+        val cleaned = base.replace(Regex("[\\x00-\\x1F/\\\\:*?\"<>|]"), "_").trim().trim('.')
+        return cleaned.ifEmpty { fallback.ifEmpty { "download" } }.take(200)
+    }
+
+    private fun enqueueDownload(url: String, userAgent: String, fileName: String) {
+        // Re-validate scheme at enqueue time (defense in depth; the URL is the same
+        // one validated in downloadFile but this method is the single enqueue point).
+        val scheme = runCatching { Uri.parse(url).scheme?.lowercase() }.getOrNull()
+        if (scheme != "http" && scheme != "https") {
+            Toast.makeText(this, getString(R.string.download_unsupported_scheme), Toast.LENGTH_SHORT).show()
+            return
+        }
+        try {
+            val request = DownloadManager.Request(Uri.parse(url)).apply {
+                setTitle(fileName)
+                setDescription(getString(R.string.downloading_via_helix))
+                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                if (userAgent.isNotEmpty()) addRequestHeader("User-Agent", userAgent)
+                allowScanningByMediaScanner()
+            }
+            (getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+            Toast.makeText(this, getString(R.string.download_started, fileName), Toast.LENGTH_SHORT).show()
+        } catch (t: Throwable) {
+            android.util.Log.w("MainActivity", "enqueueDownload failed", t)
+            Toast.makeText(this, getString(R.string.download_failed), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Human-readable byte size (e.g. "4.2 MB"). Used only for the download preview.
+    private fun formatBytes(bytes: Long): String {
+        if (bytes < 1024) return "$bytes B"
+        val units = arrayOf("KB", "MB", "GB", "TB")
+        var value = bytes.toDouble() / 1024.0
+        var i = 0
+        while (value >= 1024.0 && i < units.size - 1) { value /= 1024.0; i++ }
+        return String.format(java.util.Locale.US, "%.1f %s", value, units[i])
+    }
+
+    // Derive a single MIME filter for the system file picker from the
+    // <input accept="..."> hint. GetMultipleContents takes one MIME string,
+    // so when the page accepts several distinct top-level types (or extension
+    // hints we cannot map) we fall back to "*/*". File extensions and the
+    // "image/*" style wildcards are honored; anything unrecognized widens to
+    // all files rather than silently blocking the user's real file.
+    private fun resolveFileChooserMimeFilter(
+        params: android.webkit.WebChromeClient.FileChooserParams
+    ): String {
+        val accept = params.acceptTypes
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?: emptyList()
+        if (accept.isEmpty()) return "*/*"
+
+        val mimeMap = android.webkit.MimeTypeMap.getSingleton()
+        val mimeTypes = LinkedHashSet<String>()
+        for (entry in accept) {
+            val mime = when {
+                entry.startsWith(".") -> {
+                    val ext = entry.substring(1).lowercase()
+                    mimeMap.getMimeTypeFromExtension(ext)
+                }
+                entry.contains("/") -> entry // already a MIME type or MIME wildcard
+                else -> null
+            }
+            if (mime == null) return "*/*" // unknown hint: don't restrict the picker
+            mimeTypes.add(mime)
+        }
+        return when {
+            mimeTypes.size == 1 -> mimeTypes.first()
+            // Multiple concrete types that share one top-level type can use the
+            // wildcard for that family (e.g. image/png + image/jpeg -> image/*).
+            mimeTypes.map { it.substringBefore("/") }.distinct().size == 1 ->
+                "${mimeTypes.first().substringBefore("/")}/*"
+            else -> "*/*"
+        }
     }
 
     private fun updateAddressBarDisplay() {
@@ -1396,20 +2277,76 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         }
     }
 
-    override fun onResume() { super.onResume() ; currentWebView?.onResume() }
+    override fun onResume() {
+        super.onResume()
+        currentWebView?.onResume()
+        // Coordination contract: returning from Settings (or any other screen) must
+        // re-apply web settings (JS, night, privacy) to EVERY pooled WebView so
+        // toggles take effect without forcing a manual reload.
+        webViewPool.values.forEach { runCatching { it.applySettingsFromPrefs() } }
+        // Desktop mode is per-tab, but the Settings screen still exposes a global
+        // "Desktop site" switch. Detect a change to that pref while we were away and
+        // apply it to the CURRENT tab only (so the toggle visibly takes effect),
+        // without disturbing the per-tab preferences of background tabs.
+        syncGlobalDesktopPrefToCurrentTab()
+    }
+
+    // The effective default desktop preference for a newly created tab: the global
+    // Settings pref, OR'd with the tablet default (tablets browse desktop unless the
+    // user has explicitly turned the global switch off via Settings).
+    private fun defaultDesktopMode(): Boolean =
+        runCatching { Prefs.isDesktopMode(this) }.getOrDefault(false) || isTablet
+
+    // Field tracks the last global desktop pref we observed so we only react to an
+    // actual change made in Settings, never re-clobbering a per-tab menu toggle.
+    private var lastGlobalDesktopPref: Boolean? = null
+
+    private fun syncGlobalDesktopPrefToCurrentTab() {
+        val pref = runCatching { Prefs.isDesktopMode(this) }.getOrNull() ?: return
+        val previous = lastGlobalDesktopPref
+        lastGlobalDesktopPref = pref
+        // First observation just records the baseline; don't override the tab.
+        if (previous == null || previous == pref) return
+        val tab = tabManager.currentTab ?: return
+        if (tab.isDesktopMode == pref) return
+        tabManager.setDesktopMode(tab.id, pref)
+        viewModel.isDesktopMode.value = pref
+        currentWebView?.setDesktopMode(pref)
+    }
     override fun onPause() {
         super.onPause()
-        webViewPool.values.forEach { it.onPause() }
+        // In Picture-in-Picture the foreground WebView's <video> must keep playing
+        // inside the PiP window, so we skip pausing it; only background WebViews are
+        // paused. WebView.onPause() would otherwise freeze the PiP video.
+        val inPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode
+        webViewPool.values.forEach { wv ->
+            if (inPip && wv === currentWebView) return@forEach
+            wv.onPause()
+        }
         // Save tabs if restore is enabled
         if (PrivacyManager.isRestoreTabsEnabled(this)) {
             tabManager.saveTabs(this)
         }
-        // Suspend inactive tabs if enabled
+        // Suspend inactive tabs if enabled, then reclaim their WebViews so the
+        // suspension actually frees memory (TabManager only flips the flag).
         if (PrivacyManager.isSuspendInactiveTabsEnabled(this)) {
             tabManager.suspendInactiveTabs()
+            evictSuspendedWebViews()
         }
     }
     override fun onDestroy() {
+        // Release any active fullscreen video (custom view + callback) and restore
+        // system UI before tearing the pool down, otherwise it leaks.
+        exitFullscreenIfActive()
+        // Deny any outstanding web/geolocation permission prompts so their callbacks
+        // never fire against a destroyed WebView and the page is not left hanging.
+        pendingGeolocationCallback?.invoke(pendingGeolocationOrigin, false, false)
+        pendingGeolocationCallback = null
+        pendingGeolocationOrigin = null
+        runCatching { pendingWebPermissionRequest?.deny() }
+        pendingWebPermissionRequest = null
+        pendingWebPermissionKey = null
+        pendingWebPermissionOrigin = null
         binding.webViewContainer.removeAllViews()
         currentWebView = null
         // Clear any pending toolbar callbacks holding references to root view.
@@ -1469,12 +2406,74 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
     }
 
     /**
+     * Cap the number of live WebViews. Iterating an access-ordered LinkedHashMap
+     * yields least-recently-used first, so we destroy from the front until the
+     * pool is within MAX_LIVE_WEBVIEWS, never evicting the foreground tab.
+     */
+    private fun enforceWebViewPoolCap(currentTabId: String) {
+        if (webViewPool.size <= MAX_LIVE_WEBVIEWS) return
+        val evictable = webViewPool.keys.filter { it != currentTabId }
+        var toEvict = webViewPool.size - MAX_LIVE_WEBVIEWS
+        for (id in evictable) {
+            if (toEvict <= 0) break
+            webViewPool.remove(id)?.let(::safelyDestroyWebView)
+            toEvict--
+        }
+    }
+
+    /**
+     * Destroy WebViews for tabs the TabManager has marked suspended (called after
+     * suspendInactiveTabs). Never touches the current tab. Recreation happens
+     * lazily from tab.url on next attach.
+     */
+    private fun evictSuspendedWebViews() {
+        val currentId = tabManager.currentTab?.id
+        webViewPool.keys.toList().forEach { id ->
+            if (id == currentId) return@forEach
+            if (tabManager.findTab(id)?.isSuspended == true) {
+                webViewPool.remove(id)?.let(::safelyDestroyWebView)
+            }
+        }
+    }
+
+    /**
+     * Free all background WebViews, keeping only the foreground tab. Called on
+     * memory pressure so we shed native WebView resources before the system
+     * kills the process.
+     */
+    private fun evictAllBackgroundWebViews() {
+        val currentId = tabManager.currentTab?.id
+        webViewPool.keys.toList().forEach { id ->
+            if (id == currentId) return@forEach
+            webViewPool.remove(id)?.let(::safelyDestroyWebView)
+        }
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= TRIM_MEMORY_RUNNING_LOW) {
+            evictAllBackgroundWebViews()
+        }
+    }
+
+    @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
+    override fun onLowMemory() {
+        super.onLowMemory()
+        evictAllBackgroundWebViews()
+    }
+
+    /**
      * Tear down a WebView so it cannot retain callbacks, the activity, or
      * native resources after removal. Safe to call from any path (tab close,
      * activity destroy, low-memory eviction).
      */
     private fun safelyDestroyWebView(webView: HelixWebView) {
         try {
+            // Wipe per-WebView incognito data (cookies/DOM storage for visited
+            // hosts) before teardown. No-ops for non-incognito WebViews. This is
+            // the single chokepoint every close path routes through, so closing
+            // an incognito tab now actually clears its private data.
+            webView.clearIncognitoData()
             webView.stopLoading()
             webView.loadUrl("about:blank")
             webView.onPause()
@@ -1515,16 +2514,49 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         }
 
         binding.addressBar.addTextChangedListener(object : TextWatcher {
+            // Whether THIS text change extended the previous user-typed text by
+            // appending at the end (forward typing) — the only case where inline
+            // autocomplete may be applied. A deletion, mid-string edit, paste, or
+            // selection-replace must never trigger autocompletion (don't fight
+            // backspace). Captured in onTextChanged where the deltas are available.
+            private var forwardTyping = false
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (applyingInlineCompletion) return
+                val newText = s?.toString() ?: ""
+                // Forward typing == purely additive at the very end: the previous
+                // user text is a strict prefix of the new text and the change is an
+                // insertion (count > before) at/after that prefix. This rejects
+                // backspace (before > count) and mid-string edits.
+                forwardTyping = newText.length > lastUserTypedText.length &&
+                    newText.startsWith(lastUserTypedText) &&
+                    start >= lastUserTypedText.length &&
+                    before == 0
+            }
+
             override fun afterTextChanged(s: Editable?) {
+                if (applyingInlineCompletion) return
                 if (binding.addressBar.isFocused) {
-                    val query = s?.toString()?.trim() ?: ""
+                    val raw = s?.toString() ?: ""
+                    // The visible text is now the user's own typed text (we have not
+                    // appended anything yet for this keystroke). Record it as the
+                    // canonical prefix and try to apply any completion the ViewModel
+                    // previously emitted for exactly this prefix.
+                    lastUserTypedText = raw
+                    if (forwardTyping) {
+                        applyPendingInlineCompletion(raw)
+                    } else {
+                        // Deletion / edit: drop any stale completion so the next
+                        // emission must re-qualify before we ever append again.
+                        pendingInlineCompletion = null
+                    }
+                    val query = raw.trim()
                     viewModel.fetchSuggestions(query)
-                    // Mic visible only while the field is empty — matches
-                    // Chrome's behavior of swapping mic for the clear-X.
-                    binding.btnVoiceSearch.isVisible = query.isEmpty() &&
-                        android.speech.SpeechRecognizer.isRecognitionAvailable(this@MainActivity)
+                    // Swap mic <-> clear-X and toggle the paste-and-go chip as the
+                    // field gains/loses content (Chrome behavior).
+                    updateAddressBarEndIcons()
                 }
             }
         })
@@ -1536,6 +2568,46 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
             } else {
                 binding.suggestionsRecyclerView.isVisible = false
             }
+        }
+
+        // Inline autocomplete: the ViewModel posts the trailing completion suffix
+        // (e.g. typed "git" -> "hub.com") on the main thread in lockstep with the
+        // suggestion list. We stash it and apply it on the NEXT forward keystroke,
+        // and also opportunistically now if the field currently holds exactly the
+        // bare user prefix with no selection, so the grey-out appears promptly.
+        viewModel.inlineCompletion.observe(this) { suffix ->
+            pendingInlineCompletion = suffix?.takeIf { it.isNotEmpty() }
+            if (!binding.addressBar.isFocused) return@observe
+            val current = binding.addressBar.text?.toString() ?: ""
+            // Only auto-apply when the field is exactly the user's typed prefix
+            // (nothing already appended/selected). Avoids re-appending on top of an
+            // existing completion or clobbering a manual selection.
+            if (current == lastUserTypedText) {
+                applyPendingInlineCompletion(current)
+            }
+        }
+    }
+
+    // Append [pendingInlineCompletion] to [typed] and select the appended range so
+    // the next keystroke overwrites it (Chrome inline autocomplete). No-ops unless
+    // the completion is still valid for this exact prefix. The re-entrancy guard
+    // stops the resulting setText/setSelection from re-triggering the TextWatcher.
+    private fun applyPendingInlineCompletion(typed: String) {
+        val suffix = pendingInlineCompletion ?: return
+        if (typed.isEmpty() || suffix.isEmpty()) return
+        // The suffix must not already be present (e.g. user typed the whole host).
+        if (typed.endsWith(suffix, ignoreCase = true)) return
+        val completed = typed + suffix
+        applyingInlineCompletion = true
+        try {
+            binding.addressBar.setText(completed)
+            // Highlight only the appended portion; the cursor sits at the prefix
+            // end so a real keystroke replaces the whole selection.
+            binding.addressBar.setSelection(typed.length, completed.length)
+        } catch (t: Throwable) {
+            android.util.Log.w("MainActivity", "inline autocomplete apply failed", t)
+        } finally {
+            applyingInlineCompletion = false
         }
     }
 
@@ -1591,8 +2663,64 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         }.start()
     }
 
+    /**
+     * JavaScript bridge for the internal start page. Exposes a single method
+     * that focuses the real address bar so the start-page search box behaves
+     * like every shortcut-grid browser's omnibox. Guarded so it only acts on
+     * the internal new-tab page (about:blank) and never affects real sites.
+     */
+    private inner class HelixHomeBridge(private val webView: HelixWebView) {
+        @android.webkit.JavascriptInterface
+        fun focusAddressBar() {
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                // Only honor the call when the visible page is the start page
+                // and this WebView is the foreground one.
+                val onStartPage = webView.url == null || webView.url == "about:blank"
+                if (webView === currentWebView && onStartPage) {
+                    binding.addressBar.requestFocus()
+                    showKeyboard(binding.addressBar)
+                }
+            }
+        }
+
+        // Open a most-visited tile. The url originates from the LOCAL history DB
+        // (never from page content), but we still scheme-allow-list it and only act
+        // from the foreground start page, so a real site that somehow reached this
+        // bridge cannot use it to navigate to arbitrary schemes (file:, intent:, …).
+        @android.webkit.JavascriptInterface
+        fun openUrl(url: String?) {
+            val target = url?.trim().orEmpty()
+            if (target.isEmpty() || target.length > MAX_INCOMING_URL_LENGTH) return
+            val scheme = runCatching { Uri.parse(target).scheme?.lowercase() }.getOrNull()
+            if (scheme != "http" && scheme != "https") return
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                val onStartPage = webView.url == null || webView.url == "about:blank"
+                if (webView === currentWebView && onStartPage) {
+                    loadUrl(target)
+                }
+            }
+        }
+    }
+
     companion object {
         const val REQUEST_TAB_SWITCHER = 1001
         private const val MAX_INCOMING_URL_LENGTH = 4096
+        private const val MAX_LIVE_WEBVIEWS = 6
+        // Most-visited tiles: 8 fills the 4-column start-page grid exactly.
+        private const val TOP_SITES_COUNT = 8
+        private const val MAX_TILE_LABEL_LEN = 24
+        // Disabled back/forward alpha — raised from 0.4 so the disabled state stays
+        // perceptible on text_primary over the dark background (contrast guidance).
+        private const val DISABLED_NAV_ALPHA = 0.5f
+        // Screenshot full-page capture pixel cap (~24 MP -> ~96 MB ARGB_8888). Long
+        // pages are clipped to the visible width * this/width so the buffer is bounded.
+        private const val SCREENSHOT_MAX_PIXELS = 24_000_000
+        // Keep only the N most-recent screenshots / cached PDFs in their cache subdirs.
+        private const val SCREENSHOT_KEEP_COUNT = 10
+        private const val PDF_CACHE_KEEP_COUNT = 5
+        // Hard cap on a cached PDF download (50 MB) to bound cache + memory use.
+        private const val MAX_PDF_BYTES = 50L * 1024L * 1024L
     }
 }

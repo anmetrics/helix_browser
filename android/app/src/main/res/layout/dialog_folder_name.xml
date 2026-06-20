@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="8dp">
+
+    <EditText
+        android:id="@+id/folderName"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_search_bar"
+        android:paddingHorizontal="16dp"
+        android:hint="@string/folder_name_hint"
+        android:textSize="15sp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/hint_color"
+        android:inputType="textCapSentences"
+        android:imeOptions="actionDone"
+        android:maxLines="1"
+        android:importantForAutofill="no" />
+</LinearLayout>

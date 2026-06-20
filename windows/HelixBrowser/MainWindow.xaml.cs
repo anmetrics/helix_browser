@@ -63,7 +63,20 @@ public sealed partial class MainWindow : Window
     private async void InitializeWebView(BrowserTab tab)
     {
         var webView = tab.WebView!;
-        await webView.EnsureCoreWebView2Async();
+        if (tab.IsIncognito)
+        {
+            // Incognito tabs get a true in-private CoreWebView2 (ephemeral profile:
+            // no cookies/history/cache persisted, isolated from the default profile)
+            // instead of silently sharing the default user data folder.
+            var env = await CoreWebView2Environment.CreateAsync();
+            var options = env.CreateCoreWebView2ControllerOptions();
+            options.IsInPrivateModeEnabled = true;
+            await webView.EnsureCoreWebView2Async(env, options);
+        }
+        else
+        {
+            await webView.EnsureCoreWebView2Async();
+        }
 
         var settings = webView.CoreWebView2.Settings;
         settings.AreDefaultScriptDialogsEnabled = true;
@@ -157,6 +170,10 @@ public sealed partial class MainWindow : Window
         if (tab.IsPinned) return;
         var index = _tabs.IndexOf(tab);
         _tabs.Remove(tab);
+        // Tear down the WebView2 so its msedgewebview2.exe browser/renderer
+        // process tree is released. Nulling the reference alone leaks the whole
+        // process (and its memory) for the lifetime of the app.
+        try { tab.WebView?.Close(); } catch { /* already closed */ }
         tab.WebView = null;
         if (_activeTab == tab)
         {

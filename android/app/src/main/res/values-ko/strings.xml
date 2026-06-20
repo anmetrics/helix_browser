@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Helix Browser</string>
     <string name="search_hint">검색 또는 URL 입력</string>
+    <string name="search_tabs_hint">탭 검색</string>
     <string name="new_tab">새 탭</string>
     <string name="incognito_tab">시크릿 탭</string>
     <string name="bookmarks">북마크</string>
@@ -46,4 +47,202 @@
     <string name="language">언어</string>
     <string name="select_language">언어 선택</string>
     <string name="system_default">시스템 기본값</string>
+    <string name="cancel">취소</string>
+    <string name="incognito_mode">시크릿 모드</string>
+    <string name="downloading_via_helix">Helix Browser를 통해 다운로드 중</string>
+    <string name="download_started">다운로드 중: %s</string>
+    <string name="share_via">공유 방법</string>
+    <string name="search_or_type_url">검색 또는 URL 입력...</string>
+    <string name="fast_secure_private">빠르게 • 안전하게 • 비공개로</string>
+    <string name="save_history">기록 저장</string>
+    <string name="find">찾기</string>
+    <string name="bookmarks_hint">북마크에서 검색...</string>
+    <string name="no_bookmarks">아직 북마크가 없습니다</string>
+    <string name="history_hint">기록 검색...</string>
+    <string name="no_history">아직 브라우징 기록이 없습니다</string>
+    <string name="private_tab_label">비공개</string>
+    <string name="ssl_untrusted">보안 인증서를 신뢰할 수 없습니다.</string>
+    <string name="ssl_expired">보안 인증서가 만료되었습니다.</string>
+    <string name="ssl_id_mismatch">도메인 이름이 인증서와 일치하지 않습니다.</string>
+    <string name="ssl_not_yet_valid">보안 인증서가 아직 유효하지 않습니다.</string>
+    <string name="ssl_date_invalid">인증서 날짜가 잘못되었습니다.</string>
+    <string name="ssl_invalid">보안 인증서가 잘못되었습니다.</string>
+    <string name="ssl_unknown">알 수 없는 SSL 오류입니다.</string>
+    <string name="ssl_title">안전하지 않은 연결</string>
+    <string name="ssl_message">%1$s\n\nURL: %2$s\n\n계속하시겠습니까?</string>
+    <string name="continue_button">계속</string>
+    <string name="go_back_button">뒤로 가기</string>
+    <string name="error_page_title">연결할 수 없음</string>
+    <string name="error_page_go_back">뒤로 가기</string>
+    <string name="ssl_error_page_title">안전하지 않은 연결</string>
+    <string name="ssl_error_page_message">이 웹사이트의 보안 인증서가 잘못되었습니다(SSL 오류 %d).</string>
+    <string name="ssl_error_page_go_back">안전하게 뒤로 가기</string>
+    <string name="search_engine_pref">검색 엔진</string>
+    <string name="homepage_pref">홈페이지</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">웹사이트에서 JavaScript 사용</string>
+    <string name="desktop_site_summary">항상 데스크톱 버전 사용</string>
+    <string name="block_ads_title">광고 차단</string>
+    <string name="block_ads_summary">광고 및 추적기 차단</string>
+    <string name="block_trackers_summary">추적 스크립트 차단</string>
+    <string name="block_third_party_cookies_summary">타사 사이트의 쿠키 차단</string>
+    <string name="do_not_track_summary">추적 안 함 요청 전송</string>
+    <string name="https_upgrade_summary">HTTP를 HTTPS로 자동 업그레이드</string>
+    <string name="anti_fingerprinting_summary">브라우저 지문 스크립트 차단</string>
+    <string name="block_popups_summary">자동 팝업 창 차단</string>
+    <string name="trackers_blocked_summary_format">추적기 %d개 차단됨</string>
+    <string name="clear_cache">캐시 삭제</string>
+    <string name="clear_cache_summary">캐시된 웹사이트 데이터 삭제</string>
+    <string name="clear_cookies">쿠키 삭제</string>
+    <string name="clear_cookies_summary">웹사이트 쿠키 삭제</string>
+    <string name="clear_history_summary">브라우징 기록 삭제</string>
+    <string name="clear_all_data_summary">모든 데이터, 쿠키 및 캐시 삭제</string>
+    <string name="tabs_category">탭</string>
+    <string name="restore_tabs_summary">다시 시작할 때 탭 복원</string>
+    <string name="suspend_tabs_summary">10분 후 비활성 탭 일시 중지</string>
+    <string name="info_category">정보</string>
+    <string name="version_pref">버전</string>
+    <string name="engine_pref">엔진</string>
+    <string name="cache_cleared">캐시가 삭제되었습니다</string>
+    <string name="cookies_cleared">쿠키가 삭제되었습니다</string>
+    <string name="all_data_cleared">모든 브라우징 데이터가 삭제되었습니다</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">추천</string>
+    <string name="all_languages">모든 언어</string>
+    <string name="clear_history_dialog_title">기록 삭제</string>
+    <string name="clear_history_dialog_message">전체 브라우징 기록을 삭제하시겠습니까?</string>
+    <string name="clear_history_confirm">삭제</string>
+    <string name="history_cleared">기록이 삭제되었습니다</string>
+    <string name="desc_secure">보안 연결</string>
+    <string name="desc_not_secure">안전하지 않음</string>
+    <string name="security_secure_title">연결이 안전합니다</string>
+    <string name="security_secure_message">이 사이트로 전송되는 정보(예: 비밀번호 또는 신용카드 번호)는 비공개로 보호됩니다.</string>
+    <string name="security_not_secure_title">연결이 안전하지 않습니다</string>
+    <string name="security_not_secure_message">이 사이트에서는 공격자가 정보를 가로챌 수 있으므로 민감한 정보(예: 비밀번호 또는 신용카드)를 입력하지 마세요.</string>
+    <string name="security_internal_title">내부 페이지</string>
+    <string name="security_internal_message">이 페이지는 브라우저 내부 페이지입니다.</string>
+    <string name="desc_bookmark">이 페이지 북마크</string>
+    <string name="desc_refresh">페이지 새로고침</string>
+    <string name="desc_prev">이전</string>
+    <string name="desc_next">다음</string>
+    <string name="desc_close">닫기</string>
+    <string name="desc_back">뒤로 가기</string>
+    <string name="desc_forward">앞으로 가기</string>
+    <string name="desc_home">홈으로 이동</string>
+    <string name="desc_more">추가 옵션</string>
+    <string name="desc_favicon">파비콘</string>
+    <string name="desc_delete">삭제</string>
+    <string name="tab_count">탭 %d개</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">광고 없는 브라우징 + 독점 기능</string>
+    <string name="close_all">모두 닫기</string>
+    <string name="dismiss">닫기</string>
+    <string name="no_downloads">아직 다운로드가 없습니다</string>
+    <string name="print_page">페이지 인쇄</string>
+    <string name="add_to_home">홈 화면에 추가</string>
+    <string name="translate_page">번역</string>
+    <string name="page_info">페이지 정보</string>
+    <string name="zoom_in">확대</string>
+    <string name="zoom_out">축소</string>
+    <string name="text_zoom">텍스트 확대/축소</string>
+    <string name="copy_link">링크 복사</string>
+    <string name="link_copied">링크가 복사되었습니다</string>
+    <string name="open_in_new_tab">새 탭에서 열기</string>
+    <string name="open_in_incognito">시크릿 탭에서 열기</string>
+    <string name="save_image">이미지 저장</string>
+    <string name="share_link">링크 공유</string>
+    <string name="reader_mode">읽기 모드</string>
+    <string name="reopen_closed_tab">닫은 탭 다시 열기</string>
+    <string name="not_secure">안전하지 않음</string>
+    <string name="page_info_connection">연결</string>
+    <string name="page_info_secure_subtitle">이 사이트로 전송하는 정보는 비공개로 보호됩니다</string>
+    <string name="page_info_not_secure_subtitle">이 사이트와의 연결은 비공개가 아닙니다. 공격자가 이 사이트에 제공하는 정보를 볼 수 있습니다.</string>
+    <string name="page_info_internal_subtitle">이 페이지는 Helix 내부 페이지입니다</string>
+    <string name="page_info_permissions">권한</string>
+    <string name="page_info_no_permissions">부여된 특수 권한이 없습니다</string>
+    <string name="page_info_cookies">쿠키 및 사이트 데이터</string>
+    <string name="page_info_certificate">인증서가 유효합니다</string>
+    <string name="page_info_certificate_invalid">인증서를 신뢰할 수 없습니다</string>
+    <string name="learn_more">자세히 알아보기</string>
+    <string name="proceed_anyway">계속</string>
+    <string name="connection_secure">보안 연결</string>
+    <string name="connection_not_secure">안전하지 않음</string>
+    <string name="connection_internal">내부 페이지</string>
+
+    <!-- Site permissions -->
+    <string name="allow">허용</string>
+    <string name="deny">차단</string>
+    <string name="permission_location_title">위치 요청</string>
+    <string name="permission_location_message">%1$s에서 위치에 접근하려고 합니다.</string>
+    <string name="permission_camera_title">카메라 요청</string>
+    <string name="permission_camera_message">%1$s에서 카메라를 사용하려고 합니다.</string>
+    <string name="permission_mic_title">마이크 요청</string>
+    <string name="permission_mic_message">%1$s에서 마이크를 사용하려고 합니다.</string>
+    <string name="permission_notifications_title">알림 요청</string>
+    <string name="permission_notifications_message">%1$s에서 알림을 보내려고 합니다.</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">HTTPS 전용 모드</string>
+    <string name="https_only_mode_summary">안전하지 않은 모든(HTTP) 연결을 차단합니다. HTTPS를 지원하지 않는 사이트는 로드되지 않습니다.</string>
+    <string name="https_only_blocked_title">연결이 안전하지 않습니다</string>
+    <string name="https_only_blocked_message">HTTPS 전용 모드가 켜져 있고 사이트가 HTTPS를 지원하지 않기 때문에 Helix가 이 페이지를 차단했습니다.</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">사이트 권한</string>
+    <string name="site_permissions_summary">사이트별 위치, 카메라, 마이크 및 알림 접근 관리</string>
+    <string name="site_permissions_empty">아직 저장된 사이트 권한이 없습니다</string>
+    <string name="site_permission_revoke">재설정</string>
+    <string name="site_permission_label_allow">허용됨</string>
+    <string name="site_permission_label_deny">차단됨</string>
+    <string name="site_permission_label_location">위치</string>
+    <string name="site_permission_label_camera">카메라</string>
+    <string name="site_permission_label_microphone">마이크</string>
+    <string name="site_permission_label_notifications">알림</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">읽기 모드 종료</string>
+    <string name="picture_in_picture">PIP 모드</string>
+    <string name="pip_unsupported">이 기기에서는 PIP 모드가 지원되지 않습니다</string>
+    <string name="pip_no_video">이 페이지에서 재생 중인 동영상이 없습니다</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">사용자 지정</string>
+    <string name="custom_search_engine_title">사용자 지정 검색 엔진</string>
+    <string name="custom_search_engine_hint">검색어가 들어갈 자리에 %%s를 넣어 검색 URL을 입력하세요. 예: https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">URL은 http:// 또는 https://로 시작해야 합니다</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">페이지 저장(오프라인)</string>
+    <string name="save_page_no_url">먼저 페이지를 여세요</string>
+    <string name="save_page_done">%1$s(으)로 저장됨</string>
+    <string name="save_page_failed">페이지를 저장하지 못했습니다</string>
+    <string name="no_recently_closed">최근에 닫은 탭이 없습니다</string>
+    <string name="bookmarks_import">북마크 가져오기…</string>
+    <string name="bookmarks_export">북마크 내보내기…</string>
+    <string name="bookmarks_exported">북마크 %1$d개를 내보냈습니다</string>
+    <string name="bookmarks_export_failed">내보내기에 실패했습니다</string>
+    <string name="bookmarks_imported">북마크 %1$d개를 가져왔습니다</string>
+    <string name="bookmarks_import_failed">가져오기에 실패했습니다</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">음성 검색</string>
+    <string name="desc_tabs">탭 전환기 열기</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">이 링크를 열 수 있는 앱이 없습니다</string>
+    <string name="download_unsupported_scheme">이 다운로드 링크는 열 수 없습니다</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">새 시크릿 탭</string>
+    <string name="close_all_tabs">모든 탭 닫기</string>
+    <string name="close_other_tabs">다른 탭 닫기</string>
+    <string name="close_tabs_to_right">오른쪽 탭 닫기</string>
+    <string name="tab_closed">탭이 닫혔습니다</string>
+    <string name="undo">실행 취소</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="one">탭 1개를 닫으시겠습니까?</item>
+        <item quantity="other">탭 %d개를 모두 닫으시겠습니까?</item>
+    </plurals>
 </resources>

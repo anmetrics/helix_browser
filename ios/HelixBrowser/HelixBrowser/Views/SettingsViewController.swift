@@ -176,12 +176,48 @@ class SettingsViewController: UITableViewController {
 
     private func showClearDataAlert() {
         let alert = UIAlertController(title: "Xóa tất cả dữ liệu?", message: "Lịch sử, cookie, cache sẽ bị xóa. Không thể hoàn tác.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Xóa", style: .destructive) { _ in
+        alert.addAction(UIAlertAction(title: "Xóa", style: .destructive) { [weak self] _ in
             PrivacyManager.shared.clearAllData {
-                UserDefaults.standard.removeObject(forKey: "helix_history")
+                // WebKit's removeData completion is delivered on the main thread, but
+                // hop explicitly so the UserDefaults purge and live-session reset are
+                // always performed on the main queue regardless of WebKit internals.
+                DispatchQueue.main.async {
+                    self?.purgeBrowsingData()
+                }
             }
         })
         alert.addAction(UIAlertAction(title: "Hủy", style: .cancel))
         present(alert, animated: true)
+    }
+
+    /// Removes all persisted browsing records that the "clear data" dialog implicitly
+    /// promises to erase (history, downloads, saved tab session, tracker counter) and
+    /// resets the live tab session so the running browser reflects the clear.
+    /// Bookmarks are intentionally preserved — they are saved data the dialog does not
+    /// promise to remove, so erasing them is left to an explicit user action.
+    private func purgeBrowsingData() {
+        let defaults = UserDefaults.standard
+
+        // History + downloads (DataManager owns these keys). Bookmarks are deliberately
+        // left untouched, so do not call DataManager.clearAllData() (it also clears them).
+        DataManager.shared.clearHistory()
+        DataManager.shared.clearDownloads()
+
+        // Persisted tab session contains visited URLs/titles; DataManager does not own
+        // these keys, so remove them directly to match the dialog's promise.
+        defaults.removeObject(forKey: "helix_saved_tabs")
+        defaults.removeObject(forKey: "helix_saved_groups")
+
+        // Reset the blocked-tracker statistic that is shown in Settings.
+        TabManager.shared.trackersBlocked = 0
+
+        // Reset the live session so the running browser reflects the clear: open a fresh
+        // start tab, then close every other (non-pinned) tab via the public TabManager API.
+        let manager = TabManager.shared
+        let freshTab = manager.createTab(url: "helix://start")
+        manager.closeOtherTabs(except: freshTab.id)
+
+        // Refresh the tracker count shown in this screen.
+        tableView.reloadData()
     }
 }

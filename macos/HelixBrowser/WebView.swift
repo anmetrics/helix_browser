@@ -343,12 +343,11 @@ struct WebView: NSViewRepresentable {
         
         // MARK: - SSL Challenge
         func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-            if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-               let trust = challenge.protectionSpace.serverTrust {
-                completionHandler(.useCredential, URLCredential(trust: trust))
-            } else {
-                completionHandler(.performDefaultHandling, nil)
-            }
+            // SECURITY: never blindly trust the server certificate. Let the system
+            // perform full chain/hostname validation. Invalid certs are rejected and
+            // surface through the navigation-failure path (error page) instead of
+            // silently establishing a MITM-able connection.
+            completionHandler(.performDefaultHandling, nil)
         }
         
         // MARK: - WKUIDelegate

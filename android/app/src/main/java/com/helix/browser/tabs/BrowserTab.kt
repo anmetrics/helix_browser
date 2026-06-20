@@ -15,7 +15,8 @@ data class BrowserTab(
     var groupName: String? = null,
     var lastAccessTime: Long = System.currentTimeMillis(),
     var isMuted: Boolean = false,
-    var isSuspended: Boolean = false
+    var isSuspended: Boolean = false,
+    var isDesktopMode: Boolean = false
 ) {
     /**
      * Release bitmaps held by this tab. Call when the tab is permanently closed.

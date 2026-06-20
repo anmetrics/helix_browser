@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Helix Browser</string>
     <string name="search_hint">搜索或输入网址</string>
+    <string name="search_tabs_hint">搜索您的标签页</string>
     <string name="new_tab">新标签页</string>
     <string name="incognito_tab">无痕标签页</string>
     <string name="bookmarks">书签</string>
@@ -46,4 +47,201 @@
     <string name="language">语言</string>
     <string name="select_language">选择语言</string>
     <string name="system_default">系统默认</string>
+    <string name="cancel">取消</string>
+    <string name="incognito_mode">无痕模式</string>
+    <string name="downloading_via_helix">正在通过 Helix Browser 下载</string>
+    <string name="download_started">正在下载：%s</string>
+    <string name="share_via">分享方式</string>
+    <string name="search_or_type_url">搜索或输入网址…</string>
+    <string name="fast_secure_private">快速 • 安全 • 隐私</string>
+    <string name="save_history">保存历史记录</string>
+    <string name="find">查找</string>
+    <string name="bookmarks_hint">在书签中搜索…</string>
+    <string name="no_bookmarks">暂无书签</string>
+    <string name="history_hint">搜索历史记录…</string>
+    <string name="no_history">暂无浏览历史</string>
+    <string name="private_tab_label">隐私</string>
+    <string name="ssl_untrusted">安全证书不受信任。</string>
+    <string name="ssl_expired">安全证书已过期。</string>
+    <string name="ssl_id_mismatch">域名与证书不匹配。</string>
+    <string name="ssl_not_yet_valid">安全证书尚未生效。</string>
+    <string name="ssl_date_invalid">证书日期无效。</string>
+    <string name="ssl_invalid">安全证书无效。</string>
+    <string name="ssl_unknown">未知的 SSL 错误。</string>
+    <string name="ssl_title">连接不安全</string>
+    <string name="ssl_message">%1$s\n\n网址：%2$s\n\n是否要继续？</string>
+    <string name="continue_button">继续</string>
+    <string name="go_back_button">返回</string>
+    <string name="error_page_title">无法连接</string>
+    <string name="error_page_go_back">返回</string>
+    <string name="ssl_error_page_title">连接不安全</string>
+    <string name="ssl_error_page_message">此网站的安全证书无效（SSL 错误 %d）。</string>
+    <string name="ssl_error_page_go_back">安全返回</string>
+    <string name="search_engine_pref">搜索引擎</string>
+    <string name="homepage_pref">主页</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">为网站启用 JavaScript</string>
+    <string name="desktop_site_summary">始终使用桌面版</string>
+    <string name="block_ads_title">屏蔽广告</string>
+    <string name="block_ads_summary">屏蔽广告和追踪器</string>
+    <string name="block_trackers_summary">屏蔽追踪脚本</string>
+    <string name="block_third_party_cookies_summary">屏蔽来自第三方网站的 Cookie</string>
+    <string name="do_not_track_summary">发送请勿追踪请求</string>
+    <string name="https_upgrade_summary">自动将 HTTP 升级为 HTTPS</string>
+    <string name="anti_fingerprinting_summary">屏蔽浏览器指纹识别脚本</string>
+    <string name="block_popups_summary">屏蔽自动弹出窗口</string>
+    <string name="trackers_blocked_summary_format">已屏蔽 %d 个追踪器</string>
+    <string name="clear_cache">清除缓存</string>
+    <string name="clear_cache_summary">清除已缓存的网站数据</string>
+    <string name="clear_cookies">清除 Cookie</string>
+    <string name="clear_cookies_summary">清除网站 Cookie</string>
+    <string name="clear_history_summary">清除浏览历史</string>
+    <string name="clear_all_data_summary">清除所有数据、Cookie 和缓存</string>
+    <string name="tabs_category">标签页</string>
+    <string name="restore_tabs_summary">重启时恢复标签页</string>
+    <string name="suspend_tabs_summary">10 分钟后暂停非活动标签页</string>
+    <string name="info_category">信息</string>
+    <string name="version_pref">版本</string>
+    <string name="engine_pref">引擎</string>
+    <string name="cache_cleared">缓存已清除</string>
+    <string name="cookies_cleared">Cookie 已清除</string>
+    <string name="all_data_cleared">所有浏览数据已清除</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">推荐</string>
+    <string name="all_languages">所有语言</string>
+    <string name="clear_history_dialog_title">清除历史记录</string>
+    <string name="clear_history_dialog_message">确定要清除您的全部浏览历史吗？</string>
+    <string name="clear_history_confirm">清除</string>
+    <string name="history_cleared">历史记录已清除</string>
+    <string name="desc_secure">安全连接</string>
+    <string name="desc_not_secure">不安全</string>
+    <string name="security_secure_title">连接是安全的</string>
+    <string name="security_secure_message">向此网站发送您的信息（例如密码或信用卡号）时，这些信息是私密的。</string>
+    <string name="security_not_secure_title">连接不安全</string>
+    <string name="security_not_secure_message">您不应在此网站上输入任何敏感信息（例如密码或信用卡），因为它们可能被攻击者窃取。</string>
+    <string name="security_internal_title">内部页面</string>
+    <string name="security_internal_message">这是一个浏览器内部页面。</string>
+    <string name="desc_bookmark">为此页面添加书签</string>
+    <string name="desc_refresh">刷新页面</string>
+    <string name="desc_prev">上一个</string>
+    <string name="desc_next">下一个</string>
+    <string name="desc_close">关闭</string>
+    <string name="desc_back">返回</string>
+    <string name="desc_forward">前进</string>
+    <string name="desc_home">回到主页</string>
+    <string name="desc_more">更多选项</string>
+    <string name="desc_favicon">网站图标</string>
+    <string name="desc_delete">删除</string>
+    <string name="tab_count">%d 个标签页</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">无广告浏览 + 专属功能</string>
+    <string name="close_all">全部关闭</string>
+    <string name="dismiss">忽略</string>
+    <string name="no_downloads">暂无下载</string>
+    <string name="print_page">打印页面</string>
+    <string name="add_to_home">添加到主屏幕</string>
+    <string name="translate_page">翻译</string>
+    <string name="page_info">页面信息</string>
+    <string name="zoom_in">放大</string>
+    <string name="zoom_out">缩小</string>
+    <string name="text_zoom">文字缩放</string>
+    <string name="copy_link">复制链接</string>
+    <string name="link_copied">链接已复制</string>
+    <string name="open_in_new_tab">在新标签页中打开</string>
+    <string name="open_in_incognito">在无痕标签页中打开</string>
+    <string name="save_image">保存图片</string>
+    <string name="share_link">分享链接</string>
+    <string name="reader_mode">阅读模式</string>
+    <string name="reopen_closed_tab">重新打开已关闭的标签页</string>
+    <string name="not_secure">不安全</string>
+    <string name="page_info_connection">连接</string>
+    <string name="page_info_secure_subtitle">您发送到此网站的信息是私密的</string>
+    <string name="page_info_not_secure_subtitle">您与此网站的连接不是私密的。攻击者可能能够看到您提供给此网站的信息。</string>
+    <string name="page_info_internal_subtitle">这是一个 Helix 内部页面</string>
+    <string name="page_info_permissions">权限</string>
+    <string name="page_info_no_permissions">未授予特殊权限</string>
+    <string name="page_info_cookies">Cookie 和网站数据</string>
+    <string name="page_info_certificate">证书有效</string>
+    <string name="page_info_certificate_invalid">证书不受信任</string>
+    <string name="learn_more">了解更多</string>
+    <string name="proceed_anyway">继续</string>
+    <string name="connection_secure">安全连接</string>
+    <string name="connection_not_secure">不安全</string>
+    <string name="connection_internal">内部页面</string>
+
+    <!-- Site permissions -->
+    <string name="allow">允许</string>
+    <string name="deny">屏蔽</string>
+    <string name="permission_location_title">位置请求</string>
+    <string name="permission_location_message">%1$s 想要访问您的位置。</string>
+    <string name="permission_camera_title">摄像头请求</string>
+    <string name="permission_camera_message">%1$s 想要使用您的摄像头。</string>
+    <string name="permission_mic_title">麦克风请求</string>
+    <string name="permission_mic_message">%1$s 想要使用您的麦克风。</string>
+    <string name="permission_notifications_title">通知请求</string>
+    <string name="permission_notifications_message">%1$s 想要向您发送通知。</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">仅 HTTPS 模式</string>
+    <string name="https_only_mode_summary">屏蔽所有不安全的（HTTP）连接。不支持 HTTPS 的网站将无法加载。</string>
+    <string name="https_only_blocked_title">连接不安全</string>
+    <string name="https_only_blocked_message">由于已开启仅 HTTPS 模式且该网站不支持 HTTPS，Helix 已屏蔽此页面。</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">网站权限</string>
+    <string name="site_permissions_summary">按网站管理位置、摄像头、麦克风和通知访问权限</string>
+    <string name="site_permissions_empty">尚未保存任何网站权限</string>
+    <string name="site_permission_revoke">重置</string>
+    <string name="site_permission_label_allow">已允许</string>
+    <string name="site_permission_label_deny">已屏蔽</string>
+    <string name="site_permission_label_location">位置</string>
+    <string name="site_permission_label_camera">摄像头</string>
+    <string name="site_permission_label_microphone">麦克风</string>
+    <string name="site_permission_label_notifications">通知</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">退出阅读模式</string>
+    <string name="picture_in_picture">画中画</string>
+    <string name="pip_unsupported">此设备不支持画中画</string>
+    <string name="pip_no_video">此页面没有正在播放的视频</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">自定义</string>
+    <string name="custom_search_engine_title">自定义搜索引擎</string>
+    <string name="custom_search_engine_hint">输入搜索网址，并用 %%s 表示查询词的位置。示例：https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">网址必须以 http:// 或 https:// 开头</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">保存页面（离线）</string>
+    <string name="save_page_no_url">请先打开一个页面</string>
+    <string name="save_page_done">已保存为 %1$s</string>
+    <string name="save_page_failed">保存页面失败</string>
+    <string name="no_recently_closed">没有最近关闭的标签页</string>
+    <string name="bookmarks_import">导入书签…</string>
+    <string name="bookmarks_export">导出书签…</string>
+    <string name="bookmarks_exported">已导出 %1$d 个书签</string>
+    <string name="bookmarks_export_failed">导出失败</string>
+    <string name="bookmarks_imported">已导入 %1$d 个书签</string>
+    <string name="bookmarks_import_failed">导入失败</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">语音搜索</string>
+    <string name="desc_tabs">打开标签页切换器</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">未找到可打开此链接的应用</string>
+    <string name="download_unsupported_scheme">无法打开此下载链接</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">新建无痕标签页</string>
+    <string name="close_all_tabs">关闭所有标签页</string>
+    <string name="close_other_tabs">关闭其他标签页</string>
+    <string name="close_tabs_to_right">关闭右侧标签页</string>
+    <string name="tab_closed">标签页已关闭</string>
+    <string name="undo">撤销</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="other">关闭全部 %d 个标签页？</item>
+    </plurals>
 </resources>

@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import Security
 
 class BrowserViewController: UIViewController {
 
@@ -24,6 +25,16 @@ class BrowserViewController: UIViewController {
     private var progressObserver: NSKeyValueObservation?
     private let tabManager = TabManager.shared
     private let processPool = WKProcessPool()
+    private let incognitoProcessPool = WKProcessPool()
+
+    /// Hosts that have already been auto-upgraded from http to https this session,
+    /// so a failed upgrade can fall back to the original http URL exactly once.
+    private var upgradedHosts: Set<String> = []
+    /// Hosts where the https upgrade failed and we fell back to http; do not re-upgrade.
+    private var httpsUpgradeFailedHosts: Set<String> = []
+
+    /// Maps an in-flight WKDownload to the source URL string used as the DataManager key.
+    private var activeDownloads: [WKDownload: String] = [:]
 
     // MARK: - Lifecycle
 
@@ -41,7 +52,14 @@ class BrowserViewController: UIViewController {
         }
 
         if Prefs.shared.isAdBlockEnabled {
-            AdBlockEngine.shared.compileRules { _ in }
+            AdBlockEngine.shared.compileRules { [weak self] ruleList in
+                // The first WebView may have been created before the rules finished
+                // compiling, so apply the compiled list to any already-live WebViews.
+                guard let self = self, let ruleList = ruleList else { return }
+                for tab in self.tabManager.tabs {
+                    tab.webView?.configuration.userContentController.add(ruleList)
+                }
+            }
         }
 
         loadActiveTab()
@@ -71,6 +89,9 @@ class BrowserViewController: UIViewController {
         backButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         forwardButton.setImage(UIImage(systemName: "chevron.right"), for: .normal)
         reloadButton.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
+        backButton.accessibilityLabel = "Quay lại"
+        forwardButton.accessibilityLabel = "Tiến tới"
+        reloadButton.accessibilityLabel = "Tải lại"
 
         // SSL icon
         sslIcon.image = UIImage(systemName: "lock.fill")
@@ -78,6 +99,8 @@ class BrowserViewController: UIViewController {
         sslIcon.contentMode = .scaleAspectFit
         sslIcon.translatesAutoresizingMaskIntoConstraints = false
         sslIcon.widthAnchor.constraint(equalToConstant: 16).isActive = true
+        sslIcon.isAccessibilityElement = true
+        sslIcon.accessibilityLabel = "Kết nối an toàn"
 
         // Address bar
         addressBar.backgroundColor = BrandColors.addressBar
@@ -94,6 +117,7 @@ class BrowserViewController: UIViewController {
         addressBar.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 8, height: 0))
         addressBar.leftViewMode = .always
         addressBar.translatesAutoresizingMaskIntoConstraints = false
+        addressBar.accessibilityLabel = "Thanh địa chỉ"
 
         // Address row
         let addressRow = UIStackView(arrangedSubviews: [sslIcon, addressBar])
@@ -132,6 +156,11 @@ class BrowserViewController: UIViewController {
         shareButton.setImage(UIImage(systemName: "square.and.arrow.up"), for: .normal)
         tabsButton.setImage(UIImage(systemName: "square.on.square"), for: .normal)
         menuButton.setImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
+        homeButton.accessibilityLabel = "Trang chủ"
+        bookmarkButton.accessibilityLabel = "Dấu trang"
+        shareButton.accessibilityLabel = "Chia sẻ"
+        tabsButton.accessibilityLabel = "Thẻ"
+        menuButton.accessibilityLabel = "Menu"
 
         // Tab count badge
         tabCountLabel.font = .systemFont(ofSize: 10, weight: .bold)
@@ -210,10 +239,12 @@ class BrowserViewController: UIViewController {
             bookmarks.remove(at: index)
             bookmarkButton.setImage(UIImage(systemName: "star"), for: .normal)
             bookmarkButton.tintColor = .white
+            bookmarkButton.accessibilityLabel = "Dấu trang"
         } else {
             bookmarks.append(["title": tab.title, "url": url, "timestamp": String(Date().timeIntervalSince1970)])
             bookmarkButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
             bookmarkButton.tintColor = .systemYellow
+            bookmarkButton.accessibilityLabel = "Xóa dấu trang"
         }
         UserDefaults.standard.set(bookmarks, forKey: "helix_bookmarks")
     }
@@ -252,6 +283,16 @@ class BrowserViewController: UIViewController {
             vc.onSelectUrl = { [weak self] url in self?.loadUrl(url) }
             self?.present(UINavigationController(rootViewController: vc), animated: true)
         })
+        alert.addAction(UIAlertAction(title: "Tải xuống", style: .default) { [weak self] _ in
+            let vc = DownloadsViewController()
+            self?.present(UINavigationController(rootViewController: vc), animated: true)
+        })
+        alert.addAction(UIAlertAction(title: "Tìm trên trang", style: .default) { [weak self] _ in
+            self?.presentFindInPage()
+        })
+        alert.addAction(UIAlertAction(title: "In trang", style: .default) { [weak self] _ in
+            self?.printCurrentPage()
+        })
         alert.addAction(UIAlertAction(title: "Cài đặt", style: .default) { [weak self] _ in
             let vc = SettingsViewController()
             self?.present(UINavigationController(rootViewController: vc), animated: true)
@@ -259,6 +300,23 @@ class BrowserViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Hủy", style: .cancel))
         alert.popoverPresentationController?.sourceView = menuButton
         present(alert, animated: true)
+    }
+
+    private func presentFindInPage() {
+        guard #available(iOS 16.0, *), let webView = currentWebView else { return }
+        webView.isFindInteractionEnabled = true
+        webView.findInteraction?.presentFindNavigator(showingReplace: false)
+    }
+
+    private func printCurrentPage() {
+        guard let webView = currentWebView else { return }
+        let printController = UIPrintInteractionController.shared
+        let printInfo = UIPrintInfo(dictionary: nil)
+        printInfo.outputType = .general
+        printInfo.jobName = webView.title ?? "Helix"
+        printController.printInfo = printInfo
+        printController.printFormatter = webView.viewPrintFormatter()
+        printController.present(animated: true, completionHandler: nil)
     }
 
     // MARK: - WebView Management
@@ -294,9 +352,24 @@ class BrowserViewController: UIViewController {
             tab.webView = webView
             currentWebView = webView
 
-            if !tab.url.hasPrefix("helix://"), let url = URL(string: tab.url) {
+            // Restore the persisted back/forward history + scroll position after a
+            // process-death relaunch (iOS 15+). TabManager only stores state for
+            // non-incognito tabs, so incognito falls through to a plain URL load.
+            if #available(iOS 15.0, *), let state = tabManager.interactionState(forTabId: tab.id) {
+                webView.interactionState = state
+                // If the restored blob had no committed page, load the saved URL.
+                if webView.url == nil, !tab.url.hasPrefix("helix://"), let url = URL(string: tab.url) {
+                    webView.load(URLRequest(url: url))
+                }
+            } else if !tab.url.hasPrefix("helix://"), let url = URL(string: tab.url) {
                 webView.load(URLRequest(url: url))
             }
+        }
+
+        // Re-attach the progress observer to whichever WebView is now current, so the
+        // progress bar keeps working when switching back to a previously-created tab.
+        if let webView = currentWebView {
+            attachProgressObserver(to: webView)
         }
 
         if tab.url.hasPrefix("helix://") {
@@ -316,7 +389,9 @@ class BrowserViewController: UIViewController {
 
     private func createWebView(isIncognito: Bool) -> WKWebView {
         let config = WKWebViewConfiguration()
-        config.processPool = processPool
+        // Use a dedicated process pool for incognito tabs so private and normal
+        // content never share a web content process.
+        config.processPool = isIncognito ? incognitoProcessPool : processPool
         config.allowsAirPlayForMediaPlayback = true
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
@@ -337,16 +412,26 @@ class BrowserViewController: UIViewController {
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.isOpaque = false
         webView.backgroundColor = BrandColors.background
+        if #available(iOS 16.0, *) {
+            webView.isFindInteractionEnabled = true
+        }
 
         applyUserAgent(to: webView)
+        attachProgressObserver(to: webView)
 
+        return webView
+    }
+
+    /// Observes the estimated progress of the given WebView and invalidates any
+    /// previous observation. Must be called whenever `currentWebView` changes so the
+    /// progress bar tracks the visible tab (including reused tabs).
+    private func attachProgressObserver(to webView: WKWebView) {
+        progressObserver?.invalidate()
         progressObserver = webView.observe(\.estimatedProgress, options: .new) { [weak self] webView, _ in
             let progress = Float(webView.estimatedProgress)
             self?.progressBar.setProgress(progress, animated: true)
             self?.progressBar.isHidden = progress >= 1.0
         }
-
-        return webView
     }
 
     private func applyUserAgent(to webView: WKWebView) {
@@ -378,20 +463,54 @@ class BrowserViewController: UIViewController {
         let isBookmarked = getBookmarks().contains(where: { $0["url"] == tabManager.activeTab?.url })
         bookmarkButton.setImage(UIImage(systemName: isBookmarked ? "star.fill" : "star"), for: .normal)
         bookmarkButton.tintColor = isBookmarked ? .systemYellow : .white
+        bookmarkButton.accessibilityLabel = isBookmarked ? "Xóa dấu trang" : "Dấu trang"
     }
 
     private func updateTabCount() {
         tabCountLabel.text = "\(tabManager.tabs.count)"
+        tabsButton.accessibilityValue = "\(tabManager.tabs.count)"
     }
 
     private func getBookmarks() -> [[String: String]] {
         return UserDefaults.standard.array(forKey: "helix_bookmarks") as? [[String: String]] ?? []
     }
 
-    private func updateSSLIcon(url: URL?) {
-        let isSecure = url?.scheme == "https"
-        sslIcon.image = UIImage(systemName: isSecure ? "lock.fill" : "info.circle")
-        sslIcon.tintColor = isSecure ? BrandColors.secureGreen : BrandColors.textSecondary
+    private enum SSLIndicatorState {
+        case secure       // https with only secure content
+        case mixed        // https page loading insecure subresources
+        case insecure     // http (or non-https)
+        case neutral      // loading / unknown
+    }
+
+    /// Drives the lock indicator from the WebView's real connection state rather than
+    /// just the URL scheme.
+    private func updateSSLIndicator(for webView: WKWebView) {
+        guard webView.url?.scheme == "https" else {
+            setSSLIndicator(state: .insecure)
+            return
+        }
+        setSSLIndicator(state: webView.hasOnlySecureContent ? .secure : .mixed)
+    }
+
+    private func setSSLIndicator(state: SSLIndicatorState) {
+        switch state {
+        case .secure:
+            sslIcon.image = UIImage(systemName: "lock.fill")
+            sslIcon.tintColor = BrandColors.secureGreen
+            sslIcon.accessibilityLabel = "Kết nối an toàn"
+        case .mixed:
+            sslIcon.image = UIImage(systemName: "lock.open.fill")
+            sslIcon.tintColor = BrandColors.accentPinkUI
+            sslIcon.accessibilityLabel = "Không an toàn"
+        case .insecure:
+            sslIcon.image = UIImage(systemName: "info.circle")
+            sslIcon.tintColor = BrandColors.textSecondary
+            sslIcon.accessibilityLabel = "Không an toàn"
+        case .neutral:
+            sslIcon.image = UIImage(systemName: "info.circle")
+            sslIcon.tintColor = BrandColors.textSecondary
+            sslIcon.accessibilityLabel = "Đang tải"
+        }
     }
 }
 
@@ -411,10 +530,18 @@ extension BrowserViewController: UITextFieldDelegate {
 
 extension BrowserViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if let url = navigationAction.request.url, Prefs.shared.isHttpsUpgradeEnabled && url.scheme == "http" {
+        if let url = navigationAction.request.url, Prefs.shared.isHttpsUpgradeEnabled, url.scheme == "http",
+           let host = url.host,
+           // Only upgrade safe, top-level GET navigations so we never drop a POST
+           // body, and never hijack subresources / iframes.
+           navigationAction.targetFrame?.isMainFrame == true,
+           (navigationAction.request.httpMethod ?? "GET").uppercased() == "GET",
+           // Do not re-upgrade a host that already failed over to http this session.
+           !httpsUpgradeFailedHosts.contains(host) {
             var comps = URLComponents(url: url, resolvingAgainstBaseURL: false)
             comps?.scheme = "https"
             if let httpsUrl = comps?.url {
+                upgradedHosts.insert(host)
                 decisionHandler(.cancel)
                 webView.load(URLRequest(url: httpsUrl))
                 return
@@ -428,8 +555,10 @@ extension BrowserViewController: WKNavigationDelegate {
         progressBar.setProgress(0.1, animated: true)
         if let url = webView.url {
             addressBar.text = url.absoluteString
-            updateSSLIcon(url: url)
         }
+        // Show a neutral indicator while the page is still loading/validating; the
+        // real secure state is only known once the navigation finishes.
+        setSSLIndicator(state: .neutral)
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -442,13 +571,17 @@ extension BrowserViewController: WKNavigationDelegate {
         if let tab = tabManager.activeTab {
             tab.url = url
             tab.title = title.isEmpty ? UrlUtils.getDisplayUrl(url) : title
-            tab.faviconUrl = UrlUtils.getFaviconUrl(url)
+            // Do not derive (and persist) a Google favicon URL for incognito tabs to
+            // avoid leaking private browsing into a persistent third-party request.
+            if !tab.isIncognito {
+                tab.faviconUrl = UrlUtils.getFaviconUrl(url)
+            }
         }
 
         addressBar.text = url
         updateNavigationState()
         updateBookmarkButton()
-        updateSSLIcon(url: webView.url)
+        updateSSLIndicator(for: webView)
 
         // Save history
         if Prefs.shared.isSaveHistoryEnabled && !(tabManager.activeTab?.isIncognito ?? false) {
@@ -460,7 +593,79 @@ extension BrowserViewController: WKNavigationDelegate {
         let nsError = error as NSError
         if nsError.code == NSURLErrorCancelled { return }
         progressBar.isHidden = true
-        showErrorPage(in: webView, error: error)
+
+        // If an http->https auto-upgrade failed for a *connection* reason (host
+        // unreachable / timeout), fall back once to the original http URL instead
+        // of stranding genuinely http-only sites. SECURITY: never fall back on a
+        // TLS/certificate failure — doing so would let an attacker who presents a
+        // bad cert force a silent downgrade to cleartext http (MITM). Those flow
+        // to the certificate-error page below instead.
+        if let failingURL = nsError.userInfo[NSURLErrorFailingURLErrorKey] as? URL ?? webView.url,
+           failingURL.scheme == "https",
+           let host = failingURL.host,
+           upgradedHosts.contains(host),
+           isConnectionError(nsError.code) {
+            upgradedHosts.remove(host)
+            httpsUpgradeFailedHosts.insert(host)
+            var comps = URLComponents(url: failingURL, resolvingAgainstBaseURL: false)
+            comps?.scheme = "http"
+            if let httpURL = comps?.url {
+                webView.load(URLRequest(url: httpURL))
+                return
+            }
+        }
+
+        if isTLSError(nsError.code) {
+            showCertificateErrorPage(in: webView, error: error)
+        } else {
+            showErrorPage(in: webView, error: error)
+        }
+    }
+
+    private func isTLSError(_ code: Int) -> Bool {
+        switch code {
+        case NSURLErrorServerCertificateUntrusted,
+             NSURLErrorServerCertificateHasBadDate,
+             NSURLErrorServerCertificateHasUnknownRoot,
+             NSURLErrorServerCertificateNotYetValid,
+             NSURLErrorClientCertificateRejected,
+             NSURLErrorClientCertificateRequired,
+             NSURLErrorSecureConnectionFailed:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Genuine connection failures only — deliberately EXCLUDES TLS/certificate
+    /// errors so the https->http upgrade fallback can never downgrade past a bad cert.
+    private func isConnectionError(_ code: Int) -> Bool {
+        switch code {
+        case NSURLErrorCannotConnectToHost,
+             NSURLErrorCannotFindHost,
+             NSURLErrorTimedOut,
+             NSURLErrorNetworkConnectionLost,
+             NSURLErrorDNSLookupFailed:
+            return true
+        default:
+            return false
+        }
+    }
+
+    func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              let serverTrust = challenge.protectionSpace.serverTrust else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+        // Validate the certificate chain ourselves and only proceed when it is valid.
+        // Never unconditionally accept the trust object (that would enable MITM).
+        var secError: CFError?
+        if SecTrustEvaluateWithError(serverTrust, &secError) {
+            completionHandler(.useCredential, URLCredential(trust: serverTrust))
+        } else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        }
     }
 
     private func showErrorPage(in webView: WKWebView, error: Error) {
@@ -480,6 +685,22 @@ extension BrowserViewController: WKNavigationDelegate {
         webView.loadHTMLString(html, baseURL: nil)
     }
 
+    private func showCertificateErrorPage(in webView: WKWebView, error: Error) {
+        let html = """
+        <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+        body{font-family:-apple-system,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#0A091E;color:#fff}
+        .c{text-align:center;max-width:400px;padding:20px}
+        h1{font-size:48px;margin:0}h2{color:#FF7EB3;font-weight:400;font-size:18px}
+        p{color:#8888bb;line-height:1.6;font-size:14px}
+        </style></head><body><div class="c">
+        <h1>🔒</h1><h2>Kết nối của bạn không an toàn</h2>
+        <p>Không thể xác minh chứng chỉ bảo mật của trang web này. Để bảo vệ bạn, Helix Browser đã chặn trang này.</p>
+        <p>\(error.localizedDescription)</p>
+        </div></body></html>
+        """
+        webView.loadHTMLString(html, baseURL: nil)
+    }
+
     private func saveHistory(title: String, url: String) {
         var history = UserDefaults.standard.array(forKey: "helix_history") as? [[String: String]] ?? []
         if history.first?["url"] == url { return }
@@ -488,28 +709,155 @@ extension BrowserViewController: WKNavigationDelegate {
         if history.count > 5000 { history = Array(history.prefix(5000)) }
         UserDefaults.standard.set(history, forKey: "helix_history")
     }
+
+    // MARK: - Downloads
+
+    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        // Treat explicit attachments and non-renderable MIME types as downloads.
+        var shouldDownload = !navigationResponse.canShowMIMEType
+        if let http = navigationResponse.response as? HTTPURLResponse,
+           let disposition = http.value(forHTTPHeaderField: "Content-Disposition"),
+           disposition.lowercased().contains("attachment") {
+            shouldDownload = true
+        }
+        if shouldDownload {
+            decisionHandler(.download)
+        } else {
+            decisionHandler(.allow)
+        }
+    }
+
+    func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
+        download.delegate = self
+    }
+
+    func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) {
+        download.delegate = self
+    }
 }
 
 // MARK: - WKUIDelegate
 
 extension BrowserViewController: WKUIDelegate {
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        // Only open new tabs for user-initiated link activations (or when popup
+        // blocking is disabled) so page scripts cannot spawn drive-by tabs.
+        guard navigationAction.navigationType == .linkActivated || !Prefs.shared.isBlockPopupsEnabled else {
+            return nil
+        }
         if let url = navigationAction.request.url {
             tabManager.createTab(url: url.absoluteString)
         }
         return nil
     }
 
+    @available(iOS 15.0, *)
+    func webView(_ webView: WKWebView, requestMediaCapturePermissionFor origin: WKSecurityOrigin, initiatedByFrame frame: WKFrameInfo, type: WKMediaCaptureType, decisionHandler: @escaping (WKPermissionDecision) -> Void) {
+        // Grant camera/microphone access for WebRTC; the system still presents its own
+        // OS-level permission prompt the first time, backed by the Info.plist strings.
+        decisionHandler(.grant)
+    }
+
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
         let alert = UIAlertController(title: "Helix Browser", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler() })
-        present(alert, animated: true)
+        presentDialog(alert, fallback: { completionHandler() })
     }
 
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
         let alert = UIAlertController(title: "Helix Browser", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler(true) })
         alert.addAction(UIAlertAction(title: "Hủy", style: .cancel) { _ in completionHandler(false) })
-        present(alert, animated: true)
+        presentDialog(alert, fallback: { completionHandler(false) })
+    }
+
+    func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+        let alert = UIAlertController(title: "Helix Browser", message: prompt, preferredStyle: .alert)
+        alert.addTextField { $0.text = defaultText }
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            completionHandler(alert.textFields?.first?.text)
+        })
+        alert.addAction(UIAlertAction(title: "Hủy", style: .cancel) { _ in completionHandler(nil) })
+        presentDialog(alert, fallback: { completionHandler(nil) })
+    }
+
+    /// Presents a JS dialog from the top-most presented controller, and always invokes
+    /// the fallback (resolving the JS callback) if presentation is not possible, so the
+    /// page is never left hanging.
+    private func presentDialog(_ alert: UIAlertController, fallback: @escaping () -> Void) {
+        var presenter: UIViewController = self
+        while let presented = presenter.presentedViewController, !(presented is UIAlertController) {
+            presenter = presented
+        }
+        guard presenter.presentedViewController == nil else {
+            fallback()
+            return
+        }
+        presenter.present(alert, animated: true)
+    }
+}
+
+// MARK: - WKDownloadDelegate
+
+extension BrowserViewController: WKDownloadDelegate {
+    func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
+        let sanitized = sanitizeFilename(suggestedFilename)
+        let dir = downloadsDirectory()
+        var destination = dir.appendingPathComponent(sanitized)
+
+        // Avoid clobbering an existing file by appending a numeric suffix.
+        let fm = FileManager.default
+        if fm.fileExists(atPath: destination.path) {
+            let base = (sanitized as NSString).deletingPathExtension
+            let ext = (sanitized as NSString).pathExtension
+            var index = 1
+            repeat {
+                let candidate = ext.isEmpty ? "\(base)-\(index)" : "\(base)-\(index).\(ext)"
+                destination = dir.appendingPathComponent(candidate)
+                index += 1
+            } while fm.fileExists(atPath: destination.path)
+        }
+
+        let sourceUrl = download.originalRequest?.url?.absoluteString ?? destination.lastPathComponent
+        activeDownloads[download] = sourceUrl
+        let size = (response as? HTTPURLResponse)?.expectedContentLength ?? response.expectedContentLength
+        DataManager.shared.addDownload(url: sourceUrl, filename: destination.lastPathComponent, filesize: max(0, size))
+
+        completionHandler(destination)
+    }
+
+    func downloadDidFinish(_ download: WKDownload) {
+        if let url = activeDownloads[download] {
+            DataManager.shared.updateDownloadStatus(url: url, status: "completed")
+        }
+        activeDownloads[download] = nil
+    }
+
+    func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
+        if let url = activeDownloads[download] {
+            DataManager.shared.updateDownloadStatus(url: url, status: "failed")
+        }
+        activeDownloads[download] = nil
+    }
+
+    private func downloadsDirectory() -> URL {
+        let fm = FileManager.default
+        let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        let dir = docs.appendingPathComponent("Downloads", isDirectory: true)
+        if !fm.fileExists(atPath: dir.path) {
+            try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        return dir
+    }
+
+    /// Strips path separators and parent-directory traversal from a suggested filename.
+    private func sanitizeFilename(_ name: String) -> String {
+        var cleaned = (name as NSString).lastPathComponent
+        cleaned = cleaned.replacingOccurrences(of: "/", with: "_")
+        cleaned = cleaned.replacingOccurrences(of: "\\", with: "_")
+        cleaned = cleaned.replacingOccurrences(of: "..", with: "_")
+        cleaned = cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned.isEmpty ? "download" : cleaned
     }
 }

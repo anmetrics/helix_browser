@@ -25,7 +25,7 @@ class DownloadsViewController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Xóa tất cả", style: .plain, target: self, action: #selector(clearAll)
         )
-        navigationItem.rightBarButtonItem?.tintColor = BrandColors.accentPink
+        navigationItem.rightBarButtonItem?.tintColor = BrandColors.accentPinkUI
     }
 
     private func setupTableView() {
@@ -143,7 +143,7 @@ class DownloadCell: UITableViewCell {
         selectionStyle = .none
 
         iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.tintColor = BrandColors.accentPurple
+        iconView.tintColor = BrandColors.accentPurpleUI
         iconView.contentMode = .scaleAspectFit
         contentView.addSubview(iconView)
 
@@ -196,14 +196,14 @@ class DownloadCell: UITableViewCell {
             iconView.tintColor = BrandColors.secureGreen
         case "downloading":
             statusLabel.text = "Đang tải..."
-            statusLabel.textColor = BrandColors.accentPurple
+            statusLabel.textColor = BrandColors.accentPurpleUI
             iconView.image = UIImage(systemName: "arrow.down.circle.fill")
-            iconView.tintColor = BrandColors.accentPurple
+            iconView.tintColor = BrandColors.accentPurpleUI
         case "failed":
             statusLabel.text = "Thất bại"
-            statusLabel.textColor = BrandColors.accentPink
+            statusLabel.textColor = BrandColors.accentPinkUI
             iconView.image = UIImage(systemName: "xmark.circle.fill")
-            iconView.tintColor = BrandColors.accentPink
+            iconView.tintColor = BrandColors.accentPinkUI
         default:
             statusLabel.text = "Đang chờ"
             statusLabel.textColor = BrandColors.textSecondary

@@ -1,15 +1,30 @@
 import UIKit
 
-class TabSwitcherViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+class TabSwitcherViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     var onDismiss: (() -> Void)?
     private var collectionView: UICollectionView!
     private let tabManager = TabManager.shared
 
+    // Layout metrics shared between the flow layout and sizeForItemAt.
+    private let interitemSpacing: CGFloat = 12
+    private let lineSpacing: CGFloat = 12
+    private let sectionInsets = UIEdgeInsets(top: 12, left: 16, bottom: 16, right: 16)
+    private let cellHeight: CGFloat = 200
+    private let minColumnWidth: CGFloat = 180
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = BrandColors.background
         setupUI()
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        // Recompute the adaptive column layout on rotation / iPad multitasking resize.
+        coordinator.animate(alongsideTransition: { [weak self] _ in
+            self?.collectionView?.collectionViewLayout.invalidateLayout()
+        })
     }
 
     private func setupUI() {
@@ -32,16 +47,16 @@ class TabSwitcherViewController: UIViewController, UICollectionViewDelegate, UIC
         let newTabButton = UIButton(type: .system)
         newTabButton.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
         newTabButton.tintColor = BrandColors.accentPurpleUI
+        newTabButton.accessibilityLabel = "Thẻ mới"
         newTabButton.addTarget(self, action: #selector(newTab), for: .touchUpInside)
         newTabButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(newTabButton)
 
         // Collection View
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: (UIScreen.main.bounds.width - 48) / 2, height: 200)
-        layout.minimumInteritemSpacing = 12
-        layout.minimumLineSpacing = 12
-        layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 16, right: 16)
+        layout.minimumInteritemSpacing = interitemSpacing
+        layout.minimumLineSpacing = lineSpacing
+        layout.sectionInset = sectionInsets
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
@@ -77,6 +92,23 @@ class TabSwitcherViewController: UIViewController, UICollectionViewDelegate, UIC
 
     // MARK: - CollectionView
 
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        // Derive an adaptive column count from the collection view's own bounds
+        // (not UIScreen.main.bounds, which is wrong under iPad multitasking).
+        let availableWidth = collectionView.bounds.width
+            - sectionInsets.left - sectionInsets.right
+            - collectionView.adjustedContentInset.left - collectionView.adjustedContentInset.right
+        guard availableWidth > 0 else {
+            return CGSize(width: minColumnWidth, height: cellHeight)
+        }
+        // Fit as many columns as possible while keeping each at least minColumnWidth.
+        var columns = Int((availableWidth + interitemSpacing) / (minColumnWidth + interitemSpacing))
+        columns = max(1, columns)
+        let totalSpacing = interitemSpacing * CGFloat(columns - 1)
+        let itemWidth = floor((availableWidth - totalSpacing) / CGFloat(columns))
+        return CGSize(width: max(itemWidth, 1), height: cellHeight)
+    }
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return tabManager.tabs.count
     }
@@ -111,6 +143,14 @@ class TabCell: UICollectionViewCell {
     private let incognitoIcon = UIImageView()
     private let pinnedIcon = UIImageView()
     var onClose: (() -> Void)?
+
+    // Identifies the tab this cell currently represents, so an in-flight favicon
+    // load can be discarded if the cell is reused for a different tab before the
+    // network response arrives (otherwise a stale favicon would be shown).
+    private var representedTabId: String?
+
+    // Ephemeral, cookie-less session shared across cells for favicon loads.
+    static let faviconSession = URLSession(configuration: .ephemeral)
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -153,6 +193,7 @@ class TabCell: UICollectionViewCell {
 
         closeButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
         closeButton.tintColor = BrandColors.textSecondary
+        closeButton.accessibilityLabel = "Đóng thẻ"
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
         contentView.addSubview(closeButton)
@@ -211,10 +252,16 @@ class TabCell: UICollectionViewCell {
     }
 
     func configure(tab: BrowserTab, isActive: Bool) {
+        representedTabId = tab.id
         titleLabel.text = tab.title
         urlLabel.text = UrlUtils.getDisplayUrl(tab.url)
         incognitoIcon.isHidden = !tab.isIncognito
         pinnedIcon.isHidden = !tab.isPinned
+
+        // Expose the whole cell as a single VoiceOver element labelled by its title.
+        isAccessibilityElement = true
+        accessibilityLabel = tab.title
+        accessibilityTraits = .button
 
         if isActive {
             contentView.layer.borderWidth = 2
@@ -223,11 +270,22 @@ class TabCell: UICollectionViewCell {
             contentView.layer.borderWidth = 0
         }
 
-        // Load favicon
-        if let faviconUrlStr = tab.faviconUrl, let faviconUrl = URL(string: faviconUrlStr) {
-            URLSession.shared.dataTask(with: faviconUrl) { [weak self] data, _, _ in
+        // Load favicon. Skip the network fetch entirely for incognito tabs to avoid
+        // leaking private browsing activity, and use an ephemeral session so favicon
+        // requests never carry persistent cookies or hit the on-disk cache.
+        if !tab.isIncognito, let faviconUrlStr = tab.faviconUrl, let faviconUrl = URL(string: faviconUrlStr) {
+            // Show the placeholder immediately so a recycled cell never displays the
+            // previous tab's favicon while the new one loads.
+            faviconView.image = UIImage(systemName: "globe")
+            faviconView.tintColor = BrandColors.accentPurpleUI
+            let requestedTabId = tab.id
+            TabCell.faviconSession.dataTask(with: faviconUrl) { [weak self] data, _, _ in
                 if let data = data, let image = UIImage(data: data) {
-                    DispatchQueue.main.async { self?.faviconView.image = image }
+                    DispatchQueue.main.async {
+                        // Ignore the response if the cell has since been reused for another tab.
+                        guard let self = self, self.representedTabId == requestedTabId else { return }
+                        self.faviconView.image = image
+                    }
                 }
             }.resume()
         } else {

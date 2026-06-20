@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Helix Browser</string>
     <string name="search_hint">Suchen oder URL eingeben</string>
+    <string name="search_tabs_hint">Tabs durchsuchen</string>
     <string name="new_tab">Neuer Tab</string>
     <string name="incognito_tab">Inkognito-Tab</string>
     <string name="bookmarks">Lesezeichen</string>
@@ -46,4 +47,202 @@
     <string name="language">Sprache</string>
     <string name="select_language">Sprache wählen</string>
     <string name="system_default">Systemstandard</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="incognito_mode">Inkognito-Modus</string>
+    <string name="downloading_via_helix">Wird über Helix Browser heruntergeladen</string>
+    <string name="download_started">Wird heruntergeladen: %s</string>
+    <string name="share_via">Teilen über</string>
+    <string name="search_or_type_url">Suchen oder URL eingeben…</string>
+    <string name="fast_secure_private">Schnell • Sicher • Privat</string>
+    <string name="save_history">Verlauf speichern</string>
+    <string name="find">Suchen</string>
+    <string name="bookmarks_hint">In Lesezeichen suchen…</string>
+    <string name="no_bookmarks">Noch keine Lesezeichen</string>
+    <string name="history_hint">Verlauf durchsuchen…</string>
+    <string name="no_history">Noch kein Browserverlauf</string>
+    <string name="private_tab_label">Privat</string>
+    <string name="ssl_untrusted">Dem Sicherheitszertifikat wird nicht vertraut.</string>
+    <string name="ssl_expired">Das Sicherheitszertifikat ist abgelaufen.</string>
+    <string name="ssl_id_mismatch">Der Domainname stimmt nicht mit dem Zertifikat überein.</string>
+    <string name="ssl_not_yet_valid">Das Sicherheitszertifikat ist noch nicht gültig.</string>
+    <string name="ssl_date_invalid">Das Zertifikatsdatum ist ungültig.</string>
+    <string name="ssl_invalid">Das Sicherheitszertifikat ist ungültig.</string>
+    <string name="ssl_unknown">Unbekannter SSL-Fehler.</string>
+    <string name="ssl_title">Unsichere Verbindung</string>
+    <string name="ssl_message">%1$s\n\nURL: %2$s\n\nMöchten Sie fortfahren?</string>
+    <string name="continue_button">Fortfahren</string>
+    <string name="go_back_button">Zurück</string>
+    <string name="error_page_title">Verbindung nicht möglich</string>
+    <string name="error_page_go_back">Zurück</string>
+    <string name="ssl_error_page_title">Unsichere Verbindung</string>
+    <string name="ssl_error_page_message">Diese Website hat ein ungültiges Sicherheitszertifikat (SSL-Fehler %d).</string>
+    <string name="ssl_error_page_go_back">Sicher zurückgehen</string>
+    <string name="search_engine_pref">Suchmaschine</string>
+    <string name="homepage_pref">Startseite</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">JavaScript für Websites aktivieren</string>
+    <string name="desktop_site_summary">Immer Desktop-Version verwenden</string>
+    <string name="block_ads_title">Werbung blockieren</string>
+    <string name="block_ads_summary">Werbung und Tracker blockieren</string>
+    <string name="block_trackers_summary">Tracking-Skripte blockieren</string>
+    <string name="block_third_party_cookies_summary">Cookies von Drittanbieter-Websites blockieren</string>
+    <string name="do_not_track_summary">Do-Not-Track-Anfrage senden</string>
+    <string name="https_upgrade_summary">HTTP automatisch auf HTTPS hochstufen</string>
+    <string name="anti_fingerprinting_summary">Browser-Fingerprinting-Skripte blockieren</string>
+    <string name="block_popups_summary">Automatische Popup-Fenster blockieren</string>
+    <string name="trackers_blocked_summary_format">%d Tracker blockiert</string>
+    <string name="clear_cache">Cache leeren</string>
+    <string name="clear_cache_summary">Zwischengespeicherte Website-Daten löschen</string>
+    <string name="clear_cookies">Cookies löschen</string>
+    <string name="clear_cookies_summary">Website-Cookies löschen</string>
+    <string name="clear_history_summary">Browserverlauf löschen</string>
+    <string name="clear_all_data_summary">Alle Daten, Cookies und Cache löschen</string>
+    <string name="tabs_category">Tabs</string>
+    <string name="restore_tabs_summary">Tabs beim Neustart wiederherstellen</string>
+    <string name="suspend_tabs_summary">Inaktive Tabs nach 10 Minuten anhalten</string>
+    <string name="info_category">Informationen</string>
+    <string name="version_pref">Version</string>
+    <string name="engine_pref">Engine</string>
+    <string name="cache_cleared">Cache geleert</string>
+    <string name="cookies_cleared">Cookies gelöscht</string>
+    <string name="all_data_cleared">Alle Browserdaten gelöscht</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">Empfohlen</string>
+    <string name="all_languages">Alle Sprachen</string>
+    <string name="clear_history_dialog_title">Verlauf löschen</string>
+    <string name="clear_history_dialog_message">Möchten Sie wirklich den gesamten Browserverlauf löschen?</string>
+    <string name="clear_history_confirm">Löschen</string>
+    <string name="history_cleared">Verlauf gelöscht</string>
+    <string name="desc_secure">Sichere Verbindung</string>
+    <string name="desc_not_secure">Nicht sicher</string>
+    <string name="security_secure_title">Verbindung ist sicher</string>
+    <string name="security_secure_message">Ihre Informationen (zum Beispiel Passwörter oder Kreditkartennummern) sind privat, wenn sie an diese Website gesendet werden.</string>
+    <string name="security_not_secure_title">Verbindung ist nicht sicher</string>
+    <string name="security_not_secure_message">Sie sollten auf dieser Website keine sensiblen Informationen (zum Beispiel Passwörter oder Kreditkarten) eingeben, da diese von Angreifern gestohlen werden könnten.</string>
+    <string name="security_internal_title">Interne Seite</string>
+    <string name="security_internal_message">Dies ist eine browserinterne Seite.</string>
+    <string name="desc_bookmark">Diese Seite als Lesezeichen speichern</string>
+    <string name="desc_refresh">Seite aktualisieren</string>
+    <string name="desc_prev">Zurück</string>
+    <string name="desc_next">Weiter</string>
+    <string name="desc_close">Schließen</string>
+    <string name="desc_back">Zurück</string>
+    <string name="desc_forward">Vorwärts</string>
+    <string name="desc_home">Zur Startseite</string>
+    <string name="desc_more">Weitere Optionen</string>
+    <string name="desc_favicon">Favicon</string>
+    <string name="desc_delete">Löschen</string>
+    <string name="tab_count">%d Tabs</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">Werbefreies Surfen + exklusive Funktionen</string>
+    <string name="close_all">Alle schließen</string>
+    <string name="dismiss">Verwerfen</string>
+    <string name="no_downloads">Noch keine Downloads</string>
+    <string name="print_page">Seite drucken</string>
+    <string name="add_to_home">Zum Startbildschirm hinzufügen</string>
+    <string name="translate_page">Übersetzen</string>
+    <string name="page_info">Seiteninfo</string>
+    <string name="zoom_in">Vergrößern</string>
+    <string name="zoom_out">Verkleinern</string>
+    <string name="text_zoom">Textzoom</string>
+    <string name="copy_link">Link kopieren</string>
+    <string name="link_copied">Link kopiert</string>
+    <string name="open_in_new_tab">In neuem Tab öffnen</string>
+    <string name="open_in_incognito">In Inkognito-Tab öffnen</string>
+    <string name="save_image">Bild speichern</string>
+    <string name="share_link">Link teilen</string>
+    <string name="reader_mode">Lesemodus</string>
+    <string name="reopen_closed_tab">Geschlossenen Tab erneut öffnen</string>
+    <string name="not_secure">Nicht sicher</string>
+    <string name="page_info_connection">Verbindung</string>
+    <string name="page_info_secure_subtitle">Informationen, die Sie an diese Website senden, sind privat</string>
+    <string name="page_info_not_secure_subtitle">Ihre Verbindung zu dieser Website ist nicht privat. Angreifer könnten die Informationen sehen, die Sie an diese Website senden.</string>
+    <string name="page_info_internal_subtitle">Dies ist eine interne Helix-Seite</string>
+    <string name="page_info_permissions">Berechtigungen</string>
+    <string name="page_info_no_permissions">Keine besonderen Berechtigungen erteilt</string>
+    <string name="page_info_cookies">Cookies und Website-Daten</string>
+    <string name="page_info_certificate">Zertifikat ist gültig</string>
+    <string name="page_info_certificate_invalid">Dem Zertifikat wird nicht vertraut</string>
+    <string name="learn_more">Mehr erfahren</string>
+    <string name="proceed_anyway">Fortfahren</string>
+    <string name="connection_secure">Sichere Verbindung</string>
+    <string name="connection_not_secure">Nicht sicher</string>
+    <string name="connection_internal">Interne Seite</string>
+
+    <!-- Site permissions -->
+    <string name="allow">Zulassen</string>
+    <string name="deny">Blockieren</string>
+    <string name="permission_location_title">Standortanfrage</string>
+    <string name="permission_location_message">%1$s möchte auf Ihren Standort zugreifen.</string>
+    <string name="permission_camera_title">Kameraanfrage</string>
+    <string name="permission_camera_message">%1$s möchte Ihre Kamera verwenden.</string>
+    <string name="permission_mic_title">Mikrofonanfrage</string>
+    <string name="permission_mic_message">%1$s möchte Ihr Mikrofon verwenden.</string>
+    <string name="permission_notifications_title">Benachrichtigungsanfrage</string>
+    <string name="permission_notifications_message">%1$s möchte Ihnen Benachrichtigungen senden.</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">Nur-HTTPS-Modus</string>
+    <string name="https_only_mode_summary">Alle unsicheren (HTTP-)Verbindungen blockieren. Websites ohne HTTPS werden nicht geladen.</string>
+    <string name="https_only_blocked_title">Verbindung ist nicht sicher</string>
+    <string name="https_only_blocked_message">Helix hat diese Seite blockiert, da der Nur-HTTPS-Modus aktiviert ist und die Website kein HTTPS unterstützt.</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">Website-Berechtigungen</string>
+    <string name="site_permissions_summary">Zugriff auf Standort, Kamera, Mikrofon und Benachrichtigungen pro Website verwalten</string>
+    <string name="site_permissions_empty">Noch keine Website-Berechtigungen gespeichert</string>
+    <string name="site_permission_revoke">Zurücksetzen</string>
+    <string name="site_permission_label_allow">Zugelassen</string>
+    <string name="site_permission_label_deny">Blockiert</string>
+    <string name="site_permission_label_location">Standort</string>
+    <string name="site_permission_label_camera">Kamera</string>
+    <string name="site_permission_label_microphone">Mikrofon</string>
+    <string name="site_permission_label_notifications">Benachrichtigungen</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">Lesemodus beenden</string>
+    <string name="picture_in_picture">Bild-in-Bild</string>
+    <string name="pip_unsupported">Bild-in-Bild wird auf diesem Gerät nicht unterstützt</string>
+    <string name="pip_no_video">Auf dieser Seite wird kein Video abgespielt</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">Benutzerdefiniert</string>
+    <string name="custom_search_engine_title">Benutzerdefinierte Suchmaschine</string>
+    <string name="custom_search_engine_hint">Geben Sie eine Such-URL mit %%s an der Stelle der Suchanfrage ein. Beispiel: https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">Die URL muss mit http:// oder https:// beginnen</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">Seite speichern (offline)</string>
+    <string name="save_page_no_url">Öffnen Sie zuerst eine Seite</string>
+    <string name="save_page_done">Gespeichert als %1$s</string>
+    <string name="save_page_failed">Seite konnte nicht gespeichert werden</string>
+    <string name="no_recently_closed">Keine kürzlich geschlossenen Tabs</string>
+    <string name="bookmarks_import">Lesezeichen importieren…</string>
+    <string name="bookmarks_export">Lesezeichen exportieren…</string>
+    <string name="bookmarks_exported">%1$d Lesezeichen exportiert</string>
+    <string name="bookmarks_export_failed">Export fehlgeschlagen</string>
+    <string name="bookmarks_imported">%1$d Lesezeichen importiert</string>
+    <string name="bookmarks_import_failed">Import fehlgeschlagen</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">Sprachsuche</string>
+    <string name="desc_tabs">Tab-Umschalter öffnen</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">Keine App gefunden, um diesen Link zu öffnen</string>
+    <string name="download_unsupported_scheme">Dieser Download-Link kann nicht geöffnet werden</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">Neuer Inkognito-Tab</string>
+    <string name="close_all_tabs">Alle Tabs schließen</string>
+    <string name="close_other_tabs">Andere Tabs schließen</string>
+    <string name="close_tabs_to_right">Tabs rechts schließen</string>
+    <string name="tab_closed">Tab geschlossen</string>
+    <string name="undo">Rückgängig</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="one">1 Tab schließen?</item>
+        <item quantity="other">Alle %d Tabs schließen?</item>
+    </plurals>
 </resources>

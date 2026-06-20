@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Helix Browser</string>
     <string name="search_hint">検索またはURLを入力</string>
+    <string name="search_tabs_hint">タブを検索</string>
     <string name="new_tab">新しいタブ</string>
     <string name="incognito_tab">シークレットタブ</string>
     <string name="bookmarks">ブックマーク</string>
@@ -46,4 +47,202 @@
     <string name="language">言語</string>
     <string name="select_language">言語を選択</string>
     <string name="system_default">システムデフォルト</string>
+    <string name="cancel">キャンセル</string>
+    <string name="incognito_mode">シークレットモード</string>
+    <string name="downloading_via_helix">Helix Browserでダウンロード中</string>
+    <string name="download_started">ダウンロード中: %s</string>
+    <string name="share_via">共有方法</string>
+    <string name="search_or_type_url">検索またはURLを入力...</string>
+    <string name="fast_secure_private">高速 • 安全 • プライベート</string>
+    <string name="save_history">履歴を保存</string>
+    <string name="find">検索</string>
+    <string name="bookmarks_hint">ブックマークを検索...</string>
+    <string name="no_bookmarks">ブックマークはまだありません</string>
+    <string name="history_hint">履歴を検索...</string>
+    <string name="no_history">閲覧履歴はまだありません</string>
+    <string name="private_tab_label">プライベート</string>
+    <string name="ssl_untrusted">セキュリティ証明書が信頼されていません。</string>
+    <string name="ssl_expired">セキュリティ証明書の有効期限が切れています。</string>
+    <string name="ssl_id_mismatch">ドメイン名が証明書と一致しません。</string>
+    <string name="ssl_not_yet_valid">セキュリティ証明書はまだ有効ではありません。</string>
+    <string name="ssl_date_invalid">証明書の日付が無効です。</string>
+    <string name="ssl_invalid">セキュリティ証明書が無効です。</string>
+    <string name="ssl_unknown">不明なSSLエラーです。</string>
+    <string name="ssl_title">安全でない接続</string>
+    <string name="ssl_message">%1$s\n\nURL: %2$s\n\n続行しますか?</string>
+    <string name="continue_button">続行</string>
+    <string name="go_back_button">戻る</string>
+    <string name="error_page_title">接続できません</string>
+    <string name="error_page_go_back">戻る</string>
+    <string name="ssl_error_page_title">安全でない接続</string>
+    <string name="ssl_error_page_message">このウェブサイトのセキュリティ証明書は無効です (SSLエラー %d)。</string>
+    <string name="ssl_error_page_go_back">安全に戻る</string>
+    <string name="search_engine_pref">検索エンジン</string>
+    <string name="homepage_pref">ホームページ</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">ウェブサイトのJavaScriptを有効にする</string>
+    <string name="desktop_site_summary">常にPC版を使用する</string>
+    <string name="block_ads_title">広告をブロック</string>
+    <string name="block_ads_summary">広告とトラッカーをブロック</string>
+    <string name="block_trackers_summary">トラッキングスクリプトをブロック</string>
+    <string name="block_third_party_cookies_summary">サードパーティサイトのクッキーをブロック</string>
+    <string name="do_not_track_summary">Do Not Trackリクエストを送信</string>
+    <string name="https_upgrade_summary">HTTPを自動的にHTTPSにアップグレード</string>
+    <string name="anti_fingerprinting_summary">ブラウザのフィンガープリンティングスクリプトをブロック</string>
+    <string name="block_popups_summary">自動ポップアップウィンドウをブロック</string>
+    <string name="trackers_blocked_summary_format">%d 件のトラッカーをブロックしました</string>
+    <string name="clear_cache">キャッシュを消去</string>
+    <string name="clear_cache_summary">キャッシュされたウェブサイトデータを消去</string>
+    <string name="clear_cookies">クッキーを消去</string>
+    <string name="clear_cookies_summary">ウェブサイトのクッキーを消去</string>
+    <string name="clear_history_summary">閲覧履歴を消去</string>
+    <string name="clear_all_data_summary">すべてのデータ、クッキー、キャッシュを消去</string>
+    <string name="tabs_category">タブ</string>
+    <string name="restore_tabs_summary">再起動時にタブを復元</string>
+    <string name="suspend_tabs_summary">10分後に非アクティブなタブを停止</string>
+    <string name="info_category">情報</string>
+    <string name="version_pref">バージョン</string>
+    <string name="engine_pref">エンジン</string>
+    <string name="cache_cleared">キャッシュを消去しました</string>
+    <string name="cookies_cleared">クッキーを消去しました</string>
+    <string name="all_data_cleared">すべての閲覧データを消去しました</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">おすすめ</string>
+    <string name="all_languages">すべての言語</string>
+    <string name="clear_history_dialog_title">履歴を消去</string>
+    <string name="clear_history_dialog_message">閲覧履歴をすべて消去してもよろしいですか?</string>
+    <string name="clear_history_confirm">消去</string>
+    <string name="history_cleared">履歴を消去しました</string>
+    <string name="desc_secure">安全な接続</string>
+    <string name="desc_not_secure">安全ではありません</string>
+    <string name="security_secure_title">接続は安全です</string>
+    <string name="security_secure_message">お客様の情報 (パスワードやクレジットカード番号など) は、このサイトに送信される際に保護されます。</string>
+    <string name="security_not_secure_title">接続は安全ではありません</string>
+    <string name="security_not_secure_message">このサイトでは機密情報 (パスワードやクレジットカードなど) を入力しないでください。攻撃者に盗まれる可能性があります。</string>
+    <string name="security_internal_title">内部ページ</string>
+    <string name="security_internal_message">これはブラウザの内部ページです。</string>
+    <string name="desc_bookmark">このページをブックマーク</string>
+    <string name="desc_refresh">ページを更新</string>
+    <string name="desc_prev">前へ</string>
+    <string name="desc_next">次へ</string>
+    <string name="desc_close">閉じる</string>
+    <string name="desc_back">戻る</string>
+    <string name="desc_forward">進む</string>
+    <string name="desc_home">ホームへ</string>
+    <string name="desc_more">その他のオプション</string>
+    <string name="desc_favicon">ファビコン</string>
+    <string name="desc_delete">削除</string>
+    <string name="tab_count">%d 個のタブ</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">広告なしのブラウジング + 限定機能</string>
+    <string name="close_all">すべて閉じる</string>
+    <string name="dismiss">閉じる</string>
+    <string name="no_downloads">ダウンロードはまだありません</string>
+    <string name="print_page">ページを印刷</string>
+    <string name="add_to_home">ホーム画面に追加</string>
+    <string name="translate_page">翻訳</string>
+    <string name="page_info">ページ情報</string>
+    <string name="zoom_in">拡大</string>
+    <string name="zoom_out">縮小</string>
+    <string name="text_zoom">テキストの拡大率</string>
+    <string name="copy_link">リンクをコピー</string>
+    <string name="link_copied">リンクをコピーしました</string>
+    <string name="open_in_new_tab">新しいタブで開く</string>
+    <string name="open_in_incognito">シークレットタブで開く</string>
+    <string name="save_image">画像を保存</string>
+    <string name="share_link">リンクを共有</string>
+    <string name="reader_mode">リーダーモード</string>
+    <string name="reopen_closed_tab">閉じたタブを再度開く</string>
+    <string name="not_secure">安全ではありません</string>
+    <string name="page_info_connection">接続</string>
+    <string name="page_info_secure_subtitle">このサイトに送信する情報は保護されます</string>
+    <string name="page_info_not_secure_subtitle">このサイトへの接続は保護されていません。攻撃者がこのサイトに提供する情報を見ることができる可能性があります。</string>
+    <string name="page_info_internal_subtitle">これはHelixの内部ページです</string>
+    <string name="page_info_permissions">権限</string>
+    <string name="page_info_no_permissions">特別な権限は付与されていません</string>
+    <string name="page_info_cookies">クッキーとサイトデータ</string>
+    <string name="page_info_certificate">証明書は有効です</string>
+    <string name="page_info_certificate_invalid">証明書が信頼されていません</string>
+    <string name="learn_more">詳細</string>
+    <string name="proceed_anyway">続行</string>
+    <string name="connection_secure">安全な接続</string>
+    <string name="connection_not_secure">安全ではありません</string>
+    <string name="connection_internal">内部ページ</string>
+
+    <!-- Site permissions -->
+    <string name="allow">許可</string>
+    <string name="deny">ブロック</string>
+    <string name="permission_location_title">位置情報のリクエスト</string>
+    <string name="permission_location_message">%1$s が位置情報へのアクセスを求めています。</string>
+    <string name="permission_camera_title">カメラのリクエスト</string>
+    <string name="permission_camera_message">%1$s がカメラの使用を求めています。</string>
+    <string name="permission_mic_title">マイクのリクエスト</string>
+    <string name="permission_mic_message">%1$s がマイクの使用を求めています。</string>
+    <string name="permission_notifications_title">通知のリクエスト</string>
+    <string name="permission_notifications_message">%1$s が通知の送信を求めています。</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">HTTPS専用モード</string>
+    <string name="https_only_mode_summary">すべての安全でない (HTTP) 接続をブロックします。HTTPSに対応していないサイトは読み込まれません。</string>
+    <string name="https_only_blocked_title">接続は安全ではありません</string>
+    <string name="https_only_blocked_message">HTTPS専用モードが有効で、このサイトがHTTPSに対応していないため、Helixはこのページをブロックしました。</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">サイトの権限</string>
+    <string name="site_permissions_summary">サイトごとに位置情報、カメラ、マイク、通知へのアクセスを管理</string>
+    <string name="site_permissions_empty">保存されたサイトの権限はまだありません</string>
+    <string name="site_permission_revoke">リセット</string>
+    <string name="site_permission_label_allow">許可</string>
+    <string name="site_permission_label_deny">ブロック</string>
+    <string name="site_permission_label_location">位置情報</string>
+    <string name="site_permission_label_camera">カメラ</string>
+    <string name="site_permission_label_microphone">マイク</string>
+    <string name="site_permission_label_notifications">通知</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">リーダーを終了</string>
+    <string name="picture_in_picture">ピクチャー・イン・ピクチャー</string>
+    <string name="pip_unsupported">このデバイスはピクチャー・イン・ピクチャーに対応していません</string>
+    <string name="pip_no_video">このページで再生中の動画はありません</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">カスタム</string>
+    <string name="custom_search_engine_title">カスタム検索エンジン</string>
+    <string name="custom_search_engine_hint">クエリの位置に %%s を入れた検索URLを入力してください。例: https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">URLはhttp://またはhttps://で始まる必要があります</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">ページを保存 (オフライン)</string>
+    <string name="save_page_no_url">先にページを開いてください</string>
+    <string name="save_page_done">%1$s として保存しました</string>
+    <string name="save_page_failed">ページの保存に失敗しました</string>
+    <string name="no_recently_closed">最近閉じたタブはありません</string>
+    <string name="bookmarks_import">ブックマークをインポート…</string>
+    <string name="bookmarks_export">ブックマークをエクスポート…</string>
+    <string name="bookmarks_exported">%1$d 件のブックマークをエクスポートしました</string>
+    <string name="bookmarks_export_failed">エクスポートに失敗しました</string>
+    <string name="bookmarks_imported">%1$d 件のブックマークをインポートしました</string>
+    <string name="bookmarks_import_failed">インポートに失敗しました</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">音声検索</string>
+    <string name="desc_tabs">タブ切り替えを開く</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">このリンクを開くアプリが見つかりません</string>
+    <string name="download_unsupported_scheme">このダウンロードリンクは開けません</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">新しいシークレットタブ</string>
+    <string name="close_all_tabs">すべてのタブを閉じる</string>
+    <string name="close_other_tabs">他のタブを閉じる</string>
+    <string name="close_tabs_to_right">右側のタブを閉じる</string>
+    <string name="tab_closed">タブを閉じました</string>
+    <string name="undo">元に戻す</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="one">1個のタブを閉じますか?</item>
+        <item quantity="other">%d 個すべてのタブを閉じますか?</item>
+    </plurals>
 </resources>

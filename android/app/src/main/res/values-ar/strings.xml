@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Helix Browser</string>
     <string name="search_hint">بحث أو إدخال عنوان URL</string>
+    <string name="search_tabs_hint">ابحث في علامات التبويب</string>
     <string name="new_tab">علامة تبويب جديدة</string>
     <string name="incognito_tab">علامة تبويب خفية</string>
     <string name="bookmarks">الإشارات المرجعية</string>
@@ -46,4 +47,206 @@
     <string name="language">اللغة</string>
     <string name="select_language">اختر اللغة</string>
     <string name="system_default">افتراضي النظام</string>
+    <string name="cancel">إلغاء</string>
+    <string name="incognito_mode">وضع التصفح الخفي</string>
+    <string name="downloading_via_helix">جاري التنزيل عبر Helix Browser</string>
+    <string name="download_started">جاري التنزيل: %s</string>
+    <string name="share_via">مشاركة عبر</string>
+    <string name="search_or_type_url">بحث أو إدخال عنوان URL...</string>
+    <string name="fast_secure_private">سريع • آمن • خاص</string>
+    <string name="save_history">حفظ السجل</string>
+    <string name="find">بحث</string>
+    <string name="bookmarks_hint">البحث في الإشارات المرجعية...</string>
+    <string name="no_bookmarks">لا توجد إشارات مرجعية بعد</string>
+    <string name="history_hint">البحث في السجل...</string>
+    <string name="no_history">لا يوجد سجل تصفح بعد</string>
+    <string name="private_tab_label">خاص</string>
+    <string name="ssl_untrusted">شهادة الأمان غير موثوقة.</string>
+    <string name="ssl_expired">انتهت صلاحية شهادة الأمان.</string>
+    <string name="ssl_id_mismatch">اسم النطاق لا يطابق الشهادة.</string>
+    <string name="ssl_not_yet_valid">شهادة الأمان غير صالحة بعد.</string>
+    <string name="ssl_date_invalid">تاريخ الشهادة غير صالح.</string>
+    <string name="ssl_invalid">شهادة الأمان غير صالحة.</string>
+    <string name="ssl_unknown">خطأ SSL غير معروف.</string>
+    <string name="ssl_title">اتصال غير آمن</string>
+    <string name="ssl_message">%1$s\n\nعنوان URL: %2$s\n\nهل تريد المتابعة؟</string>
+    <string name="continue_button">متابعة</string>
+    <string name="go_back_button">رجوع</string>
+    <string name="error_page_title">تعذر الاتصال</string>
+    <string name="error_page_go_back">رجوع</string>
+    <string name="ssl_error_page_title">اتصال غير آمن</string>
+    <string name="ssl_error_page_message">يحتوي هذا الموقع على شهادة أمان غير صالحة (خطأ SSL ‏%d).</string>
+    <string name="ssl_error_page_go_back">العودة بأمان</string>
+    <string name="search_engine_pref">محرك البحث</string>
+    <string name="homepage_pref">الصفحة الرئيسية</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">تمكين JavaScript للمواقع</string>
+    <string name="desktop_site_summary">استخدام نسخة سطح المكتب دائماً</string>
+    <string name="block_ads_title">حظر الإعلانات</string>
+    <string name="block_ads_summary">حظر الإعلانات وأدوات التتبع</string>
+    <string name="block_trackers_summary">حظر نصوص التتبع البرمجية</string>
+    <string name="block_third_party_cookies_summary">حظر ملفات تعريف الارتباط من مواقع الجهات الخارجية</string>
+    <string name="do_not_track_summary">إرسال طلب عدم التتبع</string>
+    <string name="https_upgrade_summary">ترقية HTTP إلى HTTPS تلقائياً</string>
+    <string name="anti_fingerprinting_summary">حظر نصوص بصمات المتصفح البرمجية</string>
+    <string name="block_popups_summary">حظر النوافذ المنبثقة التلقائية</string>
+    <string name="trackers_blocked_summary_format">%d أدوات تتبع محظورة</string>
+    <string name="clear_cache">مسح ذاكرة التخزين المؤقت</string>
+    <string name="clear_cache_summary">مسح بيانات المواقع المخزنة مؤقتاً</string>
+    <string name="clear_cookies">مسح ملفات تعريف الارتباط</string>
+    <string name="clear_cookies_summary">مسح ملفات تعريف الارتباط للمواقع</string>
+    <string name="clear_history_summary">مسح سجل التصفح</string>
+    <string name="clear_all_data_summary">مسح جميع البيانات وملفات تعريف الارتباط وذاكرة التخزين المؤقت</string>
+    <string name="tabs_category">علامات التبويب</string>
+    <string name="restore_tabs_summary">استعادة علامات التبويب عند إعادة التشغيل</string>
+    <string name="suspend_tabs_summary">تعليق علامات التبويب غير النشطة بعد 10 دقائق</string>
+    <string name="info_category">معلومات</string>
+    <string name="version_pref">الإصدار</string>
+    <string name="engine_pref">المحرك</string>
+    <string name="cache_cleared">تم مسح ذاكرة التخزين المؤقت</string>
+    <string name="cookies_cleared">تم مسح ملفات تعريف الارتباط</string>
+    <string name="all_data_cleared">تم مسح جميع بيانات التصفح</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">موصى به</string>
+    <string name="all_languages">جميع اللغات</string>
+    <string name="clear_history_dialog_title">مسح السجل</string>
+    <string name="clear_history_dialog_message">هل أنت متأكد من رغبتك في مسح سجل التصفح بالكامل؟</string>
+    <string name="clear_history_confirm">مسح</string>
+    <string name="history_cleared">تم مسح السجل</string>
+    <string name="desc_secure">اتصال آمن</string>
+    <string name="desc_not_secure">غير آمن</string>
+    <string name="security_secure_title">الاتصال آمن</string>
+    <string name="security_secure_message">تكون معلوماتك (مثل كلمات المرور أو أرقام بطاقات الائتمان) خاصة عند إرسالها إلى هذا الموقع.</string>
+    <string name="security_not_secure_title">الاتصال غير آمن</string>
+    <string name="security_not_secure_message">لا يجب إدخال أي معلومات حساسة على هذا الموقع (مثل كلمات المرور أو بطاقات الائتمان)، لأنه يمكن سرقتها من قبل المهاجمين.</string>
+    <string name="security_internal_title">صفحة داخلية</string>
+    <string name="security_internal_message">هذه صفحة داخلية للمتصفح.</string>
+    <string name="desc_bookmark">إضافة هذه الصفحة إلى الإشارات المرجعية</string>
+    <string name="desc_refresh">تحديث الصفحة</string>
+    <string name="desc_prev">السابق</string>
+    <string name="desc_next">التالي</string>
+    <string name="desc_close">إغلاق</string>
+    <string name="desc_back">رجوع</string>
+    <string name="desc_forward">تقدم</string>
+    <string name="desc_home">الانتقال إلى الصفحة الرئيسية</string>
+    <string name="desc_more">المزيد من الخيارات</string>
+    <string name="desc_favicon">أيقونة الموقع</string>
+    <string name="desc_delete">حذف</string>
+    <string name="tab_count">%d علامات تبويب</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">تصفح بدون إعلانات + ميزات حصرية</string>
+    <string name="close_all">إغلاق الكل</string>
+    <string name="dismiss">تجاهل</string>
+    <string name="no_downloads">لا توجد تنزيلات بعد</string>
+    <string name="print_page">طباعة الصفحة</string>
+    <string name="add_to_home">إضافة إلى الشاشة الرئيسية</string>
+    <string name="translate_page">ترجمة</string>
+    <string name="page_info">معلومات الصفحة</string>
+    <string name="zoom_in">تكبير</string>
+    <string name="zoom_out">تصغير</string>
+    <string name="text_zoom">تكبير النص</string>
+    <string name="copy_link">نسخ الرابط</string>
+    <string name="link_copied">تم نسخ الرابط</string>
+    <string name="open_in_new_tab">فتح في علامة تبويب جديدة</string>
+    <string name="open_in_incognito">فتح في علامة تبويب خفية</string>
+    <string name="save_image">حفظ الصورة</string>
+    <string name="share_link">مشاركة الرابط</string>
+    <string name="reader_mode">وضع القارئ</string>
+    <string name="reopen_closed_tab">إعادة فتح علامة التبويب المغلقة</string>
+    <string name="not_secure">غير آمن</string>
+    <string name="page_info_connection">الاتصال</string>
+    <string name="page_info_secure_subtitle">المعلومات التي ترسلها إلى هذا الموقع خاصة</string>
+    <string name="page_info_not_secure_subtitle">اتصالك بهذا الموقع ليس خاصاً. قد يتمكن المهاجمون من رؤية المعلومات التي تقدمها لهذا الموقع.</string>
+    <string name="page_info_internal_subtitle">هذه صفحة داخلية لـ Helix</string>
+    <string name="page_info_permissions">الأذونات</string>
+    <string name="page_info_no_permissions">لم يتم منح أذونات خاصة</string>
+    <string name="page_info_cookies">ملفات تعريف الارتباط وبيانات الموقع</string>
+    <string name="page_info_certificate">الشهادة صالحة</string>
+    <string name="page_info_certificate_invalid">الشهادة غير موثوقة</string>
+    <string name="learn_more">معرفة المزيد</string>
+    <string name="proceed_anyway">متابعة</string>
+    <string name="connection_secure">اتصال آمن</string>
+    <string name="connection_not_secure">غير آمن</string>
+    <string name="connection_internal">صفحة داخلية</string>
+
+    <!-- Site permissions -->
+    <string name="allow">السماح</string>
+    <string name="deny">حظر</string>
+    <string name="permission_location_title">طلب الموقع</string>
+    <string name="permission_location_message">يريد %1$s الوصول إلى موقعك.</string>
+    <string name="permission_camera_title">طلب الكاميرا</string>
+    <string name="permission_camera_message">يريد %1$s استخدام الكاميرا.</string>
+    <string name="permission_mic_title">طلب الميكروفون</string>
+    <string name="permission_mic_message">يريد %1$s استخدام الميكروفون.</string>
+    <string name="permission_notifications_title">طلب الإشعارات</string>
+    <string name="permission_notifications_message">يريد %1$s إرسال إشعارات إليك.</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">وضع HTTPS فقط</string>
+    <string name="https_only_mode_summary">حظر جميع الاتصالات غير الآمنة (HTTP). لن يتم تحميل المواقع التي لا تدعم HTTPS.</string>
+    <string name="https_only_blocked_title">الاتصال غير آمن</string>
+    <string name="https_only_blocked_message">حظر Helix هذه الصفحة لأن وضع HTTPS فقط مفعّل والموقع لا يدعم HTTPS.</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">أذونات الموقع</string>
+    <string name="site_permissions_summary">إدارة الوصول إلى الموقع والكاميرا والميكروفون والإشعارات لكل موقع</string>
+    <string name="site_permissions_empty">لم يتم حفظ أي أذونات للمواقع بعد</string>
+    <string name="site_permission_revoke">إعادة تعيين</string>
+    <string name="site_permission_label_allow">مسموح</string>
+    <string name="site_permission_label_deny">محظور</string>
+    <string name="site_permission_label_location">الموقع</string>
+    <string name="site_permission_label_camera">الكاميرا</string>
+    <string name="site_permission_label_microphone">الميكروفون</string>
+    <string name="site_permission_label_notifications">الإشعارات</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">الخروج من القارئ</string>
+    <string name="picture_in_picture">صورة داخل صورة</string>
+    <string name="pip_unsupported">ميزة صورة داخل صورة غير مدعومة على هذا الجهاز</string>
+    <string name="pip_no_video">لا يوجد فيديو قيد التشغيل في هذه الصفحة</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">مخصص</string>
+    <string name="custom_search_engine_title">محرك بحث مخصص</string>
+    <string name="custom_search_engine_hint">أدخل عنوان URL للبحث مع %%s في موضع الاستعلام. مثال: https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">يجب أن يبدأ عنوان URL بـ http:// أو https://</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">حفظ الصفحة (دون اتصال)</string>
+    <string name="save_page_no_url">افتح صفحة أولاً</string>
+    <string name="save_page_done">تم الحفظ باسم %1$s</string>
+    <string name="save_page_failed">فشل حفظ الصفحة</string>
+    <string name="no_recently_closed">لا توجد علامات تبويب مغلقة مؤخراً</string>
+    <string name="bookmarks_import">استيراد الإشارات المرجعية…</string>
+    <string name="bookmarks_export">تصدير الإشارات المرجعية…</string>
+    <string name="bookmarks_exported">تم تصدير %1$d إشارة مرجعية</string>
+    <string name="bookmarks_export_failed">فشل التصدير</string>
+    <string name="bookmarks_imported">تم استيراد %1$d إشارة مرجعية</string>
+    <string name="bookmarks_import_failed">فشل الاستيراد</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">البحث الصوتي</string>
+    <string name="desc_tabs">فتح مبدّل علامات التبويب</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">لم يتم العثور على تطبيق لفتح هذا الرابط</string>
+    <string name="download_unsupported_scheme">لا يمكن فتح رابط التنزيل هذا</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">علامة تبويب خفية جديدة</string>
+    <string name="close_all_tabs">إغلاق جميع علامات التبويب</string>
+    <string name="close_other_tabs">إغلاق علامات التبويب الأخرى</string>
+    <string name="close_tabs_to_right">إغلاق علامات التبويب على اليمين</string>
+    <string name="tab_closed">تم إغلاق علامة التبويب</string>
+    <string name="undo">تراجع</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="zero">إغلاق علامات التبويب؟</item>
+        <item quantity="one">إغلاق علامة تبويب واحدة؟</item>
+        <item quantity="two">إغلاق علامتي تبويب؟</item>
+        <item quantity="few">إغلاق %d علامات تبويب؟</item>
+        <item quantity="many">إغلاق %d علامة تبويب؟</item>
+        <item quantity="other">إغلاق جميع علامات التبويب الـ %d؟</item>
+    </plurals>
 </resources>

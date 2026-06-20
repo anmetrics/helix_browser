@@ -26,7 +26,7 @@
     <string>LaunchScreen</string>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
-        <string>armv7</string>
+        <string>arm64</string>
     </array>
     <key>UISupportedInterfaceOrientations</key>
     <array>
@@ -43,15 +43,13 @@
     </array>
     <key>NSAppTransportSecurity</key>
     <dict>
-        <key>NSAllowsArbitraryLoads</key>
+        <key>NSAllowsArbitraryLoadsInWebContent</key>
         <true/>
     </dict>
     <key>NSCameraUsageDescription</key>
     <string>Helix Browser cần truy cập camera cho WebRTC</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Helix Browser cần truy cập microphone cho WebRTC</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>Helix Browser cần truy cập thư viện ảnh để tải file lên</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>

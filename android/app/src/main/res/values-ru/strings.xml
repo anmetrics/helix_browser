@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Helix Browser</string>
     <string name="search_hint">Поиск или ввод URL</string>
+    <string name="search_tabs_hint">Поиск по вкладкам</string>
     <string name="new_tab">Новая вкладка</string>
     <string name="incognito_tab">Вкладка инкогнито</string>
     <string name="bookmarks">Закладки</string>
@@ -46,4 +47,204 @@
     <string name="language">Язык</string>
     <string name="select_language">Выберите язык</string>
     <string name="system_default">Системный по умолчанию</string>
+    <string name="cancel">Отмена</string>
+    <string name="incognito_mode">Режим инкогнито</string>
+    <string name="downloading_via_helix">Загрузка через Helix Browser</string>
+    <string name="download_started">Загрузка: %s</string>
+    <string name="share_via">Поделиться через</string>
+    <string name="search_or_type_url">Поиск или ввод URL...</string>
+    <string name="fast_secure_private">Быстро • Безопасно • Конфиденциально</string>
+    <string name="save_history">Сохранять историю</string>
+    <string name="find">Найти</string>
+    <string name="bookmarks_hint">Поиск в закладках...</string>
+    <string name="no_bookmarks">Закладок пока нет</string>
+    <string name="history_hint">Поиск в истории...</string>
+    <string name="no_history">История просмотров пуста</string>
+    <string name="private_tab_label">Приватная</string>
+    <string name="ssl_untrusted">Сертификат безопасности не является доверенным.</string>
+    <string name="ssl_expired">Срок действия сертификата безопасности истёк.</string>
+    <string name="ssl_id_mismatch">Доменное имя не соответствует сертификату.</string>
+    <string name="ssl_not_yet_valid">Сертификат безопасности ещё не вступил в силу.</string>
+    <string name="ssl_date_invalid">Недопустимая дата сертификата.</string>
+    <string name="ssl_invalid">Недействительный сертификат безопасности.</string>
+    <string name="ssl_unknown">Неизвестная ошибка SSL.</string>
+    <string name="ssl_title">Незащищённое соединение</string>
+    <string name="ssl_message">%1$s\n\nURL: %2$s\n\nХотите продолжить?</string>
+    <string name="continue_button">Продолжить</string>
+    <string name="go_back_button">Назад</string>
+    <string name="error_page_title">Не удаётся подключиться</string>
+    <string name="error_page_go_back">Назад</string>
+    <string name="ssl_error_page_title">Незащищённое соединение</string>
+    <string name="ssl_error_page_message">У этого сайта недействительный сертификат безопасности (ошибка SSL %d).</string>
+    <string name="ssl_error_page_go_back">Безопасно вернуться назад</string>
+    <string name="search_engine_pref">Поисковая система</string>
+    <string name="homepage_pref">Домашняя страница</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">Включить JavaScript для сайтов</string>
+    <string name="desktop_site_summary">Всегда использовать версию для ПК</string>
+    <string name="block_ads_title">Блокировать рекламу</string>
+    <string name="block_ads_summary">Блокировать рекламу и трекеры</string>
+    <string name="block_trackers_summary">Блокировать отслеживающие скрипты</string>
+    <string name="block_third_party_cookies_summary">Блокировать файлы cookie со сторонних сайтов</string>
+    <string name="do_not_track_summary">Отправлять запрос «Не отслеживать»</string>
+    <string name="https_upgrade_summary">Автоматически обновлять HTTP до HTTPS</string>
+    <string name="anti_fingerprinting_summary">Блокировать скрипты сбора цифровых отпечатков</string>
+    <string name="block_popups_summary">Блокировать автоматические всплывающие окна</string>
+    <string name="trackers_blocked_summary_format">Заблокировано трекеров: %d</string>
+    <string name="clear_cache">Очистить кэш</string>
+    <string name="clear_cache_summary">Очистить кэшированные данные сайтов</string>
+    <string name="clear_cookies">Очистить файлы cookie</string>
+    <string name="clear_cookies_summary">Очистить файлы cookie сайтов</string>
+    <string name="clear_history_summary">Очистить историю просмотров</string>
+    <string name="clear_all_data_summary">Очистить все данные, файлы cookie и кэш</string>
+    <string name="tabs_category">Вкладки</string>
+    <string name="restore_tabs_summary">Восстанавливать вкладки при перезапуске</string>
+    <string name="suspend_tabs_summary">Приостанавливать неактивные вкладки через 10 минут</string>
+    <string name="info_category">Информация</string>
+    <string name="version_pref">Версия</string>
+    <string name="engine_pref">Движок</string>
+    <string name="cache_cleared">Кэш очищен</string>
+    <string name="cookies_cleared">Файлы cookie очищены</string>
+    <string name="all_data_cleared">Все данные браузера очищены</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">Рекомендуемые</string>
+    <string name="all_languages">Все языки</string>
+    <string name="clear_history_dialog_title">Очистить историю</string>
+    <string name="clear_history_dialog_message">Вы уверены, что хотите очистить всю историю просмотров?</string>
+    <string name="clear_history_confirm">Очистить</string>
+    <string name="history_cleared">История очищена</string>
+    <string name="desc_secure">Защищённое соединение</string>
+    <string name="desc_not_secure">Не защищено</string>
+    <string name="security_secure_title">Соединение защищено</string>
+    <string name="security_secure_message">Ваши данные (например, пароли или номера банковских карт) защищены при отправке на этот сайт.</string>
+    <string name="security_not_secure_title">Соединение не защищено</string>
+    <string name="security_not_secure_message">Не вводите на этом сайте конфиденциальные данные (например, пароли или данные карт), так как их могут похитить злоумышленники.</string>
+    <string name="security_internal_title">Внутренняя страница</string>
+    <string name="security_internal_message">Это внутренняя страница браузера.</string>
+    <string name="desc_bookmark">Добавить страницу в закладки</string>
+    <string name="desc_refresh">Обновить страницу</string>
+    <string name="desc_prev">Назад</string>
+    <string name="desc_next">Вперёд</string>
+    <string name="desc_close">Закрыть</string>
+    <string name="desc_back">Назад</string>
+    <string name="desc_forward">Вперёд</string>
+    <string name="desc_home">На главную</string>
+    <string name="desc_more">Дополнительно</string>
+    <string name="desc_favicon">Значок сайта</string>
+    <string name="desc_delete">Удалить</string>
+    <string name="tab_count">Вкладок: %d</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">Просмотр без рекламы + эксклюзивные функции</string>
+    <string name="close_all">Закрыть все</string>
+    <string name="dismiss">Закрыть</string>
+    <string name="no_downloads">Загрузок пока нет</string>
+    <string name="print_page">Печать страницы</string>
+    <string name="add_to_home">Добавить на главный экран</string>
+    <string name="translate_page">Перевести</string>
+    <string name="page_info">Сведения о странице</string>
+    <string name="zoom_in">Увеличить</string>
+    <string name="zoom_out">Уменьшить</string>
+    <string name="text_zoom">Масштаб текста</string>
+    <string name="copy_link">Копировать ссылку</string>
+    <string name="link_copied">Ссылка скопирована</string>
+    <string name="open_in_new_tab">Открыть в новой вкладке</string>
+    <string name="open_in_incognito">Открыть во вкладке инкогнито</string>
+    <string name="save_image">Сохранить изображение</string>
+    <string name="share_link">Поделиться ссылкой</string>
+    <string name="reader_mode">Режим чтения</string>
+    <string name="reopen_closed_tab">Открыть закрытую вкладку</string>
+    <string name="not_secure">Не защищено</string>
+    <string name="page_info_connection">Соединение</string>
+    <string name="page_info_secure_subtitle">Данные, отправляемые на этот сайт, защищены</string>
+    <string name="page_info_not_secure_subtitle">Ваше соединение с этим сайтом не защищено. Злоумышленники могут видеть данные, которые вы передаёте этому сайту.</string>
+    <string name="page_info_internal_subtitle">Это внутренняя страница Helix</string>
+    <string name="page_info_permissions">Разрешения</string>
+    <string name="page_info_no_permissions">Особые разрешения не предоставлены</string>
+    <string name="page_info_cookies">Файлы cookie и данные сайта</string>
+    <string name="page_info_certificate">Сертификат действителен</string>
+    <string name="page_info_certificate_invalid">Сертификат не является доверенным</string>
+    <string name="learn_more">Подробнее</string>
+    <string name="proceed_anyway">Продолжить</string>
+    <string name="connection_secure">Защищённое соединение</string>
+    <string name="connection_not_secure">Не защищено</string>
+    <string name="connection_internal">Внутренняя страница</string>
+
+    <!-- Site permissions -->
+    <string name="allow">Разрешить</string>
+    <string name="deny">Блокировать</string>
+    <string name="permission_location_title">Запрос геолокации</string>
+    <string name="permission_location_message">Сайт %1$s запрашивает доступ к вашему местоположению.</string>
+    <string name="permission_camera_title">Запрос камеры</string>
+    <string name="permission_camera_message">Сайт %1$s запрашивает доступ к камере.</string>
+    <string name="permission_mic_title">Запрос микрофона</string>
+    <string name="permission_mic_message">Сайт %1$s запрашивает доступ к микрофону.</string>
+    <string name="permission_notifications_title">Запрос уведомлений</string>
+    <string name="permission_notifications_message">Сайт %1$s хочет отправлять вам уведомления.</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">Режим «Только HTTPS»</string>
+    <string name="https_only_mode_summary">Блокировать все незащищённые (HTTP) соединения. Сайты без HTTPS не будут загружаться.</string>
+    <string name="https_only_blocked_title">Соединение не защищено</string>
+    <string name="https_only_blocked_message">Helix заблокировал эту страницу, так как включён режим «Только HTTPS», а сайт не поддерживает HTTPS.</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">Разрешения сайтов</string>
+    <string name="site_permissions_summary">Управление доступом к геолокации, камере, микрофону и уведомлениям для каждого сайта</string>
+    <string name="site_permissions_empty">Сохранённых разрешений сайтов пока нет</string>
+    <string name="site_permission_revoke">Сбросить</string>
+    <string name="site_permission_label_allow">Разрешено</string>
+    <string name="site_permission_label_deny">Заблокировано</string>
+    <string name="site_permission_label_location">Местоположение</string>
+    <string name="site_permission_label_camera">Камера</string>
+    <string name="site_permission_label_microphone">Микрофон</string>
+    <string name="site_permission_label_notifications">Уведомления</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">Выйти из режима чтения</string>
+    <string name="picture_in_picture">Картинка в картинке</string>
+    <string name="pip_unsupported">Режим «картинка в картинке» не поддерживается на этом устройстве</string>
+    <string name="pip_no_video">На этой странице не воспроизводится видео</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">Пользовательская</string>
+    <string name="custom_search_engine_title">Пользовательская поисковая система</string>
+    <string name="custom_search_engine_hint">Введите URL поиска с %%s на месте запроса. Пример: https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">URL должен начинаться с http:// или https://</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">Сохранить страницу (офлайн)</string>
+    <string name="save_page_no_url">Сначала откройте страницу</string>
+    <string name="save_page_done">Сохранено как %1$s</string>
+    <string name="save_page_failed">Не удалось сохранить страницу</string>
+    <string name="no_recently_closed">Нет недавно закрытых вкладок</string>
+    <string name="bookmarks_import">Импорт закладок…</string>
+    <string name="bookmarks_export">Экспорт закладок…</string>
+    <string name="bookmarks_exported">Экспортировано закладок: %1$d</string>
+    <string name="bookmarks_export_failed">Не удалось выполнить экспорт</string>
+    <string name="bookmarks_imported">Импортировано закладок: %1$d</string>
+    <string name="bookmarks_import_failed">Не удалось выполнить импорт</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">Голосовой поиск</string>
+    <string name="desc_tabs">Открыть переключатель вкладок</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">Не найдено приложение для открытия этой ссылки</string>
+    <string name="download_unsupported_scheme">Эту ссылку для загрузки нельзя открыть</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">Новая вкладка инкогнито</string>
+    <string name="close_all_tabs">Закрыть все вкладки</string>
+    <string name="close_other_tabs">Закрыть другие вкладки</string>
+    <string name="close_tabs_to_right">Закрыть вкладки справа</string>
+    <string name="tab_closed">Вкладка закрыта</string>
+    <string name="undo">Отменить</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="one">Закрыть %d вкладку?</item>
+        <item quantity="few">Закрыть %d вкладки?</item>
+        <item quantity="many">Закрыть %d вкладок?</item>
+        <item quantity="other">Закрыть %d вкладки?</item>
+    </plurals>
 </resources>

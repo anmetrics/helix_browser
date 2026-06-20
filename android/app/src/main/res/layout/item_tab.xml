@@ -176,4 +176,30 @@
 
     </LinearLayout>
 
+    <!-- Selection-mode overlay. Shown only in multi-select mode; dims the card
+         and surfaces a check badge in the top-start corner when selected. It is
+         non-clickable so taps fall through to the card root's selection toggle. -->
+    <FrameLayout
+        android:id="@+id/selectionOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        android:background="#33000000"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/selectionCheck"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="top|start"
+            android:layout_margin="12dp"
+            android:padding="4dp"
+            android:background="@drawable/bg_new_tab_button"
+            android:src="@drawable/ic_check"
+            app:tint="@color/accent_purple"
+            android:visibility="gone"
+            android:contentDescription="@string/tab_selected" />
+    </FrameLayout>
+
 </com.google.android.material.card.MaterialCardView>

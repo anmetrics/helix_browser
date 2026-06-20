@@ -1,5 +1,6 @@
 import Foundation
 import WebKit
+import UIKit
 
 class TabManager {
     static let shared = TabManager()
@@ -17,6 +18,16 @@ class TabManager {
 
     private let savedTabsKey = "helix_saved_tabs"
     private let savedGroupsKey = "helix_saved_groups"
+    private let savedActiveTabKey = "helix_saved_active_tab"
+    private let savedInteractionStatesKey = "helix_saved_interaction_states"
+
+    /// Persisted WKWebView `interactionState` blobs keyed by tab id, used to restore
+    /// back/forward history and scroll position after process death. Captured in
+    /// `saveTabs()` from each live (non-incognito) WebView and applied at WebView
+    /// re-creation time via `interactionState(forTabId:)`.
+    private var interactionStates: [String: Data] = [:]
+
+    private var memoryWarningObserver: NSObjectProtocol?
 
     private init() {
         if Prefs.shared.isRestoreTabsEnabled {
@@ -26,6 +37,19 @@ class TabManager {
             let tab = BrowserTab()
             tabs.append(tab)
             activeTabId = tab.id
+        }
+        memoryWarningObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.suspendInactiveTabs()
+        }
+    }
+
+    deinit {
+        if let observer = memoryWarningObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 
@@ -64,6 +88,7 @@ class TabManager {
         guard let index = tabs.firstIndex(where: { $0.id == id }) else { return }
         tab.webView?.stopLoading()
         tab.webView = nil
+        interactionStates[id] = nil
         tabs.remove(at: index)
 
         if activeTabId == id {
@@ -161,17 +186,61 @@ class TabManager {
         if let data = try? JSONEncoder().encode(tabGroups) {
             UserDefaults.standard.set(data, forKey: savedGroupsKey)
         }
+
+        // Persist the currently active tab id so it can be re-activated on relaunch
+        // instead of always falling back to the first tab.
+        UserDefaults.standard.set(activeTabId, forKey: savedActiveTabKey)
+
+        captureInteractionStates(for: saveable)
+    }
+
+    /// Captures each live (non-incognito) WebView's navigation/scroll `interactionState`
+    /// so back/forward history and scroll position survive process death. The opaque
+    /// state object is securely archived to `Data` for persistence.
+    private func captureInteractionStates(for saveable: [BrowserTab]) {
+        guard #available(iOS 15.0, *) else { return }
+        for tab in saveable {
+            guard let state = tab.webView?.interactionState else { continue }
+            if let data = try? NSKeyedArchiver.archivedData(withRootObject: state, requiringSecureCoding: true) {
+                interactionStates[tab.id] = data
+            }
+        }
+        // Drop states for tabs that no longer exist to avoid unbounded growth.
+        let liveIds = Set(saveable.map { $0.id })
+        interactionStates = interactionStates.filter { liveIds.contains($0.key) }
+        UserDefaults.standard.set(interactionStates, forKey: savedInteractionStatesKey)
+    }
+
+    /// Returns the restorable WKWebView `interactionState` object for the given tab id,
+    /// if one was persisted. Callers that create a fresh WebView for a restored tab should
+    /// assign the result to `webView.interactionState` (iOS 15+) before falling back to a
+    /// plain URL load, so back/forward history and scroll position are restored.
+    @available(iOS 15.0, *)
+    func interactionState(forTabId id: String) -> Any? {
+        guard let data = interactionStates[id] else { return nil }
+        guard let unarchived = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) else { return nil }
+        return unarchived
     }
 
     private func restoreTabs() {
         if let data = UserDefaults.standard.data(forKey: savedTabsKey),
            let restored = try? JSONDecoder().decode([BrowserTab].self, from: data), !restored.isEmpty {
             tabs = restored
-            activeTabId = restored.first?.id ?? ""
+            // Re-activate the previously active tab if it still exists; otherwise fall
+            // back to the first restored tab.
+            let savedActiveId = UserDefaults.standard.string(forKey: savedActiveTabKey)
+            if let savedActiveId = savedActiveId, restored.contains(where: { $0.id == savedActiveId }) {
+                activeTabId = savedActiveId
+            } else {
+                activeTabId = restored.first?.id ?? ""
+            }
         }
         if let data = UserDefaults.standard.data(forKey: savedGroupsKey),
            let groups = try? JSONDecoder().decode([TabGroup].self, from: data) {
             tabGroups = groups
+        }
+        if let stored = UserDefaults.standard.dictionary(forKey: savedInteractionStatesKey) as? [String: Data] {
+            interactionStates = stored
         }
     }
 
@@ -180,9 +249,17 @@ class TabManager {
     func suspendInactiveTabs() {
         let tenMinutesAgo = Date().addingTimeInterval(-600)
         for tab in tabs where tab.id != activeTabId && tab.lastAccessTime < tenMinutesAgo && !tab.isPinned {
+            // Capture the latest navigation/scroll state before discarding the WebView so
+            // it can be restored on re-activation (non-incognito tabs only).
+            if #available(iOS 15.0, *), !tab.isIncognito,
+               let state = tab.webView?.interactionState,
+               let data = try? NSKeyedArchiver.archivedData(withRootObject: state, requiringSecureCoding: true) {
+                interactionStates[tab.id] = data
+            }
             tab.isSuspended = true
             tab.webView?.stopLoading()
             tab.webView = nil
         }
+        UserDefaults.standard.set(interactionStates, forKey: savedInteractionStatesKey)
     }
 }

@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Helix Browser</string>
     <string name="search_hint">ค้นหาหรือพิมพ์ URL</string>
+    <string name="search_tabs_hint">ค้นหาแท็บของคุณ</string>
     <string name="new_tab">แท็บใหม่</string>
     <string name="incognito_tab">แท็บไม่ระบุตัวตน</string>
     <string name="bookmarks">บุ๊กมาร์ก</string>
@@ -46,4 +47,202 @@
     <string name="language">ภาษา</string>
     <string name="select_language">เลือกภาษา</string>
     <string name="system_default">ค่าเริ่มต้นของระบบ</string>
+    <string name="cancel">ยกเลิก</string>
+    <string name="incognito_mode">โหมดไม่ระบุตัวตน</string>
+    <string name="downloading_via_helix">กำลังดาวน์โหลดผ่าน Helix Browser</string>
+    <string name="download_started">กำลังดาวน์โหลด: %s</string>
+    <string name="share_via">แชร์ผ่าน</string>
+    <string name="search_or_type_url">ค้นหาหรือป้อน URL...</string>
+    <string name="fast_secure_private">เร็ว • ปลอดภัย • เป็นส่วนตัว</string>
+    <string name="save_history">บันทึกประวัติ</string>
+    <string name="find">ค้นหา</string>
+    <string name="bookmarks_hint">ค้นหาในบุ๊กมาร์ก...</string>
+    <string name="no_bookmarks">ยังไม่มีบุ๊กมาร์ก</string>
+    <string name="history_hint">ค้นหาประวัติ...</string>
+    <string name="no_history">ยังไม่มีประวัติการท่องเว็บ</string>
+    <string name="private_tab_label">ส่วนตัว</string>
+    <string name="ssl_untrusted">ใบรับรองความปลอดภัยไม่น่าเชื่อถือ</string>
+    <string name="ssl_expired">ใบรับรองความปลอดภัยหมดอายุแล้ว</string>
+    <string name="ssl_id_mismatch">ชื่อโดเมนไม่ตรงกับใบรับรอง</string>
+    <string name="ssl_not_yet_valid">ใบรับรองความปลอดภัยยังไม่มีผลใช้งาน</string>
+    <string name="ssl_date_invalid">วันที่ของใบรับรองไม่ถูกต้อง</string>
+    <string name="ssl_invalid">ใบรับรองความปลอดภัยไม่ถูกต้อง</string>
+    <string name="ssl_unknown">เกิดข้อผิดพลาด SSL ที่ไม่รู้จัก</string>
+    <string name="ssl_title">การเชื่อมต่อไม่ปลอดภัย</string>
+    <string name="ssl_message">%1$s\n\nURL: %2$s\n\nคุณต้องการดำเนินการต่อหรือไม่?</string>
+    <string name="continue_button">ดำเนินการต่อ</string>
+    <string name="go_back_button">ย้อนกลับ</string>
+    <string name="error_page_title">เชื่อมต่อไม่ได้</string>
+    <string name="error_page_go_back">ย้อนกลับ</string>
+    <string name="ssl_error_page_title">การเชื่อมต่อไม่ปลอดภัย</string>
+    <string name="ssl_error_page_message">เว็บไซต์นี้มีใบรับรองความปลอดภัยที่ไม่ถูกต้อง (ข้อผิดพลาด SSL %d)</string>
+    <string name="ssl_error_page_go_back">ย้อนกลับอย่างปลอดภัย</string>
+    <string name="search_engine_pref">เครื่องมือค้นหา</string>
+    <string name="homepage_pref">หน้าแรก</string>
+    <string name="javascript_pref">JavaScript</string>
+    <string name="javascript_summary">เปิดใช้งาน JavaScript สำหรับเว็บไซต์</string>
+    <string name="desktop_site_summary">ใช้เวอร์ชันเดสก์ท็อปเสมอ</string>
+    <string name="block_ads_title">บล็อกโฆษณา</string>
+    <string name="block_ads_summary">บล็อกโฆษณาและตัวติดตาม</string>
+    <string name="block_trackers_summary">บล็อกสคริปต์การติดตาม</string>
+    <string name="block_third_party_cookies_summary">บล็อกคุกกี้จากเว็บไซต์บุคคลที่สาม</string>
+    <string name="do_not_track_summary">ส่งคำขอไม่ติดตาม</string>
+    <string name="https_upgrade_summary">อัปเกรด HTTP เป็น HTTPS โดยอัตโนมัติ</string>
+    <string name="anti_fingerprinting_summary">บล็อกสคริปต์ระบุตัวตนของเบราว์เซอร์</string>
+    <string name="block_popups_summary">บล็อกหน้าต่างป๊อปอัพอัตโนมัติ</string>
+    <string name="trackers_blocked_summary_format">บล็อกตัวติดตาม %d รายการ</string>
+    <string name="clear_cache">ล้างแคช</string>
+    <string name="clear_cache_summary">ล้างข้อมูลเว็บไซต์ที่แคชไว้</string>
+    <string name="clear_cookies">ล้างคุกกี้</string>
+    <string name="clear_cookies_summary">ล้างคุกกี้ของเว็บไซต์</string>
+    <string name="clear_history_summary">ล้างประวัติการท่องเว็บ</string>
+    <string name="clear_all_data_summary">ล้างข้อมูล คุกกี้ และแคชทั้งหมด</string>
+    <string name="tabs_category">แท็บ</string>
+    <string name="restore_tabs_summary">คืนค่าแท็บเมื่อรีสตาร์ท</string>
+    <string name="suspend_tabs_summary">ระงับแท็บที่ไม่ได้ใช้งานหลังจาก 10 นาที</string>
+    <string name="info_category">ข้อมูล</string>
+    <string name="version_pref">เวอร์ชัน</string>
+    <string name="engine_pref">เอนจิน</string>
+    <string name="cache_cleared">ล้างแคชแล้ว</string>
+    <string name="cookies_cleared">ล้างคุกกี้แล้ว</string>
+    <string name="all_data_cleared">ล้างข้อมูลการท่องเว็บทั้งหมดแล้ว</string>
+    <string name="homepage_summary">https://www.google.com</string>
+    <string name="version_summary">1.0.0</string>
+    <string name="engine_summary">WebKit (Android WebView)</string>
+    <string name="recommended_languages">แนะนำ</string>
+    <string name="all_languages">ภาษาทั้งหมด</string>
+    <string name="clear_history_dialog_title">ล้างประวัติ</string>
+    <string name="clear_history_dialog_message">คุณแน่ใจหรือไม่ว่าต้องการล้างประวัติการท่องเว็บทั้งหมด?</string>
+    <string name="clear_history_confirm">ล้าง</string>
+    <string name="history_cleared">ล้างประวัติแล้ว</string>
+    <string name="desc_secure">การเชื่อมต่อปลอดภัย</string>
+    <string name="desc_not_secure">ไม่ปลอดภัย</string>
+    <string name="security_secure_title">การเชื่อมต่อปลอดภัย</string>
+    <string name="security_secure_message">ข้อมูลของคุณ (เช่น รหัสผ่านหรือหมายเลขบัตรเครดิต) จะเป็นส่วนตัวเมื่อส่งไปยังไซต์นี้</string>
+    <string name="security_not_secure_title">การเชื่อมต่อไม่ปลอดภัย</string>
+    <string name="security_not_secure_message">คุณไม่ควรป้อนข้อมูลที่ละเอียดอ่อนใด ๆ บนไซต์นี้ (เช่น รหัสผ่านหรือบัตรเครดิต) เพราะอาจถูกผู้ไม่หวังดีขโมยได้</string>
+    <string name="security_internal_title">หน้าภายใน</string>
+    <string name="security_internal_message">นี่คือหน้าภายในของเบราว์เซอร์</string>
+    <string name="desc_bookmark">บุ๊กมาร์กหน้านี้</string>
+    <string name="desc_refresh">รีเฟรชหน้า</string>
+    <string name="desc_prev">ก่อนหน้า</string>
+    <string name="desc_next">ถัดไป</string>
+    <string name="desc_close">ปิด</string>
+    <string name="desc_back">ย้อนกลับ</string>
+    <string name="desc_forward">ไปข้างหน้า</string>
+    <string name="desc_home">ไปหน้าแรก</string>
+    <string name="desc_more">ตัวเลือกเพิ่มเติม</string>
+    <string name="desc_favicon">ไอคอนเว็บไซต์</string>
+    <string name="desc_delete">ลบ</string>
+    <string name="tab_count">%d แท็บ</string>
+    <string name="premium_banner_title">Helix Premium</string>
+    <string name="premium_banner_subtitle">ท่องเว็บแบบไม่มีโฆษณา + ฟีเจอร์พิเศษ</string>
+    <string name="close_all">ปิดทั้งหมด</string>
+    <string name="dismiss">ปิด</string>
+    <string name="no_downloads">ยังไม่มีรายการดาวน์โหลด</string>
+    <string name="print_page">พิมพ์หน้า</string>
+    <string name="add_to_home">เพิ่มไปยังหน้าจอหลัก</string>
+    <string name="translate_page">แปล</string>
+    <string name="page_info">ข้อมูลหน้า</string>
+    <string name="zoom_in">ขยายเข้า</string>
+    <string name="zoom_out">ขยายออก</string>
+    <string name="text_zoom">ขยายข้อความ</string>
+    <string name="copy_link">คัดลอกลิงก์</string>
+    <string name="link_copied">คัดลอกลิงก์แล้ว</string>
+    <string name="open_in_new_tab">เปิดในแท็บใหม่</string>
+    <string name="open_in_incognito">เปิดในแท็บไม่ระบุตัวตน</string>
+    <string name="save_image">บันทึกรูปภาพ</string>
+    <string name="share_link">แชร์ลิงก์</string>
+    <string name="reader_mode">โหมดการอ่าน</string>
+    <string name="reopen_closed_tab">เปิดแท็บที่ปิดไปอีกครั้ง</string>
+    <string name="not_secure">ไม่ปลอดภัย</string>
+    <string name="page_info_connection">การเชื่อมต่อ</string>
+    <string name="page_info_secure_subtitle">ข้อมูลที่คุณส่งไปยังไซต์นี้เป็นส่วนตัว</string>
+    <string name="page_info_not_secure_subtitle">การเชื่อมต่อของคุณกับไซต์นี้ไม่เป็นส่วนตัว ผู้ไม่หวังดีอาจเห็นข้อมูลที่คุณส่งไปยังไซต์นี้ได้</string>
+    <string name="page_info_internal_subtitle">นี่คือหน้าภายในของ Helix</string>
+    <string name="page_info_permissions">สิทธิ์</string>
+    <string name="page_info_no_permissions">ไม่มีการให้สิทธิ์พิเศษ</string>
+    <string name="page_info_cookies">คุกกี้และข้อมูลไซต์</string>
+    <string name="page_info_certificate">ใบรับรองถูกต้อง</string>
+    <string name="page_info_certificate_invalid">ใบรับรองไม่น่าเชื่อถือ</string>
+    <string name="learn_more">เรียนรู้เพิ่มเติม</string>
+    <string name="proceed_anyway">ดำเนินการต่อ</string>
+    <string name="connection_secure">การเชื่อมต่อปลอดภัย</string>
+    <string name="connection_not_secure">ไม่ปลอดภัย</string>
+    <string name="connection_internal">หน้าภายใน</string>
+
+    <!-- Site permissions -->
+    <string name="allow">อนุญาต</string>
+    <string name="deny">บล็อก</string>
+    <string name="permission_location_title">คำขอตำแหน่งที่ตั้ง</string>
+    <string name="permission_location_message">%1$s ต้องการเข้าถึงตำแหน่งที่ตั้งของคุณ</string>
+    <string name="permission_camera_title">คำขอใช้กล้อง</string>
+    <string name="permission_camera_message">%1$s ต้องการใช้กล้องของคุณ</string>
+    <string name="permission_mic_title">คำขอใช้ไมโครโฟน</string>
+    <string name="permission_mic_message">%1$s ต้องการใช้ไมโครโฟนของคุณ</string>
+    <string name="permission_notifications_title">คำขอส่งการแจ้งเตือน</string>
+    <string name="permission_notifications_message">%1$s ต้องการส่งการแจ้งเตือนให้คุณ</string>
+
+    <!-- HTTPS-Only -->
+    <string name="https_only_mode_title">โหมด HTTPS เท่านั้น</string>
+    <string name="https_only_mode_summary">บล็อกการเชื่อมต่อที่ไม่ปลอดภัย (HTTP) ทั้งหมด ไซต์ที่ไม่มี HTTPS จะไม่โหลด</string>
+    <string name="https_only_blocked_title">การเชื่อมต่อไม่ปลอดภัย</string>
+    <string name="https_only_blocked_message">Helix บล็อกหน้านี้เนื่องจากเปิดโหมด HTTPS เท่านั้น และไซต์ไม่รองรับ HTTPS</string>
+
+    <!-- Site permissions screen -->
+    <string name="site_permissions_title">สิทธิ์ของไซต์</string>
+    <string name="site_permissions_summary">จัดการการเข้าถึงตำแหน่งที่ตั้ง กล้อง ไมโครโฟน และการแจ้งเตือนของแต่ละไซต์</string>
+    <string name="site_permissions_empty">ยังไม่มีสิทธิ์ของไซต์ที่บันทึกไว้</string>
+    <string name="site_permission_revoke">รีเซ็ต</string>
+    <string name="site_permission_label_allow">อนุญาตแล้ว</string>
+    <string name="site_permission_label_deny">ถูกบล็อก</string>
+    <string name="site_permission_label_location">ตำแหน่งที่ตั้ง</string>
+    <string name="site_permission_label_camera">กล้อง</string>
+    <string name="site_permission_label_microphone">ไมโครโฟน</string>
+    <string name="site_permission_label_notifications">การแจ้งเตือน</string>
+
+    <!-- M4 -->
+    <string name="reader_mode_exit">ออกจากโหมดการอ่าน</string>
+    <string name="picture_in_picture">ภาพซ้อนภาพ</string>
+    <string name="pip_unsupported">อุปกรณ์นี้ไม่รองรับภาพซ้อนภาพ</string>
+    <string name="pip_no_video">ไม่มีวิดีโอกำลังเล่นในหน้านี้</string>
+
+    <!-- Custom search engine -->
+    <string name="custom_search_engine">กำหนดเอง</string>
+    <string name="custom_search_engine_title">เครื่องมือค้นหาที่กำหนดเอง</string>
+    <string name="custom_search_engine_hint">ป้อน URL การค้นหาโดยใส่ %%s ในตำแหน่งที่คำค้นหาจะปรากฏ ตัวอย่าง: https://example.com/search?q=%%s</string>
+    <string name="custom_search_engine_invalid">URL ต้องขึ้นต้นด้วย http:// หรือ https://</string>
+
+    <!-- ultrathink batch -->
+    <string name="save_page">บันทึกหน้า (ออฟไลน์)</string>
+    <string name="save_page_no_url">เปิดหน้าเว็บก่อน</string>
+    <string name="save_page_done">บันทึกเป็น %1$s แล้ว</string>
+    <string name="save_page_failed">บันทึกหน้าไม่สำเร็จ</string>
+    <string name="no_recently_closed">ไม่มีแท็บที่ปิดล่าสุด</string>
+    <string name="bookmarks_import">นำเข้าบุ๊กมาร์ก…</string>
+    <string name="bookmarks_export">ส่งออกบุ๊กมาร์ก…</string>
+    <string name="bookmarks_exported">ส่งออกบุ๊กมาร์ก %1$d รายการแล้ว</string>
+    <string name="bookmarks_export_failed">ส่งออกไม่สำเร็จ</string>
+    <string name="bookmarks_imported">นำเข้าบุ๊กมาร์ก %1$d รายการแล้ว</string>
+    <string name="bookmarks_import_failed">นำเข้าไม่สำเร็จ</string>
+
+    <!-- Accessibility -->
+    <string name="desc_voice_search">ค้นหาด้วยเสียง</string>
+    <string name="desc_tabs">เปิดตัวสลับแท็บ</string>
+
+    <!-- External links / downloads -->
+    <string name="no_app_found_for_link">ไม่พบแอปที่จะเปิดลิงก์นี้</string>
+    <string name="download_unsupported_scheme">ไม่สามารถเปิดลิงก์ดาวน์โหลดนี้ได้</string>
+
+    <!-- Tab actions -->
+    <string name="new_incognito_tab">แท็บไม่ระบุตัวตนใหม่</string>
+    <string name="close_all_tabs">ปิดแท็บทั้งหมด</string>
+    <string name="close_other_tabs">ปิดแท็บอื่น</string>
+    <string name="close_tabs_to_right">ปิดแท็บทางขวา</string>
+    <string name="tab_closed">ปิดแท็บแล้ว</string>
+    <string name="undo">เลิกทำ</string>
+    <plurals name="close_all_tabs_confirm">
+        <item quantity="one">ปิด 1 แท็บใช่หรือไม่?</item>
+        <item quantity="other">ปิดแท็บทั้งหมด %d แท็บใช่หรือไม่?</item>
+    </plurals>
 </resources>
