@@ -17,6 +17,18 @@
         android:layout_marginBottom="16dp"
         android:background="@drawable/bg_sheet_handle" />
 
+    <!-- Scrollable content so every item (incl. Settings, the last row) is
+         reachable even when the list is taller than the bottom sheet. -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
     <!-- Quick actions row -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -232,4 +244,6 @@
         <ImageView android:src="@drawable/ic_settings" style="@style/MenuIconStyle" />
         <TextView android:text="@string/settings" style="@style/MenuTextStyle" />
     </LinearLayout>
+    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </LinearLayout>

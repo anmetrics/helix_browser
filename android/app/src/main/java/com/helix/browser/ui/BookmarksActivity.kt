@@ -136,7 +136,7 @@ class BookmarksActivity : BaseActivity() {
     private fun renderEmptyState(isEmpty: Boolean) {
         binding.emptyView.visibility = if (isEmpty) View.VISIBLE else View.GONE
         if (!isEmpty) return
-        binding.emptyView.text = when {
+        binding.emptyTitle.text = when {
             viewModel.isSearching -> getString(R.string.search_no_results)
             !viewModel.isAtRoot -> getString(R.string.empty_folder)
             else -> getString(R.string.no_bookmarks)
