@@ -271,6 +271,35 @@ class HelixWebView @JvmOverloads constructor(
         // override below.
     }
 
+    // --- Per-site text zoom ---------------------------------------------------
+    //
+    // Sets WebSettings.textZoom for THIS WebView so the host can apply a
+    // remembered per-origin zoom level. The engine deliberately does NOT read
+    // or persist per-origin zoom here: MainActivity owns the host->zoom map and
+    // calls this on page finished (and from the zoom +/- control) with the
+    // value to apply.
+    //
+    // - textZoom is a percentage where 100 == default. It scales rendered text
+    //   only and is independent of pinch / built-in zoom and of the minimum
+    //   font size, so per-site zoom composes with the accessibility settings
+    //   instead of fighting them.
+    // - The value is clamped to [ZOOM_MIN_PERCENT, ZOOM_MAX_PERCENT] so a stale
+    //   or hand-edited stored value (or a future caller) can never push WebView
+    //   into an unusable / unrendered state. The overflow zoom control already
+    //   clamps to a narrower 50..200 band; this wider engine clamp is a superset
+    //   and never narrows what the host asked for within range.
+    // - WebSettings.textZoom is available since API 14 (< minSdk 24): no version
+    //   guard required.
+    // - Touches only this WebView's WebSettings (no global / process-wide state)
+    //   so it is safe for incognito and pooled tabs alike. No navigation is
+    //   triggered; the change applies to the live page immediately.
+    fun applyZoomPercent(percent: Int) {
+        val clamped = percent.coerceIn(ZOOM_MIN_PERCENT, ZOOM_MAX_PERCENT)
+        // No-op if unchanged to avoid a redundant relayout on every page finish.
+        if (settings.textZoom == clamped) return
+        settings.textZoom = clamped
+    }
+
     // Injects a meta-viewport override that re-enables user scaling on the
     // CURRENTLY displayed page. Only meaningful when force-enable-zoom is on and
     // JavaScript is allowed to run; both are checked by the caller. Called again
@@ -479,5 +508,13 @@ class HelixWebView @JvmOverloads constructor(
         const val MIN_FONT_HUGE = 24
         // Upper clamp used when reading the pref defensively.
         private const val MIN_FONT_MAX = 72
+
+        // Per-site text-zoom clamp (WebSettings.textZoom percentage, 100 ==
+        // default). applyZoomPercent() coerces any host-supplied value into this
+        // band so a stale stored value can never render a page unusable. Public
+        // so the host (MainActivity, which owns the per-origin zoom map) can
+        // clamp/round before storing too.
+        const val ZOOM_MIN_PERCENT = 50
+        const val ZOOM_MAX_PERCENT = 300
     }
 }

@@ -619,6 +619,7 @@ class MainActivity : BaseActivity() {
                 if (q.isEmpty()) {
                     currentWebView?.clearMatches()
                     binding.tvFindCount.text = ""
+                    binding.tvFindCount.contentDescription = null
                 } else {
                     currentWebView?.findAllAsync(q)
                 }
@@ -740,6 +741,9 @@ class MainActivity : BaseActivity() {
                     if (isFinishing || isDestroyed) return@runOnUiThread
                     viewModel.onPageFinished(url, webView.title ?: "")
                     updateNavButtons()
+                    // Apply remembered per-site zoom (or the global default) now that
+                    // the page is committed and currentUrl reflects the final URL.
+                    applyZoomForFinishedPage(webView)
                     headerHideRunnable?.let { binding.root.removeCallbacks(it) }
                     if (url != "about:blank" && url.isNotEmpty()) {
                         headerHideRunnable = Runnable { setToolbarScrollable(true) }.also {
@@ -816,14 +820,16 @@ class MainActivity : BaseActivity() {
         )
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, contentLength -> downloadFile(url, userAgent, contentDisposition, mimeType, contentLength) }
         webView.setFindListener { active, total, doneCounting ->
-            // FindListener fires off the UI thread; only update if this WebView is
-            // the visible one. We compare against the @Volatile foregroundTabId
-            // instead of tabManager.currentTab so we never touch the main-thread-
-            // confined tab list from this background callback (avoids a data race).
+            // FindListener fires off the UI thread (on findAllAsync AND findNext);
+            // only update if this WebView is the visible one. We compare against the
+            // @Volatile foregroundTabId instead of tabManager.currentTab so we never
+            // touch the main-thread-confined tab list from this background callback
+            // (avoids a data race). Wait for the final (doneCounting) callback so the
+            // total is stable instead of flickering through intermediate counts.
             if (!doneCounting) return@setFindListener
             if (foregroundTabId == tabId) runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
-                binding.tvFindCount.text = if (total > 0) "${active + 1}/$total" else "0/0"
+                updateFindCount(active, total)
             }
         }
         setupWebViewContextMenu(webView)
@@ -838,7 +844,13 @@ class MainActivity : BaseActivity() {
         // loaded yet, so this does not double-load.
         if (tab.isDesktopMode) webView.setDesktopMode(true)
         if (tab.url.isNotEmpty()) webView.loadUrl(tab.url)
-        else webView.loadDataWithBaseURL("about:blank", buildNewTabHtml(), "text/html", "UTF-8", null)
+        else {
+            // A brand-new incognito tab gets a privacy-explainer start page instead
+            // of the most-visited grid (which would surface nothing in incognito and
+            // is the wrong affordance). Reuses the same start-page chrome/builder.
+            val html = if (tab.isIncognito) buildIncognitoNewTabHtml() else buildNewTabHtml()
+            webView.loadDataWithBaseURL("about:blank", html, "text/html", "UTF-8", null)
+        }
         return webView
     }
 
@@ -934,6 +946,70 @@ function helixRenderTiles(items){
 }
 </script>
 </body></html>""".trimIndent()
+
+    // Incognito start page: a privacy explainer ("You've gone incognito") with what
+    // is and isn't saved, in place of the most-visited grid. No remote requests; all
+    // copy comes from string resources. Mirrors buildNewTabHtml's self-contained,
+    // inline-styled, no-network shape and reuses the same start-page search box +
+    // HelixHome bridge so tapping it focuses the real omnibox. The base URL stays
+    // about:blank so the existing internal-start-page detection (and the bridge's
+    // start-page guard) treats it identically to the normal new-tab page.
+    private fun buildIncognitoNewTabHtml(): String {
+        // Escape every user-visible string before embedding it in HTML so a
+        // translated string containing < & " cannot break the markup (defense in
+        // depth; these are our own resources, never page/remote content).
+        fun esc(s: String): String = s
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+        val title = esc(getString(R.string.incognito_ntp_title))
+        val subtitle = esc(getString(R.string.incognito_ntp_subtitle))
+        val savedHeading = esc(getString(R.string.incognito_ntp_not_saved_heading))
+        val notSaved1 = esc(getString(R.string.incognito_ntp_not_saved_history))
+        val notSaved2 = esc(getString(R.string.incognito_ntp_not_saved_cookies))
+        val notSaved3 = esc(getString(R.string.incognito_ntp_not_saved_form))
+        val visibleHeading = esc(getString(R.string.incognito_ntp_visible_heading))
+        val visible1 = esc(getString(R.string.incognito_ntp_visible_sites))
+        val visible2 = esc(getString(R.string.incognito_ntp_visible_employer))
+        val searchHint = esc(getString(R.string.search_or_type_url))
+        return """
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>$title</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#202124;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:14vh 20px 40px;color:#E8EAED;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+.glyph{width:64px;height:64px;border-radius:50%;background:#3C4043;display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+.glyph svg{width:34px;height:34px;fill:#BDC1C6;}
+.title{font-size:22px;font-weight:600;margin-bottom:8px;text-align:center;color:#F1F3F4;}
+.subtitle{font-size:14px;color:#9AA0A6;margin-bottom:28px;text-align:center;max-width:420px;line-height:1.5;}
+.search-box{width:100%;max-width:420px;background:#2A2A2D;border-radius:24px;padding:14px 20px;display:flex;align-items:center;gap:12px;margin-bottom:28px;border:1px solid #3C4043;}
+.search-box svg{width:18px;height:18px;fill:#9AA0A6;flex-shrink:0;}
+.search-box span{color:#9AA0A6;font-size:14px;}
+.card{width:100%;max-width:420px;background:#292A2D;border-radius:14px;padding:18px 20px;margin-bottom:14px;border:1px solid #3C4043;}
+.card h2{font-size:13px;font-weight:600;color:#E8EAED;margin-bottom:10px;letter-spacing:0.3px;}
+.card ul{list-style:none;}
+.card li{font-size:13px;color:#9AA0A6;line-height:1.45;padding-left:18px;position:relative;margin-bottom:6px;}
+.card li:last-child{margin-bottom:0;}
+.card li:before{content:'';position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:#5F6368;}
+</style></head>
+<body>
+<div class="glyph"><svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v2H6c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-9c0-1.1-.9-2-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.66 0 3 1.34 3 3v2H9V7c0-1.66 1.34-3 3-3zm0 11c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/></svg></div>
+<div class="title">$title</div>
+<div class="subtitle">$subtitle</div>
+<div class="search-box" onclick="if(window.HelixHome)window.HelixHome.focusAddressBar();">
+<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+<span>$searchHint</span>
+</div>
+<div class="card">
+<h2>$savedHeading</h2>
+<ul><li>$notSaved1</li><li>$notSaved2</li><li>$notSaved3</li></ul>
+</div>
+<div class="card">
+<h2>$visibleHeading</h2>
+<ul><li>$visible1</li><li>$visible2</li></ul>
+</div>
+</body></html>""".trimIndent()
+    }
 
     // Fetch the user's most-visited sites off the main thread and inject them into
     // the already-rendered internal start page, replacing the hardcoded shortcut
@@ -1045,20 +1121,23 @@ function helixRenderTiles(items){
             }
             dialog.dismiss()
         }
-        // Text zoom
+        // Text zoom. Changes go through the engine's clamp (applyZoomPercent) and are
+        // persisted per-host so the site keeps this zoom on the next visit. Incognito
+        // tabs apply the change for the session but never persist it (no trace).
         val tvZoomLevel = view.findViewById<android.widget.TextView>(R.id.tvZoomLevel)
-        val currentZoom = currentWebView?.settings?.textZoom ?: 100
-        tvZoomLevel.text = "${currentZoom}%"
-        view.findViewById<View>(R.id.btnZoomIn).setOnClickListener {
-            val newZoom = ((currentWebView?.settings?.textZoom ?: 100) + 10).coerceAtMost(200)
-            currentWebView?.settings?.textZoom = newZoom
-            tvZoomLevel.text = "${newZoom}%"
+        val currentZoom = currentWebView?.settings?.textZoom ?: defaultZoomPercent()
+        tvZoomLevel.text = getString(R.string.zoom_percent, currentZoom)
+        fun changeZoom(delta: Int) {
+            val wv = currentWebView ?: return
+            // Keep the menu control's familiar 50..200 band; the engine clamp is a
+            // wider superset and will not narrow this.
+            val newZoom = ((wv.settings.textZoom) + delta).coerceIn(50, 200)
+            wv.applyZoomPercent(newZoom)
+            tvZoomLevel.text = getString(R.string.zoom_percent, newZoom)
+            if (!wv.isIncognito) zoomHostForCurrentPage()?.let { persistZoomForHost(it, newZoom) }
         }
-        view.findViewById<View>(R.id.btnZoomOut).setOnClickListener {
-            val newZoom = ((currentWebView?.settings?.textZoom ?: 100) - 10).coerceAtLeast(50)
-            currentWebView?.settings?.textZoom = newZoom
-            tvZoomLevel.text = "${newZoom}%"
-        }
+        view.findViewById<View>(R.id.btnZoomIn).setOnClickListener { changeZoom(10) }
+        view.findViewById<View>(R.id.btnZoomOut).setOnClickListener { changeZoom(-10) }
         view.findViewById<View>(R.id.menu_share).setOnClickListener { shareCurrentPage(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_save_page).setOnClickListener { savePageAsArchive(); dialog.dismiss() }
         view.findViewById<View>(R.id.menu_print).setOnClickListener { printCurrentPage(); dialog.dismiss() }
@@ -1364,23 +1443,190 @@ function helixRenderTiles(items){
         }
     }
 
+    private fun pipSupported(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+
+    // Manual PiP entry (overflow menu). Only enters when a <video> is actually
+    // present/playing, matching Chrome — otherwise PiP would show a blank page.
+    // The fullscreen-video case is known synchronously; the inline-video case is
+    // probed via JS and entered from the async callback.
     private fun enterPictureInPicture() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-            !packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+        if (!pipSupported()) {
             Toast.makeText(this, R.string.pip_unsupported, Toast.LENGTH_SHORT).show()
             return
         }
-        // Best-effort: pause any visible playback before suspending the
-        // activity into a PiP window. WebView keeps playing its <video>
-        // element inside the PiP container.
-        val params = android.app.PictureInPictureParams.Builder()
-            .setAspectRatio(android.util.Rational(16, 9))
-            .build()
-        try {
-            enterPictureInPictureMode(params)
-        } catch (e: Exception) {
-            Toast.makeText(this, R.string.pip_unsupported, Toast.LENGTH_SHORT).show()
+        if (fullscreenView != null) {
+            enterPipNow()
+            return
         }
+        detectVideoPlaying { playing ->
+            if (isFinishing || isDestroyed) return@detectVideoPlaying
+            if (playing) enterPipNow()
+            else Toast.makeText(this, R.string.pip_no_video, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Auto-PiP: when the user leaves the activity (Home / Recents) while a video is
+    // actively playing, slide into a PiP window like Chrome. We only enter when a
+    // video is genuinely playing so backgrounding a normal page is unaffected.
+    // The fullscreen-video state is authoritative and synchronous; otherwise we do a
+    // quick JS probe and enter from the callback (still within the leave window).
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (!pipSupported() || isFinishing || isDestroyed) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode) return
+        if (fullscreenView != null) {
+            enterPipNow()
+            return
+        }
+        detectVideoPlaying { playing ->
+            if (playing && !isFinishing && !isDestroyed) enterPipNow()
+        }
+    }
+
+    @SuppressLint("NewApi") // gated by pipSupported() (API 26+) at every call site.
+    private fun enterPipNow() {
+        try {
+            enterPictureInPictureMode(buildPipParams())
+        } catch (e: Exception) {
+            android.util.Log.w("MainActivity", "enterPictureInPictureMode failed", e)
+        }
+    }
+
+    // Probe the live page for a <video> that is currently playing (not paused, not
+    // ended, has a media source). Falls back to "true" when the fullscreen-video
+    // custom view is present. The callback runs on the UI thread. Fails soft to
+    // false when JS is disabled / the eval throws.
+    private fun detectVideoPlaying(callback: (Boolean) -> Unit) {
+        if (fullscreenView != null) { callback(true); return }
+        val wv = currentWebView ?: run { callback(false); return }
+        val js = """
+            (function(){
+              try {
+                var vs = document.querySelectorAll('video');
+                for (var i=0;i<vs.length;i++){
+                  var v = vs[i];
+                  if (!v.paused && !v.ended && v.readyState > 2 && v.currentTime > 0) return true;
+                }
+              } catch(e){}
+              return false;
+            })();
+        """.trimIndent()
+        try {
+            wv.evaluateJavascript(js) { raw ->
+                if (isFinishing || isDestroyed) { callback(false); return@evaluateJavascript }
+                callback(raw == "true")
+            }
+        } catch (e: Exception) {
+            callback(false)
+        }
+    }
+
+    // Toggle play/pause on the first playing/paused <video> via JS. Driven by the
+    // PiP RemoteAction broadcast. Best-effort; safe when no video / JS disabled.
+    private fun togglePipPlayback() {
+        val wv = currentWebView ?: return
+        val js = """
+            (function(){
+              try {
+                var vs = document.querySelectorAll('video');
+                for (var i=0;i<vs.length;i++){
+                  var v = vs[i];
+                  if (v.paused) { v.play(); } else { v.pause(); }
+                  return v.paused ? 'paused' : 'playing';
+                }
+              } catch(e){}
+              return 'none';
+            })();
+        """.trimIndent()
+        try {
+            wv.evaluateJavascript(js) { state ->
+                if (isFinishing || isDestroyed) return@evaluateJavascript
+                // Re-publish the params so the action icon reflects the new state.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                    isInPictureInPictureMode) {
+                    val playing = state == "\"playing\""
+                    runCatching { setPictureInPictureParams(buildPipParams(playing)) }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("MainActivity", "togglePipPlayback failed", e)
+        }
+    }
+
+    // Build PiP params with a single play/pause RemoteAction (when supported). The
+    // [playing] flag picks the pause vs play icon/label. The PendingIntent targets
+    // our own non-exported receiver with an explicit action, so no other app can
+    // trigger it. Falls back to params without actions on pre-O / action-build
+    // failure.
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.O)
+    private fun buildPipParams(playing: Boolean = true): android.app.PictureInPictureParams {
+        val builder = android.app.PictureInPictureParams.Builder()
+            .setAspectRatio(android.util.Rational(16, 9))
+        runCatching {
+            val action = buildPipPlayPauseAction(playing)
+            if (action != null) builder.setActions(listOf(action))
+        }
+        return builder.build()
+    }
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.O)
+    private fun buildPipPlayPauseAction(playing: Boolean): android.app.RemoteAction? {
+        return try {
+            // FLAG_IMMUTABLE is required on API 31+ and harmless earlier; the intent
+            // is explicit and carries no mutable extras a caller could fill in.
+            val flags = android.app.PendingIntent.FLAG_UPDATE_CURRENT or
+                (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                    android.app.PendingIntent.FLAG_IMMUTABLE else 0)
+            val intent = Intent(ACTION_PIP_TOGGLE).setPackage(packageName)
+            val pi = android.app.PendingIntent.getBroadcast(this, 0, intent, flags)
+            val icon = android.graphics.drawable.Icon.createWithResource(this, pipPlayPauseIcon(playing))
+            val label = getString(if (playing) R.string.pip_pause else R.string.pip_play)
+            android.app.RemoteAction(icon, label, label, pi)
+        } catch (e: Exception) {
+            android.util.Log.w("MainActivity", "buildPipPlayPauseAction failed", e)
+            null
+        }
+    }
+
+    // Resolve the play/pause icon, preferring dedicated media drawables when the
+    // resource exists in this build and falling back to always-present icons so the
+    // action never fails to render (and lint never sees a missing resource ref).
+    private fun pipPlayPauseIcon(playing: Boolean): Int {
+        val name = if (playing) "ic_pause" else "ic_play_arrow"
+        val id = resources.getIdentifier(name, "drawable", packageName)
+        if (id != 0) return id
+        return if (playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
+    }
+
+    // Receiver for the PiP play/pause RemoteAction. Registered only while in PiP and
+    // explicitly (non-exported), so it is reachable only by our own PendingIntent.
+    private var pipActionReceiver: android.content.BroadcastReceiver? = null
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.O)
+    private fun registerPipReceiver() {
+        if (pipActionReceiver != null) return
+        val receiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == ACTION_PIP_TOGGLE) togglePipPlayback()
+            }
+        }
+        pipActionReceiver = receiver
+        val filter = android.content.IntentFilter(ACTION_PIP_TOGGLE)
+        // RECEIVER_NOT_EXPORTED (API 33+) keeps the receiver private; our intent is
+        // explicit/package-scoped anyway, so this is defense in depth.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(receiver, filter)
+        }
+    }
+
+    private fun unregisterPipReceiver() {
+        pipActionReceiver?.let { runCatching { unregisterReceiver(it) } }
+        pipActionReceiver = null
     }
 
     @androidx.annotation.RequiresApi(Build.VERSION_CODES.O)
@@ -1391,10 +1637,19 @@ function helixRenderTiles(items){
             // surface is unobstructed; keep the foreground WebView resumed/playing.
             binding.bottomNavContainer.isVisible = false
             currentWebView?.onResume()
+            // Start listening for the play/pause RemoteAction and seed the controls
+            // with the current playback state so the icon is correct on entry.
+            registerPipReceiver()
+            detectVideoPlaying { playing ->
+                if (isInPictureInPictureMode && !isFinishing && !isDestroyed) {
+                    runCatching { setPictureInPictureParams(buildPipParams(playing)) }
+                }
+            }
         } else {
-            // Restored to full-window: bring chrome back. If the user dismissed the
-            // PiP window (activity stopping), normal lifecycle teardown handles the rest.
+            // Restored to full-window (or the PiP window was dismissed): bring chrome
+            // back and stop listening for the RemoteAction.
             binding.bottomNavContainer.isVisible = true
+            unregisterPipReceiver()
         }
     }
 
@@ -2233,7 +2488,28 @@ function helixRenderTiles(items){
     private fun hideFindInPage() {
         viewModel.showFindInPage.value = false
         currentWebView?.clearMatches()
+        binding.tvFindCount.text = ""
+        binding.tvFindCount.contentDescription = null
         hideKeyboard()
+    }
+
+    // Render the find-in-page match counter (Chrome-style). WebView's FindListener
+    // reports a ZERO-based activeMatchOrdinal and numberOfMatches; we show 1-based
+    // "n/total" on a hit, a localized "No results" when the query matches nothing,
+    // and clear it for an empty query. Also publishes a content description so the
+    // running count is announced to TalkBack. Defensive against an active ordinal of
+    // -1 (WebView reports this transiently before the first match is positioned).
+    private fun updateFindCount(activeOrdinal: Int, total: Int) {
+        if (total <= 0) {
+            binding.tvFindCount.text = getString(R.string.find_no_results)
+            binding.tvFindCount.contentDescription = getString(R.string.find_no_results)
+            return
+        }
+        val current = (activeOrdinal + 1).coerceIn(1, total)
+        // Use a localized n/total format so RTL locales lay the counter out correctly.
+        val label = getString(R.string.find_match_count, current, total)
+        binding.tvFindCount.text = label
+        binding.tvFindCount.contentDescription = label
     }
 
     private fun showKeyboard(view: View) {
@@ -2289,6 +2565,73 @@ function helixRenderTiles(items){
         // apply it to the CURRENT tab only (so the toggle visibly takes effect),
         // without disturbing the per-tab preferences of background tabs.
         syncGlobalDesktopPrefToCurrentTab()
+    }
+
+    // --- Per-site text zoom ---------------------------------------------------
+    //
+    // We persist a host -> zoom-percent map so a site keeps the user's chosen zoom
+    // across visits/sessions (Chrome behavior). The engine owns the clamp+apply
+    // (HelixWebView.applyZoomPercent); MainActivity owns the map. Values are stored
+    // as discrete keys ("$PREFIX$host") in the default SharedPreferences so they
+    // live alongside the rest of the app's prefs and a future Settings screen can
+    // enumerate/clear them. The global default-zoom pref ($KEY_DEFAULT_ZOOM) is
+    // owned by the Settings unit; we read it with a 100% fallback so this works
+    // whether or not Settings has written it yet.
+    //
+    // Incognito: per-site zoom is a display preference (no browsing content), but to
+    // honor incognito's "leave no trace" contract we neither read nor write the
+    // persisted map for incognito tabs — they always use the global default and any
+    // in-session zoom change is not stored.
+
+    private fun defaultPrefs(): android.content.SharedPreferences =
+        androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
+
+    // Default zoom percent (Settings-owned key). Clamped to the engine's band so a
+    // hand-edited / out-of-range value can never push a page into an unusable state.
+    private fun defaultZoomPercent(): Int =
+        runCatching { defaultPrefs().getInt(KEY_DEFAULT_ZOOM, 100) }.getOrDefault(100)
+            .coerceIn(HelixWebView.ZOOM_MIN_PERCENT, HelixWebView.ZOOM_MAX_PERCENT)
+
+    // Stable host key for the current page, or null for internal / non-host URLs
+    // (about:blank, the start pages) where per-site zoom is meaningless.
+    private fun zoomHostForCurrentPage(): String? {
+        val url = viewModel.currentUrl.value ?: return null
+        if (url.isBlank() || url == "about:blank") return null
+        val host = runCatching { Uri.parse(url).host }.getOrNull()?.removePrefix("www.")
+        return host?.takeIf { it.isNotBlank() }
+    }
+
+    // Remembered zoom for [host], or null when none is stored. Never consulted for
+    // incognito tabs (caller-gated) so private sessions leave no zoom trace.
+    private fun zoomForHost(host: String): Int? {
+        val v = runCatching { defaultPrefs().getInt(KEY_SITE_ZOOM_PREFIX + host, -1) }.getOrDefault(-1)
+        return if (v < 0) null else v.coerceIn(HelixWebView.ZOOM_MIN_PERCENT, HelixWebView.ZOOM_MAX_PERCENT)
+    }
+
+    private fun persistZoomForHost(host: String, percent: Int) {
+        val clamped = percent.coerceIn(HelixWebView.ZOOM_MIN_PERCENT, HelixWebView.ZOOM_MAX_PERCENT)
+        runCatching {
+            // A value equal to the global default is stored as a removal so the map
+            // stays small and a later default change keeps tracking such sites.
+            if (clamped == defaultZoomPercent()) {
+                defaultPrefs().edit().remove(KEY_SITE_ZOOM_PREFIX + host).apply()
+            } else {
+                defaultPrefs().edit().putInt(KEY_SITE_ZOOM_PREFIX + host, clamped).apply()
+            }
+        }
+    }
+
+    // Apply the right zoom to [webView] for the page it just finished loading: the
+    // remembered per-host value if any, otherwise the global default. Skipped for
+    // incognito tabs and internal pages.
+    private fun applyZoomForFinishedPage(webView: HelixWebView) {
+        if (webView.isIncognito) {
+            webView.applyZoomPercent(defaultZoomPercent())
+            return
+        }
+        val host = zoomHostForCurrentPage()
+        val percent = (host?.let { zoomForHost(it) }) ?: defaultZoomPercent()
+        webView.applyZoomPercent(percent)
     }
 
     // The effective default desktop preference for a newly created tab: the global
@@ -2347,6 +2690,8 @@ function helixRenderTiles(items){
         pendingWebPermissionRequest = null
         pendingWebPermissionKey = null
         pendingWebPermissionOrigin = null
+        // Stop listening for the PiP RemoteAction if we are torn down while in PiP.
+        unregisterPipReceiver()
         binding.webViewContainer.removeAllViews()
         currentWebView = null
         // Clear any pending toolbar callbacks holding references to root view.
@@ -2707,6 +3052,16 @@ function helixRenderTiles(items){
     companion object {
         const val REQUEST_TAB_SWITCHER = 1001
         private const val MAX_INCOMING_URL_LENGTH = 4096
+        // PiP play/pause RemoteAction broadcast action. Package-scoped + delivered to
+        // a non-exported, dynamically-registered receiver, so it is private to us.
+        private const val ACTION_PIP_TOGGLE = "com.helix.browser.action.PIP_TOGGLE"
+        // Default-zoom pref key (OWNED by the Settings unit as
+        // SettingsActivity.PREF_DEFAULT_ZOOM = "default_page_zoom"; read here with a
+        // 100% fallback). Kept in sync by value so the two units cannot drift without
+        // a deliberate change. Per-site overrides are stored under
+        // KEY_SITE_ZOOM_PREFIX + host.
+        private const val KEY_DEFAULT_ZOOM = "default_page_zoom"
+        private const val KEY_SITE_ZOOM_PREFIX = "site_zoom_"
         private const val MAX_LIVE_WEBVIEWS = 6
         // Most-visited tiles: 8 fills the 4-column start-page grid exactly.
         private const val TOP_SITES_COUNT = 8

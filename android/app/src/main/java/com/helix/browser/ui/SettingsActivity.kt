@@ -1,8 +1,12 @@
 package com.helix.browser.ui
 
+import android.app.role.RoleManager
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +14,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.widget.TextView
@@ -26,6 +31,12 @@ class SettingsActivity : BaseActivity() {
 
     private lateinit var prefs: SharedPreferences
 
+    // Held so onResume() can re-evaluate default-browser state after the user
+    // returns from the system role/default-apps screen. Null until the General
+    // section is built (and stays null on the rare devices where the scroll
+    // hierarchy could not be located, which makes the refresh a safe no-op).
+    private var defaultBrowserRow: View? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
@@ -36,10 +47,18 @@ class SettingsActivity : BaseActivity() {
         // Close button
         findViewById<android.view.View>(R.id.btnClose).setOnClickListener { finish() }
 
+        setupGeneralSection()
         setupSwitches()
         setupClickItems()
         setupAccessibilitySection()
         updateDynamicLabels()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // The user may have just granted/revoked the default-browser role via
+        // the system UI; reflect the current state without rebuilding the page.
+        refreshDefaultBrowserRow()
     }
 
     override fun finish() {
@@ -275,6 +294,170 @@ class SettingsActivity : BaseActivity() {
                     prefs.edit().putString("homepage", newHomepage).apply()
                     findViewById<TextView>(R.id.tvHomepage).text = newHomepage
                 }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    // --- General section ------------------------------------------------------
+    //
+    // Appended programmatically to the same scroll container the Accessibility
+    // section uses (the activity_settings layout is owned by another unit). Hosts
+    // two rows:
+    //  - "Set as default browser": uses RoleManager.ROLE_BROWSER on API 29+
+    //    (createRequestRoleIntent shows the system one-tap chooser) and falls
+    //    back to the default-apps Settings screen, then this app's details page,
+    //    on older releases. The row is hidden entirely when this app already
+    //    holds the role so we never ask the user to do something already done.
+    //  - "Default page zoom": a single-choice 50..200% list whose value
+    //    MainActivity applies to new pages when the origin has no remembered
+    //    per-site zoom (see PREF_DEFAULT_ZOOM / DEFAULT_ZOOM_PERCENT below).
+    private fun setupGeneralSection() {
+        val container = findScrollContent() ?: return
+
+        container.addView(buildDivider())
+        container.addView(buildSectionHeader(getString(R.string.general_category)))
+
+        // Default-browser row. We always build it; refreshDefaultBrowserRow()
+        // (called here and from onResume) hides it when the role is already held.
+        val defaultBrowserSubtitle = TextView(this).apply { setTextAppearanceCompat() }
+        val browserRow = buildClickRow(
+            iconRes = R.drawable.ic_helix_logo,
+            title = getString(R.string.default_browser_title),
+            subtitleView = defaultBrowserSubtitle,
+            showChevron = true
+        )
+        defaultBrowserSubtitle.text = getString(R.string.default_browser_summary)
+        browserRow.setOnClickListener { requestDefaultBrowser() }
+        container.addView(browserRow)
+        defaultBrowserRow = browserRow
+        refreshDefaultBrowserRow()
+
+        // Default page-zoom row (single-choice dialog).
+        val zoomSubtitle = TextView(this).apply { setTextAppearanceCompat() }
+        val zoomRow = buildClickRow(
+            iconRes = R.drawable.ic_text_zoom,
+            title = getString(R.string.default_zoom_title),
+            subtitleView = zoomSubtitle,
+            showChevron = true
+        )
+        zoomSubtitle.text = zoomPercentLabel(currentDefaultZoom())
+        zoomRow.setOnClickListener { showDefaultZoomDialog(zoomSubtitle) }
+        container.addView(zoomRow)
+    }
+
+    // --- Default browser ------------------------------------------------------
+
+    // True when this app currently holds the default-browser role. Uses
+    // RoleManager on API 29+ (the authoritative check) and resolves the http
+    // VIEW intent's default handler on older releases. Fails soft to false so a
+    // query failure simply shows the row rather than crashing Settings.
+    private fun isDefaultBrowser(): Boolean = try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val rm = getSystemService(RoleManager::class.java)
+            rm != null && rm.isRoleAvailable(RoleManager.ROLE_BROWSER) &&
+                rm.isRoleHeld(RoleManager.ROLE_BROWSER)
+        } else {
+            // Match against the package the system would launch for a generic
+            // web URL. A non-existent/"android" resolver means no default is set.
+            val probe = Intent(Intent.ACTION_VIEW, Uri.parse("http://www.example.com"))
+            val resolved = packageManager.resolveActivity(probe, 0)
+            resolved?.activityInfo?.packageName == packageName
+        }
+    } catch (e: Exception) {
+        false
+    }
+
+    // Hides the default-browser row when this app already holds the role,
+    // otherwise shows it. Safe to call before the row exists (no-op).
+    private fun refreshDefaultBrowserRow() {
+        val row = defaultBrowserRow ?: return
+        row.visibility = if (isDefaultBrowser()) View.GONE else View.VISIBLE
+    }
+
+    // Sends the user to the most direct surface for picking the default browser.
+    // Each external call is wrapped so a missing system Activity (some OEM /
+    // managed devices) degrades to the next fallback instead of crashing.
+    private fun requestDefaultBrowser() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (requestDefaultBrowserRole()) return
+        }
+        // Pre-Q (or if the role request could not be launched): the system
+        // default-apps screen, then this app's details page as a last resort.
+        if (launchIntentSafely(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))) return
+        if (launchIntentSafely(appDetailsIntent())) return
+        Toast.makeText(this, R.string.default_browser_unavailable, Toast.LENGTH_SHORT).show()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun requestDefaultBrowserRole(): Boolean {
+        val rm = getSystemService(RoleManager::class.java) ?: return false
+        // Role may be unavailable (e.g. work profiles, some OEMs) or already
+        // held; either way fall through to the Settings fallbacks.
+        if (!rm.isRoleAvailable(RoleManager.ROLE_BROWSER)) return false
+        if (rm.isRoleHeld(RoleManager.ROLE_BROWSER)) {
+            refreshDefaultBrowserRow()
+            return true
+        }
+        return try {
+            roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_BROWSER))
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    // App "details" Settings page; from there the user can tap "Open by default"
+    // / "Browser app" on releases without the dedicated default-apps screen.
+    private fun appDetailsIntent(): Intent =
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+        }
+
+    private fun launchIntentSafely(intent: Intent): Boolean = try {
+        startActivity(intent)
+        true
+    } catch (e: Exception) {
+        false
+    }
+
+    private val roleRequestLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { _ ->
+        // Regardless of the result code, re-query the authoritative role state
+        // (the user may have granted it, declined, or backed out).
+        refreshDefaultBrowserRow()
+    }
+
+    // --- Default page zoom ----------------------------------------------------
+    //
+    // The percentage choices offered for the per-page default zoom. 100 == the
+    // WebView default. Stored as the integer percent under PREF_DEFAULT_ZOOM and
+    // read by MainActivity, which applies it to a newly loaded page only when the
+    // page's origin has no remembered per-site zoom override.
+    private val defaultZoomValues = intArrayOf(50, 75, 90, 100, 110, 125, 150, 175, 200)
+
+    private fun zoomPercentLabel(percent: Int): String =
+        getString(R.string.default_zoom_value_format, percent)
+
+    private fun currentDefaultZoom(): Int =
+        prefs.getInt(PREF_DEFAULT_ZOOM, DEFAULT_ZOOM_PERCENT)
+            .coerceIn(HelixWebView.ZOOM_MIN_PERCENT, HelixWebView.ZOOM_MAX_PERCENT)
+
+    private fun showDefaultZoomDialog(subtitle: TextView) {
+        val labels = defaultZoomValues.map { zoomPercentLabel(it) }.toTypedArray()
+        val current = currentDefaultZoom()
+        // If a stored/legacy value is not one of the listed steps, default the
+        // selection to 100% rather than leaving nothing checked.
+        val checked = defaultZoomValues.indexOf(current)
+            .let { if (it < 0) defaultZoomValues.indexOf(DEFAULT_ZOOM_PERCENT) else it }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.default_zoom_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                val value = defaultZoomValues[which]
+                prefs.edit().putInt(PREF_DEFAULT_ZOOM, value).apply()
+                subtitle.text = labels[which]
+                dialog.dismiss()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
@@ -574,5 +757,21 @@ class SettingsActivity : BaseActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) recreate()
+    }
+
+    companion object {
+        // Default page-zoom pref. Stored in the default SharedPreferences
+        // (PreferenceManager.getDefaultSharedPreferences) as an Int percentage
+        // where 100 == the WebView default. SettingsActivity writes it; MainActivity
+        // reads it and applies it to a newly loaded page ONLY when that page's
+        // origin has no remembered per-site zoom override, so per-site zoom always
+        // wins. Read defensively and clamp to
+        // [HelixWebView.ZOOM_MIN_PERCENT, HelixWebView.ZOOM_MAX_PERCENT] before use
+        // (e.g. via HelixWebView.applyZoomPercent, which clamps internally) since a
+        // hand-edited value could be out of range.
+        //
+        // Pref key: "default_page_zoom" (Int). Default: 100.
+        const val PREF_DEFAULT_ZOOM = "default_page_zoom"
+        const val DEFAULT_ZOOM_PERCENT = 100
     }
 }
