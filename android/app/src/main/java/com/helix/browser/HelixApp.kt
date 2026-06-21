@@ -27,6 +27,12 @@ class HelixApp : Application() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         // Install crash handler FIRST so any later init failure is captured.
         HelixCrashHandler.install(this)
+        // Expose web content to desktop Chrome (chrome://inspect) in debug builds
+        // only. Never enable renderer inspection in release — it would let a
+        // connected machine read/drive any page the user loads.
+        if (BuildConfig.DEBUG) {
+            android.webkit.WebView.setWebContentsDebuggingEnabled(true)
+        }
         // Init billing early so subscription status is ready
         billingManager
     }

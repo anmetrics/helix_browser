@@ -337,6 +337,11 @@
     <string name="download_size_unknown">Unknown size</string>
     <string name="download_meta">%1$s · %2$s</string>
     <string name="download">Download</string>
+    <string name="download_warning_dangerous">⚠ This type of file can harm your device. Only keep it if you trust the source.</string>
+    <string name="download_keep_anyway">Download anyway</string>
+
+    <!-- Tab crash recovery -->
+    <string name="tab_reloaded_after_crash">This tab ran out of memory and was reloaded</string>
 
     <!-- Print -->
     <string name="print_no_page">Nothing to print</string>

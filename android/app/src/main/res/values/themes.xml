@@ -33,6 +33,14 @@
 
         <!-- Toolbar -->
         <item name="toolbarStyle">@style/Widget.Helix.Toolbar</item>
+
+        <!-- Dialogs: brighten option/body text (single-choice items use
+             colorOnSurfaceVariant, which is otherwise too muted to read well). -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Helix.Dialog</item>
+    </style>
+
+    <style name="ThemeOverlay.Helix.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorOnSurfaceVariant">@color/text_primary</item>
     </style>
 
     <!-- Toolbar style -->

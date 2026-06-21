@@ -38,7 +38,11 @@ class HelixWebViewClient(
     private val isHttpsUpgradeEnabled: () -> Boolean = { false },
     private val isHttpsOnlyModeEnabled: () -> Boolean = { false },
     private val getPrivacyScripts: () -> String = { "" },
-    private val onTrackerBlocked: () -> Unit = {}
+    private val onTrackerBlocked: () -> Unit = {},
+    // Invoked when this WebView's render process dies (onRenderProcessGone). The
+    // host detaches + destroys the dead WebView and rebuilds the tab. Null = the
+    // platform default (the app process is killed).
+    private val onRenderGone: ((view: WebView) -> Unit)? = null
 ) : WebViewClient() {
 
     private companion object {
@@ -52,6 +56,43 @@ class HelixWebViewClient(
 
     fun resetTrackerCount() {
         _trackersBlockedCount.set(0)
+    }
+
+    // The renderer hosting this WebView died (out-of-memory or a crash). If we
+    // return false the OS kills the whole app process; instead we hand the dead
+    // WebView to the host to detach/destroy and rebuild the tab, and return true.
+    // Added in API 26 (O); on older devices a renderer crash still kills the app.
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.O)
+    override fun onRenderProcessGone(
+        view: WebView,
+        detail: android.webkit.RenderProcessGoneDetail
+    ): Boolean {
+        Log.w(TAG, "Render process gone (didCrash=${detail.didCrash()}); recovering tab")
+        val handler = onRenderGone
+        return if (handler != null) {
+            handler(view)
+            true
+        } else {
+            super.onRenderProcessGone(view, detail)
+        }
+    }
+
+    // Take first-party ownership of a Safe Browsing hit instead of letting the
+    // engine handle it invisibly: log it (a hook for future telemetry) and show
+    // the platform interstitial with reporting enabled. Added in API 27 (O_MR1);
+    // on older devices the engine shows its own interstitial unchanged.
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.O_MR1)
+    override fun onSafeBrowsingHit(
+        view: WebView,
+        request: WebResourceRequest,
+        threatType: Int,
+        callback: android.webkit.SafeBrowsingResponse
+    ) {
+        Log.w(TAG, "Safe Browsing hit (threat=$threatType, mainFrame=${request.isForMainFrame}) on ${request.url}")
+        // showInterstitial(true) keeps the high-quality localized engine
+        // interstitial (back-to-safety + details) while explicitly enabling
+        // anonymous reporting back to the Safe Browsing provider.
+        callback.showInterstitial(/* allowReporting = */ true)
     }
 
     override fun shouldInterceptRequest(

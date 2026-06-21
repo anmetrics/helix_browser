@@ -42,6 +42,7 @@ import com.helix.browser.engine.HelixWebView
 import com.helix.browser.engine.HelixWebViewClient
 import com.helix.browser.engine.PrivacyManager
 import com.helix.browser.tabs.BrowserTab
+import com.helix.browser.utils.DownloadSafety
 import com.helix.browser.utils.Prefs
 import com.helix.browser.utils.UrlUtils
 import com.helix.browser.viewmodel.BrowserViewModel
@@ -768,7 +769,8 @@ class MainActivity : BaseActivity() {
             isHttpsUpgradeEnabled = { PrivacyManager.isHttpsUpgradeEnabled(this) },
             isHttpsOnlyModeEnabled = { PrivacyManager.isHttpsOnlyModeEnabled(this) },
             getPrivacyScripts = { PrivacyManager.getPrivacyScripts(this) },
-            onTrackerBlocked = { PrivacyManager.incrementTrackersBlocked(this) }
+            onTrackerBlocked = { PrivacyManager.incrementTrackersBlocked(this) },
+            onRenderGone = { deadView -> recoverCrashedWebView(deadView) }
         )
         // Apply third-party cookie policy
         PrivacyManager.applyThirdPartyCookiePolicy(this, webView)
@@ -852,6 +854,27 @@ class MainActivity : BaseActivity() {
             webView.loadDataWithBaseURL("about:blank", html, "text/html", "UTF-8", null)
         }
         return webView
+    }
+
+    // Recover from a renderer crash (HelixWebViewClient.onRenderProcessGone). The
+    // dead WebView can never be reused: detach + destroy it, drop it from the
+    // pool, and rebuild the on-screen tab from its URL (createWebViewForTab
+    // reloads tab.url). A crashed background tab is simply evicted and lazily
+    // recreated the next time it is attached.
+    private fun recoverCrashedWebView(deadView: WebView) {
+        runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
+            val crashedTabId = webViewPool.entries.firstOrNull { it.value === deadView }?.key
+            (deadView.parent as? android.view.ViewGroup)?.removeView(deadView)
+            if (crashedTabId != null) webViewPool.remove(crashedTabId)
+            if (currentWebView === deadView) currentWebView = null
+            try { deadView.destroy() } catch (_: Throwable) { /* renderer already gone */ }
+            val current = tabManager.currentTab
+            if (current != null && current.id == crashedTabId) {
+                attachWebViewForTab(current)
+                Toast.makeText(this, getString(R.string.tab_reloaded_after_crash), Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun setToolbarScrollable(scrollable: Boolean) {
@@ -2153,7 +2176,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
             permissionLauncher.launch(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE))
             return
         }
-        showDownloadConfirmation(url, userAgent, guessed, contentLength)
+        showDownloadConfirmation(url, userAgent, guessed, contentLength, mimeType)
     }
 
     // Fetch a PDF into app cache (off the main thread, bounded size) and launch the
@@ -2235,11 +2258,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         url: String,
         userAgent: String,
         guessedName: String,
-        contentLength: Long
+        contentLength: Long,
+        mimeType: String = ""
     ) {
         if (isFinishing || isDestroyed) return
         val density = resources.displayMetrics.density
         fun dp(v: Int) = (v * density).toInt()
+
+        // Flag executables/installers/scripts so we can warn before saving,
+        // matching Chrome's "this type of file can harm your device" prompt.
+        val isDangerous = DownloadSafety.isDangerous(guessedName, mimeType)
 
         val host = runCatching { Uri.parse(url).host }.getOrNull()?.removePrefix("www.")
             ?: UrlUtils.getDisplayUrl(url).substringBefore('/')
@@ -2288,6 +2316,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
             android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
         ).apply { topMargin = dp(8) })
 
+        // Download protection: warn (but do not block) when the file is an
+        // executable/installer/script the user could run to harm their device.
+        if (isDangerous) {
+            val warnView = android.widget.TextView(this).apply {
+                text = getString(R.string.download_warning_dangerous)
+                setTextColor(getColor(R.color.warning_orange))
+                textSize = 13f
+            }
+            container.addView(warnView, android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(8) })
+        }
+
         val buttonRow = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.HORIZONTAL
             gravity = android.view.Gravity.END
@@ -2301,7 +2343,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
             setOnClickListener { dialog.dismiss() }
         }
         val downloadBtn = com.google.android.material.button.MaterialButton(this).apply {
-            text = getString(R.string.download)
+            text = getString(if (isDangerous) R.string.download_keep_anyway else R.string.download)
+            if (isDangerous) setBackgroundColor(getColor(R.color.warning_orange))
             setOnClickListener {
                 val chosen = sanitizeDownloadFileName(nameInput.text?.toString(), guessedName)
                 dialog.dismiss()
